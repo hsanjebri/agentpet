@@ -1,0 +1,2 @@
+# keep LF line endings (Prettier expects them) even with core.autocrlf on Windows
+* text=auto eol=lf

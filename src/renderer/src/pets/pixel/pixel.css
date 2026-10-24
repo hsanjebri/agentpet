@@ -1,0 +1,65 @@
+/* Generic pixel sprite behavior. The viewBox is in cells, so 1px in a transform = 1 cell. */
+
+.pixel-sprite {
+  display: block;
+  overflow: visible;
+  --frame-speed: 1s;
+}
+
+.pixel-sprite .sprite {
+  transform-box: fill-box;
+  transform-origin: bottom center;
+}
+
+.pixel-sprite .effects {
+  pointer-events: none;
+}
+
+.pixel-sprite .effects .layer {
+  transform-box: fill-box;
+  transform-origin: center;
+}
+
+/* multi-frame layers: only one frame is visible at a time */
+
+.pixel-sprite .frame {
+  visibility: hidden;
+}
+
+.pixel-sprite .frame:first-child {
+  visibility: visible;
+}
+
+.pixel-sprite .frames-2 {
+  animation: px-frames-2 var(--frame-speed) steps(1, end) infinite;
+}
+
+.pixel-sprite .frames-4 {
+  animation: px-frames-4 var(--frame-speed) steps(1, end) infinite;
+}
+
+@keyframes px-frames-2 {
+  0% {
+    visibility: visible;
+  }
+  50%,
+  100% {
+    visibility: hidden;
+  }
+}
+
+@keyframes px-frames-4 {
+  0% {
+    visibility: visible;
+  }
+  25%,
+  100% {
+    visibility: hidden;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pixel-sprite .frame {
+    animation: none !important;
+  }
+}

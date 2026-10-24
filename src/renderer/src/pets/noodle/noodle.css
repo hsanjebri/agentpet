@@ -1,0 +1,210 @@
+/* Noodle's moods. 1px in a transform = 1 cell; steps(1, end) holds each keyframe, which keeps
+   the motion pixel-art instead of smooth. */
+
+.noodle .rainbow {
+  pointer-events: none;
+}
+
+/* ---------- body motion ---------- */
+
+.noodle.mood-sleeping .sprite {
+  animation: nd-breathe 3.2s steps(1, end) infinite;
+}
+
+@keyframes nd-breathe {
+  0%,
+  100% {
+    transform: scaleY(1);
+  }
+  50% {
+    transform: scaleY(1.03);
+  }
+}
+
+.noodle.mood-needs .sprite {
+  animation: nd-hop 0.6s steps(1, end) infinite;
+}
+
+@keyframes nd-hop {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  25%,
+  75% {
+    transform: translateY(-2px);
+  }
+  50% {
+    transform: translateY(-4px);
+  }
+}
+
+.noodle.mood-happy .sprite {
+  animation: nd-bounce 0.45s steps(1, end) infinite;
+}
+
+@keyframes nd-bounce {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-1px);
+  }
+}
+
+.noodle.mood-sweat .sprite {
+  animation: nd-shiver 0.16s steps(1, end) infinite;
+}
+
+@keyframes nd-shiver {
+  0%,
+  100% {
+    transform: translateX(-0.5px);
+  }
+  50% {
+    transform: translateX(0.5px);
+  }
+}
+
+.noodle.mood-sad .sprite {
+  animation: nd-droop 2.4s steps(1, end) infinite;
+}
+
+@keyframes nd-droop {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(1px);
+  }
+}
+
+.noodle.mood-hiss .sprite {
+  animation: nd-shake 0.24s steps(1, end) infinite;
+}
+
+@keyframes nd-shake {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  25% {
+    transform: translateX(-1px);
+  }
+  75% {
+    transform: translateX(1px);
+  }
+}
+
+/* ---------- effects ---------- */
+
+.noodle .z-small,
+.noodle .z-big {
+  animation: nd-float 2.4s steps(1, end) infinite;
+}
+
+.noodle .z-big {
+  animation-delay: -1.2s;
+}
+
+@keyframes nd-float {
+  0% {
+    transform: translateY(0);
+    opacity: 1;
+  }
+  33% {
+    transform: translateY(-1px);
+  }
+  66% {
+    transform: translateY(-2px);
+    opacity: 0.5;
+  }
+  100% {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.noodle .steam {
+  animation: nd-steam 1.2s steps(1, end) infinite;
+}
+
+@keyframes nd-steam {
+  0% {
+    transform: translate(0, 0);
+    opacity: 1;
+  }
+  50% {
+    transform: translate(1px, -1px);
+    opacity: 0.4;
+  }
+}
+
+.noodle .alert-mark,
+.noodle .lightning {
+  animation: nd-blink 0.4s steps(1, end) infinite;
+}
+
+.noodle .sparkle-a {
+  animation: nd-blink 0.6s steps(1, end) infinite;
+}
+
+.noodle .sparkle-b {
+  animation: nd-blink 0.6s steps(1, end) infinite -0.3s;
+}
+
+.noodle .sparkle-c {
+  animation: nd-blink 0.6s steps(1, end) infinite -0.15s;
+}
+
+@keyframes nd-blink {
+  0% {
+    visibility: visible;
+  }
+  60%,
+  100% {
+    visibility: hidden;
+  }
+}
+
+.noodle .sweat-drop {
+  animation: nd-drip 1.2s steps(1, end) infinite;
+}
+
+@keyframes nd-drip {
+  0% {
+    transform: translateY(0);
+  }
+  33% {
+    transform: translateY(1px);
+  }
+  66% {
+    transform: translateY(2px);
+    opacity: 0.6;
+  }
+}
+
+/* ---------- reduced motion: nothing moves, effects gently pulse ---------- */
+
+@media (prefers-reduced-motion: reduce) {
+  .noodle .sprite,
+  .noodle .effects .layer {
+    animation: none !important;
+  }
+
+  .noodle .effects .layer {
+    animation: nd-pulse 2s ease-in-out infinite !important;
+  }
+
+  @keyframes nd-pulse {
+    0%,
+    100% {
+      opacity: 1;
+    }
+    50% {
+      opacity: 0.4;
+    }
+  }
+}

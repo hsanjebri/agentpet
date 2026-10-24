@@ -1,0 +1,60 @@
+import { useEffect, useRef } from 'react'
+
+/** True when the element is one of the pet's painted pixels (not the transparent area). */
+function isOverPet(target: EventTarget | null): boolean {
+  return target instanceof Element && target.closest('[data-pet-hit]') !== null
+}
+
+/**
+ * Click-through everywhere except the pet, plus custom dragging (the window is frameless).
+ * The main process forwards mouse moves even while the window ignores the mouse, so we can
+ * turn interactivity on as soon as the pointer is over the pet.
+ */
+export function usePetPointer(onClick?: () => void): void {
+  const onClickRef = useRef(onClick)
+  useEffect(() => {
+    onClickRef.current = onClick
+  })
+
+  useEffect(() => {
+    let interactive = false
+    let dragging = false
+
+    const setInteractive = (value: boolean): void => {
+      if (value === interactive) return
+      interactive = value
+      window.api.setInteractive(value)
+    }
+
+    const onMove = (e: MouseEvent): void => {
+      if (!dragging) setInteractive(isOverPet(e.target))
+    }
+    const onLeave = (): void => {
+      if (!dragging) setInteractive(false)
+    }
+    const onDown = (e: MouseEvent): void => {
+      if (e.button !== 0 || !isOverPet(e.target)) return
+      e.preventDefault()
+      dragging = true
+      window.api.dragStart()
+    }
+    const onUp = async (e: MouseEvent): Promise<void> => {
+      if (!dragging) return
+      dragging = false
+      const { moved } = await window.api.dragEnd()
+      if (!moved) onClickRef.current?.()
+      setInteractive(isOverPet(e.target))
+    }
+
+    window.addEventListener('mousemove', onMove)
+    window.addEventListener('mousedown', onDown)
+    window.addEventListener('mouseup', onUp)
+    document.documentElement.addEventListener('mouseleave', onLeave)
+    return () => {
+      window.removeEventListener('mousemove', onMove)
+      window.removeEventListener('mousedown', onDown)
+      window.removeEventListener('mouseup', onUp)
+      document.documentElement.removeEventListener('mouseleave', onLeave)
+    }
+  }, [])
+}

@@ -1,0 +1,61 @@
+html,
+body,
+#root {
+  margin: 0;
+  height: 100%;
+  overflow: hidden;
+  /* the window itself is transparent; only the pet is drawn */
+  background: transparent;
+  user-select: none;
+}
+
+/* the pet sits at the bottom of the window, leaving room above for the speech bubble */
+.stage {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+}
+
+/* mood name shown above the pet during the mood demo */
+.demo-label {
+  padding: 3px 10px;
+  border-radius: 999px;
+  background: rgba(31, 28, 26, 0.85);
+  color: #fff;
+  font:
+    600 12px/1.4 system-ui,
+    sans-serif;
+  white-space: nowrap;
+}
+
+/* dev-only design sheet (Gallery.tsx) */
+.gallery {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  padding: 12px;
+  min-height: 100%;
+  box-sizing: border-box;
+  background: #c9d6df;
+  font-family: system-ui, sans-serif;
+}
+
+.gallery .tile {
+  margin: 0;
+  padding: 14px 10px 6px;
+  border-radius: 12px;
+  background: #eef2f5;
+  text-align: center;
+  color: #444;
+}
+
+.gallery .tile.dark {
+  background: #262b36;
+  color: #ccc;
+}
+
+.gallery.still * {
+  animation: none !important;
+}
