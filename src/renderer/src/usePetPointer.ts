@@ -1,8 +1,17 @@
 import { useEffect, useRef } from 'react'
 
-/** True when the element is one of the pet's painted pixels (not the transparent area). */
+/** True over the pet's painted pixels or a control (bubble buttons), not the transparent area. */
 function isOverPet(target: EventTarget | null): boolean {
-  return target instanceof Element && target.closest('[data-pet-hit]') !== null
+  return target instanceof Element && target.closest('[data-pet-hit], [data-ui]') !== null
+}
+
+/** Only the pet itself can be dragged; controls just get clicked. */
+function isDraggable(target: EventTarget | null): boolean {
+  return (
+    target instanceof Element &&
+    target.closest('[data-pet-hit]') !== null &&
+    target.closest('[data-ui]') === null
+  )
 }
 
 /**
@@ -33,7 +42,7 @@ export function usePetPointer(onClick?: () => void): void {
       if (!dragging) setInteractive(false)
     }
     const onDown = (e: MouseEvent): void => {
-      if (e.button !== 0 || !isOverPet(e.target)) return
+      if (e.button !== 0 || !isDraggable(e.target)) return
       e.preventDefault()
       dragging = true
       window.api.dragStart()

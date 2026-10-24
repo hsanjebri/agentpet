@@ -6,6 +6,7 @@ export type PetEventType =
   | 'session_start'
   | 'working' // user sent a prompt
   | 'tool' // agent is using a tool (edit, bash, read…)
+  | 'tool_done' // a tool finished (so any permission prompt for it was answered)
   | 'needs_you' // agent is waiting for permission / input
   | 'done' // agent finished its turn
   | 'error' // tests failed / command failed
@@ -27,6 +28,7 @@ export const PET_EVENT_TYPES: readonly PetEventType[] = [
   'session_start',
   'working',
   'tool',
+  'tool_done',
   'needs_you',
   'done',
   'error',
@@ -38,7 +40,7 @@ export const AGENT_KINDS: readonly AgentKind[] = ['claude-code', 'codex', 'curso
 
 const MAX_TEXT = 200
 
-function optionalText(value: unknown): string | undefined {
+export function optionalText(value: unknown): string | undefined {
   if (typeof value !== 'string' || value.length === 0) return undefined
   return value.length > MAX_TEXT ? value.slice(0, MAX_TEXT - 1) + '…' : value
 }
@@ -62,5 +64,75 @@ export function parsePetEvent(input: unknown): PetEvent | null {
     target: optionalText(raw.target),
     message: optionalText(raw.message),
     timestamp
+  }
+}
+
+function optionalNumber(value: unknown, min = 0, max = Infinity): number | undefined {
+  return typeof value === 'number' && Number.isFinite(value) && value >= min && value <= max
+    ? value
+    : undefined
+}
+
+/** Usage numbers from the agent's status line. Every field is optional: plans differ. */
+export interface UsageInfo {
+  sessionId?: string
+  /** % of the 5-hour limit used ("current session" in /usage); Pro/Max plans only */
+  sessionPct?: number
+  /** unix seconds when the 5-hour window resets */
+  sessionResetsAt?: number
+  /** % of the weekly limit used */
+  weekPct?: number
+  /** % of the context window used */
+  contextPct?: number
+  costUsd?: number
+  model?: string
+  timestamp: number
+}
+
+export function parseUsage(input: unknown): UsageInfo | null {
+  if (typeof input !== 'object' || input === null) return null
+  const raw = input as Record<string, unknown>
+  return {
+    sessionId: optionalText(raw.sessionId),
+    sessionPct: optionalNumber(raw.sessionPct, 0, 1000),
+    sessionResetsAt: optionalNumber(raw.sessionResetsAt),
+    weekPct: optionalNumber(raw.weekPct, 0, 1000),
+    contextPct: optionalNumber(raw.contextPct, 0, 100),
+    costUsd: optionalNumber(raw.costUsd),
+    model: optionalText(raw.model),
+    timestamp: Date.now()
+  }
+}
+
+/** A tool call waiting for the user's OK, shown as the approval bubble. */
+export interface PermissionPrompt {
+  id: string
+  agent: AgentKind
+  sessionId?: string
+  cwd?: string
+  toolName: string
+  target?: string // command or file, shortened
+  createdAt: number
+}
+
+/** 'terminal' = let the agent ask in its own window as usual. */
+export type PermissionDecision = 'allow' | 'deny' | 'terminal'
+
+export const PERMISSION_DECISIONS: readonly PermissionDecision[] = ['allow', 'deny', 'terminal']
+
+/** Validates a permission request from the hook (everything except the id and time). */
+export function parsePermissionRequest(
+  input: unknown
+): Omit<PermissionPrompt, 'id' | 'createdAt'> | null {
+  if (typeof input !== 'object' || input === null) return null
+  const raw = input as Record<string, unknown>
+  const toolName = optionalText(raw.toolName)
+  if (!toolName) return null
+  return {
+    agent: AGENT_KINDS.includes(raw.agent as AgentKind) ? (raw.agent as AgentKind) : 'unknown',
+    sessionId: optionalText(raw.sessionId),
+    cwd: optionalText(raw.cwd),
+    toolName,
+    target: optionalText(raw.target)
   }
 }

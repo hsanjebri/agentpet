@@ -6,14 +6,14 @@ import App from './App'
 
 // eslint-disable-next-line react-refresh/only-export-components -- entry file, never hot-swapped
 const Gallery = lazy(() => import('./Gallery'))
-const showGallery = import.meta.env.DEV && location.hash.startsWith('#gallery')
+// eslint-disable-next-line react-refresh/only-export-components -- entry file, never hot-swapped
+const Showcase = lazy(() => import('./Showcase'))
+const devPage = import.meta.env.DEV ? location.hash : ''
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
-    {showGallery ? (
-      <Suspense>
-        <Gallery />
-      </Suspense>
+    {devPage.startsWith('#gallery') || devPage.startsWith('#showcase') ? (
+      <Suspense>{devPage.startsWith('#gallery') ? <Gallery /> : <Showcase />}</Suspense>
     ) : (
       <App />
     )}

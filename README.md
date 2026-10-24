@@ -11,8 +11,20 @@ task is done. 🌈
 - ✅ Phase 0: project setup (Electron + React + TypeScript, Vitest, ESLint, Prettier)
 - ✅ Phase 1: transparent always-on-top window, click-through, drag, tray menu
 - ✅ Noodle the pixel cat with 7 moods (the tail shows what the agent is doing)
-- ⏳ Phase 2: local event server + mood state machine
-- ⏳ Phase 3: Claude Code hooks
+- ✅ Phase 2: local event server (127.0.0.1:7777) + mood state machine
+- ✅ Claude Code hooks: live moods, **Approve / Deny from the pet**, session usage bar
+- ⏳ Next: click the pet to jump to the terminal, sounds, first-run "Connect Claude Code" screen
+
+## Connect Claude Code
+
+```bash
+npm run hooks:preview     # show what will be added to ~/.claude/settings.json
+npm run hooks:install     # add it (your settings are backed up first)
+npm run hooks:uninstall   # remove only AgentPet's entries
+```
+
+Then start a new Claude Code session. When Claude asks for permission, Noodle hops and shows
+an Approve / Deny bubble; the bar under him shows your 5-hour session usage.
 
 ## Moods
 

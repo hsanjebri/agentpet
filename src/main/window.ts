@@ -5,9 +5,10 @@ import { is } from '@electron-toolkit/utils'
 import { IPC, type DragResult } from '../shared/ipc'
 import { type Position, settings } from './settings'
 
-// Noodle is 90×48 cells at 4px (360×192); the extra height is room to hop and for the speech bubble.
+// Noodle is 90×48 cells at 4px (360×192); above him sit the approval bubble and demo label,
+// below him the usage bar.
 export const WINDOW_WIDTH = 360
-export const WINDOW_HEIGHT = 240
+export const WINDOW_HEIGHT = 340
 const SCREEN_MARGIN = 16
 const CLICK_TOLERANCE = 4 // px the pointer may move before a press counts as a drag
 

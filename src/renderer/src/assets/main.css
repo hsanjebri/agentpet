@@ -59,3 +59,162 @@ body,
 .gallery.still * {
   animation: none !important;
 }
+
+/* ---------- pixel-style UI around the pet ---------- */
+
+:root {
+  --ink: #1f1c1a;
+  --paper: #fffdf8;
+  --ui-font: 700 11px/1.3 ui-monospace, 'Cascadia Mono', Consolas, monospace;
+}
+
+/* approval bubble: sits above Noodle's head (right side of the window) */
+.bubble {
+  position: relative;
+  align-self: flex-end;
+  margin: 0 18px 6px 0;
+  max-width: 250px;
+  padding: 7px 9px 8px;
+  background: var(--paper);
+  border: 3px solid var(--ink);
+  box-shadow: 3px 3px 0 var(--ink);
+  font: var(--ui-font);
+  color: var(--ink);
+  animation: bubble-in 0.18s steps(3, end);
+}
+
+/* the little tail of the speech bubble, pointing down at the cat */
+.bubble::after {
+  content: '';
+  position: absolute;
+  bottom: -11px;
+  right: 70px;
+  width: 12px;
+  height: 8px;
+  background: var(--paper);
+  border: 3px solid var(--ink);
+  border-top: none;
+  clip-path: polygon(0 0, 100% 0, 0 100%);
+}
+
+@keyframes bubble-in {
+  from {
+    transform: translateY(6px);
+    opacity: 0;
+  }
+}
+
+.bubble-title {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.bubble-more {
+  margin-left: 6px;
+  padding: 0 4px;
+  background: #e24b4a;
+  color: #fff;
+}
+
+.bubble-target {
+  display: block;
+  margin: 4px 0 7px;
+  padding: 3px 5px;
+  background: #ece7df;
+  font: inherit;
+  font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.bubble-actions {
+  display: flex;
+  gap: 6px;
+}
+
+.btn {
+  padding: 3px 9px;
+  border: 2px solid var(--ink);
+  box-shadow: 2px 2px 0 var(--ink);
+  font: var(--ui-font);
+  color: var(--ink);
+  cursor: pointer;
+}
+
+.btn:active {
+  transform: translate(2px, 2px);
+  box-shadow: none;
+}
+
+.btn-approve {
+  background: #5cc46b;
+}
+
+.btn-deny {
+  background: #f2a0a8;
+}
+
+.btn-terminal {
+  margin-left: auto;
+  background: var(--paper);
+}
+
+/* usage bar under the pet; never catches the mouse */
+.usage {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 2px;
+  padding: 3px 7px;
+  background: rgba(31, 28, 26, 0.82);
+  color: #fff;
+  font: var(--ui-font);
+  pointer-events: none;
+}
+
+.usage-label {
+  text-transform: uppercase;
+  opacity: 0.8;
+}
+
+.usage-track {
+  width: 110px;
+  height: 10px;
+  padding: 1px;
+  background: #3c3834;
+  border: 2px solid #fff;
+}
+
+.usage-fill {
+  height: 100%;
+  /* chunky pixel segments */
+  background-image: repeating-linear-gradient(90deg, var(--fill) 0 6px, transparent 6px 8px);
+  transition: width 0.4s steps(6, end);
+}
+
+.usage-ok {
+  --fill: #5cc46b;
+}
+
+.usage-warn {
+  --fill: #f6c744;
+}
+
+.usage-high {
+  --fill: #e24b4a;
+}
+
+.usage-detail {
+  opacity: 0.75;
+  font-weight: 500;
+}
+
+/* dev-only recording page (Showcase.tsx) */
+.showcase {
+  height: 100%;
+  padding-bottom: 14px;
+  box-sizing: border-box;
+  background: linear-gradient(160deg, #4a5a78, #2a3142);
+}

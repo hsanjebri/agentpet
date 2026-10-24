@@ -1,4 +1,5 @@
 // IPC channel names and the API the preload script exposes to the renderer.
+import type { PermissionDecision, PermissionPrompt, PetEvent, UsageInfo } from './events'
 import type { SkinId } from './skins'
 
 export const IPC = {
@@ -6,7 +7,11 @@ export const IPC = {
   dragStart: 'pet:drag-start',
   dragEnd: 'pet:drag-end',
   settings: 'pet:settings',
-  getSettings: 'pet:get-settings'
+  getSettings: 'pet:get-settings',
+  agentEvent: 'pet:agent-event',
+  usage: 'pet:usage',
+  permissions: 'pet:permissions',
+  decide: 'pet:decide'
 } as const
 
 export interface DragResult {
@@ -30,4 +35,10 @@ export interface PetApi {
   getSettings(): Promise<PetSettings>
   /** Called whenever settings change (e.g. from the tray). Returns an unsubscribe function. */
   onSettings(listener: (settings: PetSettings) => void): () => void
+  /** Events from the coding agent (via the hooks). Returns an unsubscribe function. */
+  onAgentEvent(listener: (event: PetEvent) => void): () => void
+  onUsage(listener: (usage: UsageInfo) => void): () => void
+  /** The permission requests currently waiting for a click (oldest first). */
+  onPermissions(listener: (prompts: PermissionPrompt[]) => void): () => void
+  decide(id: string, decision: PermissionDecision): void
 }

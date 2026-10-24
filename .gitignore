@@ -8,3 +8,6 @@ out
 # local-only files
 desktop.ini
 beluga image.png
+
+# screen recordings
+recordings/

@@ -1,5 +1,6 @@
 import { BrowserWindow, app } from 'electron'
 import { electronApp, optimizer } from '@electron-toolkit/utils'
+import { startBridge } from './bridge'
 import { registerSettingsIpc } from './settings'
 import { createTray } from './tray'
 import { createPetWindow } from './window'
@@ -18,6 +19,7 @@ if (!app.requestSingleInstanceLock()) {
     })
 
     registerSettingsIpc()
+    startBridge()
     createPetWindow()
     createTray()
 
