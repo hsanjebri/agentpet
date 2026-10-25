@@ -81,9 +81,9 @@ function drawRainbow(phase: number): PixelMap {
     const top = 28 + Math.round(Math.sin((RAINBOW_START_X - x) / 3 + phase))
     RAINBOW.forEach((color, band) => setCell(map, x, top + band, color))
   }
-  fillEllipse(map, 6, 30, 4, 3, 'w')
-  fillEllipse(map, 3, 32, 3, 2.5, 'w')
-  fillEllipse(map, 9, 33, 3, 2.2, 'w')
+  fillEllipse(map, 6, 30, 4, 3, 'W')
+  fillEllipse(map, 3, 32, 3, 2.5, 'W')
+  fillEllipse(map, 9, 33, 3, 2.2, 'W')
   return withOutline(map)
 }
 

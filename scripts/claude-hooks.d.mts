@@ -8,3 +8,4 @@ export function isOurStatusLine(statusLine: unknown): boolean
 export function agentPetEntries(cliPath: string): { hooks: Settings; statusLine: Settings }
 export function removeAgentPet(settings: Settings): Settings
 export function addAgentPet(settings: Settings, cliPath: string): Settings
+export function hasAgentPet(settings: Settings): boolean

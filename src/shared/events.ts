@@ -21,6 +21,7 @@ export interface PetEvent {
   toolName?: string // e.g. "Edit", "Bash"
   target?: string // file path or command (shortened for display)
   message?: string // e.g. permission message from the agent
+  pid?: number // the agent's process, for bringing its terminal / IDE to the front
   timestamp: number
 }
 
@@ -63,6 +64,7 @@ export function parsePetEvent(input: unknown): PetEvent | null {
     toolName: optionalText(raw.toolName),
     target: optionalText(raw.target),
     message: optionalText(raw.message),
+    pid: optionalNumber(raw.pid, 1, 2 ** 32),
     timestamp
   }
 }
@@ -112,6 +114,7 @@ export interface PermissionPrompt {
   cwd?: string
   toolName: string
   target?: string // command or file, shortened
+  pid?: number
   createdAt: number
 }
 
@@ -133,6 +136,16 @@ export function parsePermissionRequest(
     sessionId: optionalText(raw.sessionId),
     cwd: optionalText(raw.cwd),
     toolName,
-    target: optionalText(raw.target)
+    target: optionalText(raw.target),
+    pid: optionalNumber(raw.pid, 1, 2 ** 32)
   }
+}
+
+/** What the hover bubble shows about the agent session the pet is following. */
+export interface SessionSummary {
+  sessionId: string
+  project?: string
+  lastAction?: string // e.g. "editing App.tsx"
+  toolCount: number
+  startedAt: number
 }

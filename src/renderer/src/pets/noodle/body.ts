@@ -112,9 +112,9 @@ function drawHead(map: PixelMap, [hx, hy]: Point): void {
 }
 
 // Eye sprites. Shine is top-right on both eyes (same light source).
-const EYE = ['.ee.', 'eewe', 'eeee', '.ee.']
-const BIG_EYE = ['.eee.', 'eeeww', 'eeeww', 'eeeee', '.eee.']
-const NARROW_EYE = ['eewe', 'eeee', '.ee.']
+const EYE = ['.ee.', 'eeWe', 'eeee', '.ee.']
+const BIG_EYE = ['.eee.', 'eeeWW', 'eeeWW', 'eeeee', '.eee.']
+const NARROW_EYE = ['eeWe', 'eeee', '.ee.']
 const CLOSED_EYE = ['k..k', '.kk.']
 const HAPPY_EYE = ['.kk.', 'k..k']
 
@@ -183,7 +183,7 @@ function drawFace(map: PixelMap, mood: Mood, [hx, hy]: Point): void {
     case 'hiss':
       eyes(NARROW_EYE, lx, hy - 1)
       paint(map, 'k', both(angry))
-      stamp(map, hx - 4, hy + 4, ['kkkkkkkkk', 'kwkkkkkwk', 'kwkpppkwk', '.kkkkkkk.'])
+      stamp(map, hx - 4, hy + 4, ['kkkkkkkkk', 'kWkkkkkWk', 'kWkpppkWk', '.kkkkkkk.'])
       break
   }
 }
@@ -196,5 +196,13 @@ export function buildBody(mood: Mood): PixelMap {
   if (mood === 'hiss') drawBackFur(map, pose)
   drawHead(map, HEAD[pose])
   drawFace(map, mood, HEAD[pose])
+  return map
+}
+
+/** Just the head and face (for app and tray icons). */
+export function buildHead(mood: Mood): PixelMap {
+  const map = createMap(GRID_W, GRID_H)
+  drawHead(map, HEAD.standing)
+  drawFace(map, mood, HEAD.standing)
   return map
 }

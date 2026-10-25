@@ -8,14 +8,19 @@ import App from './App'
 const Gallery = lazy(() => import('./Gallery'))
 // eslint-disable-next-line react-refresh/only-export-components -- entry file, never hot-swapped
 const Showcase = lazy(() => import('./Showcase'))
+// eslint-disable-next-line react-refresh/only-export-components -- entry file, never hot-swapped
+const Connect = lazy(() => import('./Connect'))
 const devPage = import.meta.env.DEV ? location.hash : ''
+
+function page(): React.JSX.Element {
+  if (location.hash === '#connect') return <Connect />
+  if (devPage.startsWith('#gallery')) return <Gallery />
+  if (devPage.startsWith('#showcase')) return <Showcase />
+  return <App />
+}
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
-    {devPage.startsWith('#gallery') || devPage.startsWith('#showcase') ? (
-      <Suspense>{devPage.startsWith('#gallery') ? <Gallery /> : <Showcase />}</Suspense>
-    ) : (
-      <App />
-    )}
+    <Suspense>{page()}</Suspense>
   </StrictMode>
 )

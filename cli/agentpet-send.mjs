@@ -111,7 +111,9 @@ function baseFields(agent, hook) {
     sessionId: hook.session_id,
     cwd: hook.cwd ?? hook.workspace?.current_dir,
     toolName: hook.tool_name,
-    target: targetOf(hook.tool_input)
+    target: targetOf(hook.tool_input),
+    // hooks run as children of the agent: lets the app bring its terminal / IDE to the front
+    pid: process.ppid
   }
 }
 

@@ -19,15 +19,28 @@ function isDraggable(target: EventTarget | null): boolean {
  * The main process forwards mouse moves even while the window ignores the mouse, so we can
  * turn interactivity on as soon as the pointer is over the pet.
  */
-export function usePetPointer(onClick?: () => void): void {
-  const onClickRef = useRef(onClick)
+interface Handlers {
+  onClick?(): void
+  /** the pointer moved onto / off the pet itself (not its controls) */
+  onHover?(hovering: boolean): void
+}
+
+export function usePetPointer(handlers: Handlers = {}): void {
+  const handlersRef = useRef(handlers)
   useEffect(() => {
-    onClickRef.current = onClick
+    handlersRef.current = handlers
   })
 
   useEffect(() => {
     let interactive = false
     let dragging = false
+    let hovering = false
+
+    const setHovering = (value: boolean): void => {
+      if (value === hovering) return
+      hovering = value
+      handlersRef.current.onHover?.(value)
+    }
 
     const setInteractive = (value: boolean): void => {
       if (value === interactive) return
@@ -36,10 +49,14 @@ export function usePetPointer(onClick?: () => void): void {
     }
 
     const onMove = (e: MouseEvent): void => {
-      if (!dragging) setInteractive(isOverPet(e.target))
+      if (dragging) return
+      setInteractive(isOverPet(e.target))
+      setHovering(isDraggable(e.target))
     }
     const onLeave = (): void => {
-      if (!dragging) setInteractive(false)
+      if (dragging) return
+      setInteractive(false)
+      setHovering(false)
     }
     const onDown = (e: MouseEvent): void => {
       if (e.button !== 0 || !isDraggable(e.target)) return
@@ -51,7 +68,7 @@ export function usePetPointer(onClick?: () => void): void {
       if (!dragging) return
       dragging = false
       const { moved } = await window.api.dragEnd()
-      if (!moved) onClickRef.current?.()
+      if (!moved) handlersRef.current.onClick?.()
       setInteractive(isOverPet(e.target))
     }
 

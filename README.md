@@ -1,60 +1,73 @@
+<p align="center"><img src="docs/icon.png" width="96" alt="AgentPet icon"></p>
+
 # AgentPet
 
-A desktop pet that babysits your AI coding agent. It sleeps when the agent is idle, works
-while it works, **jumps when the agent needs your approval**, and farts a rainbow when the
-task is done. 🌈
+A desktop pet that babysits your AI coding agent. Noodle sleeps while Claude Code is idle,
+works while it works, **hops and meows when it needs your approval** (approve right from his
+bubble), and farts a rainbow when the task is done. 🌈
 
-> Work in progress. See [`AGENTPET_PLAN.md`](AGENTPET_PLAN.md) for the full build plan.
+<p align="center"><img src="docs/demo.gif" width="380" alt="Noodle going through his moods"></p>
 
-## Status
+## What Noodle does
 
-- ✅ Phase 0: project setup (Electron + React + TypeScript, Vitest, ESLint, Prettier)
-- ✅ Phase 1: transparent always-on-top window, click-through, drag, tray menu
-- ✅ Noodle the pixel cat with 7 moods (the tail shows what the agent is doing)
-- ✅ Phase 2: local event server (127.0.0.1:7777) + mood state machine
-- ✅ Claude Code hooks: live moods, **Approve / Deny from the pet**, session usage bar
-- ⏳ Next: click the pet to jump to the terminal, sounds, first-run "Connect Claude Code" screen
+| Mood      | When                                                                         | Noodle                                        |
+| --------- | ---------------------------------------------------------------------------- | --------------------------------------------- |
+| sleeping  | agent idle                                                                   | lies down, tail wrapped around him            |
+| working   | agent working                                                                | tail holds a coffee mug                       |
+| **needs** | **waiting for your approval**                                                | meows, hops toward you, Approve / Deny bubble |
+| happy     | task done                                                                    | tail draws a heart, rainbow fart              |
+| sweat     | session usage passes 50 / 80 / 95 %                                          | holds a coin, sweats                          |
+| sad       | the agent hit an error                                                       | lies flat, tears                              |
+| hiss      | risky action: `.env`, `rm -rf`, `git push --force`, deleted tests, 25+ files | puffed tail, says why                         |
 
-## Connect Claude Code
+- **Approve / Deny from the pet**: no need to go back to the terminal for every permission.
+- **Session usage bar** under Noodle: your 5-hour Claude limit (or context window), resets at…
+- **Click Noodle** to jump to the terminal / IDE where Claude is running.
+- **Hover** for what Claude is up to: `my-app · editing App.tsx · 12 tools · 4 min`.
+- Skins: Noodle, Mochi (orange tabby), Zitouna (street cat). Tray menu › Skin.
+- Tray menu: Mute, Focus mode (only shows up when needed), Start on login, Mood demo.
 
-```bash
-npm run hooks:preview     # show what will be added to ~/.claude/settings.json
-npm run hooks:install     # add it (your settings are backed up first)
-npm run hooks:uninstall   # remove only AgentPet's entries
-```
+## Install
 
-Then start a new Claude Code session. When Claude asks for permission, Noodle hops and shows
-an Approve / Deny bubble; the bar under him shows your 5-hour session usage.
+1. Download the installer for your system from
+   [Releases](https://github.com/hsanjebri/agentpet/releases) (`AgentPet-0.1.0-setup.exe`,
+   `.dmg` or `.AppImage`).
+   The builds aren't code-signed yet, so Windows SmartScreen / macOS Gatekeeper will warn:
+   choose "More info › Run anyway" (Windows) or right-click › Open (macOS).
+2. Start AgentPet. A **Connect Claude Code** window opens: click **Connect**.
+   It shows exactly what it adds to `~/.claude/settings.json` and backs the file up first.
+3. Start a **new** Claude Code session. That's it.
 
-## Moods
+Requires [Node.js](https://nodejs.org) on your PATH (the hooks are a tiny Node script).
 
-| Mood     | When                             | Noodle                                  |
-| -------- | -------------------------------- | --------------------------------------- |
-| sleeping | agent idle                       | lies down, tail wrapped around him      |
-| working  | agent working                    | tail holds a coffee mug                 |
-| needs    | waiting for your approval        | hops, tail shoots up like a red antenna |
-| happy    | task done                        | tail draws a heart, rainbow fart        |
-| sweat    | session getting expensive        | holds a coin, sweats                    |
-| sad      | tests failed                     | lies flat, tears                        |
-| hiss     | risky action (`.env`, `rm -rf`…) | puffed tail, bristling back             |
+## Privacy
 
-Tray menu › **Mood demo** plays them all in a loop.
+Everything stays on your computer. The app only listens on `127.0.0.1`, refuses requests
+from web pages, keeps nothing on disk except its settings, and has no telemetry.
+
+## Uninstall
+
+Tray menu › **Disconnect Claude Code** (removes only AgentPet's entries and restores your
+previous status line), then uninstall the app as usual. Or from a clone:
+`npm run hooks:uninstall`.
 
 ## Development
 
 ```bash
 npm install
-npm run dev        # start the app
-npm test           # unit tests
-npm run lint
-npm run typecheck
+npm run dev               # start the app
+npm test                  # unit tests
+npm run lint && npm run typecheck
+npm run build:win         # or build:mac / build:linux -> dist/
+npm run icons             # redraw the icons from Noodle's pixels
+
+npm run hooks:preview     # show what gets added to ~/.claude/settings.json
+npm run hooks:install     # connect this checkout to Claude Code
+npm run hooks:uninstall
 ```
 
-While `npm run dev` is running, open the renderer URL with `#gallery` (for example
-`http://localhost:5173/#gallery`) to see every mood side by side.
+While `npm run dev` runs, open the renderer URL (e.g. `http://localhost:5173`) with
+`#gallery` to see every mood, or `#showcase` for the demo loop on a plain background.
+`AGENTPET_DEMO=1 npm run dev` starts with the mood demo on.
 
-Start with the mood demo already running: `AGENTPET_DEMO=1 npm run dev`.
-
-## Privacy
-
-Everything stays local: the event server only listens on `127.0.0.1`, and there is no telemetry.
+See [`AGENTPET_PLAN.md`](AGENTPET_PLAN.md) for the full build plan.

@@ -17,7 +17,13 @@ const api: PetApi = {
   onAgentEvent: (listener) => listen(IPC.agentEvent, listener),
   onUsage: (listener) => listen(IPC.usage, listener),
   onPermissions: (listener) => listen(IPC.permissions, listener),
-  decide: (id, decision) => ipcRenderer.send(IPC.decide, id, decision)
+  decide: (id, decision) => ipcRenderer.send(IPC.decide, id, decision),
+  onSession: (listener) => listen(IPC.session, listener),
+  setAlert: (on) => ipcRenderer.send(IPC.setAlert, on),
+  petClicked: () => ipcRenderer.send(IPC.petClicked),
+  connectStatus: () => ipcRenderer.invoke(IPC.connectStatus),
+  connect: () => ipcRenderer.invoke(IPC.connect),
+  closeWindow: () => ipcRenderer.send(IPC.closeWindow)
 }
 
 contextBridge.exposeInMainWorld('api', api)

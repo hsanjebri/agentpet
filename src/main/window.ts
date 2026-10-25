@@ -71,7 +71,8 @@ export function createPetWindow(): BrowserWindow {
       preload: join(__dirname, '../preload/index.js'),
       contextIsolation: true,
       nodeIntegration: false,
-      sandbox: true
+      sandbox: true,
+      autoplayPolicy: 'no-user-gesture-required' // the meow must play without a click
     }
   })
 
@@ -110,6 +111,49 @@ export function moveWindow(win: BrowserWindow, { x, y }: Position): void {
   win.setBounds({ x: Math.round(x), y: Math.round(y), width: WINDOW_WIDTH, height: WINDOW_HEIGHT })
 }
 
+// ---------- needs-you alert: hop a bit toward the middle of the screen, then back ----------
+
+const ALERT_PULL = 0.25 // how far toward the screen center (fraction of the way)
+const GLIDE_MS = 260
+/** Where the pet was before the alert moved it, while the alert is on. */
+let restPosition: Position | null = null
+let glideTimer: NodeJS.Timeout | undefined
+
+function glideTo(win: BrowserWindow, target: Position): void {
+  clearInterval(glideTimer)
+  const [fromX, fromY] = win.getPosition()
+  const started = Date.now()
+  glideTimer = setInterval(() => {
+    const t = Math.min(1, (Date.now() - started) / GLIDE_MS)
+    const ease = 1 - (1 - t) ** 3
+    moveWindow(win, { x: fromX + (target.x - fromX) * ease, y: fromY + (target.y - fromY) * ease })
+    if (t === 1) clearInterval(glideTimer)
+  }, 16)
+}
+
+export function setAlert(win: BrowserWindow, on: boolean): void {
+  if (win.isDestroyed()) return
+  if (on && !restPosition) {
+    const [x, y] = win.getPosition()
+    restPosition = { x, y }
+    const { workArea: a } = screen.getDisplayMatching(win.getBounds())
+    const center = {
+      x: a.x + (a.width - WINDOW_WIDTH) / 2,
+      y: a.y + (a.height - WINDOW_HEIGHT) / 2
+    }
+    glideTo(
+      win,
+      clampToDisplay({
+        x: x + (center.x - x) * ALERT_PULL,
+        y: y + (center.y - y) * ALERT_PULL
+      })
+    )
+  } else if (!on && restPosition) {
+    glideTo(win, restPosition)
+    restPosition = null
+  }
+}
+
 function registerPointerIpc(win: BrowserWindow): void {
   const fromPet = (e: Electron.IpcMainEvent | Electron.IpcMainInvokeEvent): boolean =>
     e.sender === win.webContents
@@ -132,6 +176,7 @@ function registerPointerIpc(win: BrowserWindow): void {
   ipcMain.on(IPC.dragStart, (e) => {
     if (!fromPet(e)) return
     stopDrag()
+    clearInterval(glideTimer)
     const start = screen.getCursorScreenPoint()
     const [wx, wy] = win.getPosition()
     const offset = { x: start.x - wx, y: start.y - wy }
@@ -150,6 +195,7 @@ function registerPointerIpc(win: BrowserWindow): void {
     if (moved) {
       const [x, y] = win.getPosition()
       settings.set('windowPosition', { x, y })
+      restPosition = null // dropped somewhere new: that's home now, even during an alert
     }
     return { moved }
   })

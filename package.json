@@ -1,6 +1,6 @@
 {
   "name": "agentpet",
-  "version": "0.0.1",
+  "version": "0.1.0",
   "description": "A desktop pet that babysits your AI coding agent",
   "main": "./out/main/index.js",
   "author": "AgentPet",
@@ -23,7 +23,8 @@
     "test:watch": "vitest",
     "hooks:install": "node scripts/install-hooks.mjs",
     "hooks:preview": "node scripts/install-hooks.mjs --dry-run",
-    "hooks:uninstall": "node scripts/uninstall-hooks.mjs"
+    "hooks:uninstall": "node scripts/uninstall-hooks.mjs",
+    "icons": "vitest run --config scripts/icons/vitest.config.mts"
   },
   "dependencies": {
     "@electron-toolkit/utils": "^4.0.0",

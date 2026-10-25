@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import type { PetSettings } from '@shared/ipc'
 import { DEFAULT_SKIN } from '@shared/skins'
 
-const INITIAL: PetSettings = { skin: DEFAULT_SKIN, muted: false, demo: false }
+const INITIAL: PetSettings = { skin: DEFAULT_SKIN, muted: false, focusMode: false, demo: false }
 
 /** Current settings from the main process, updated live when they change in the tray. */
 export function useSettings(): PetSettings {

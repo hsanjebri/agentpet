@@ -3,13 +3,13 @@ export type SkinId = 'noodle' | 'mochi' | 'zitouna' | 'byte' | 'ribbit' | 'bolt'
 export interface SkinInfo {
   id: SkinId
   name: string
-  ready: boolean // the other vector skins arrive in Phase 4
+  ready: boolean // Byte, Ribbit and Bolt still need their own pixel art
 }
 
 export const SKINS: readonly SkinInfo[] = [
   { id: 'noodle', name: 'Noodle', ready: true },
-  { id: 'mochi', name: 'Mochi', ready: false },
-  { id: 'zitouna', name: 'Zitouna', ready: false },
+  { id: 'mochi', name: 'Mochi', ready: true },
+  { id: 'zitouna', name: 'Zitouna', ready: true },
   { id: 'byte', name: 'Byte', ready: false },
   { id: 'ribbit', name: 'Ribbit', ready: false },
   { id: 'bolt', name: 'Bolt', ready: false }

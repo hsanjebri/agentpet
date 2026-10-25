@@ -83,3 +83,10 @@ export function addAgentPet(settings, cliPath) {
   next.statusLine = entries.statusLine
   return next
 }
+
+/** True when the settings already contain AgentPet's hooks. */
+export function hasAgentPet(settings) {
+  return Object.values(settings?.hooks ?? {}).some(
+    (groups) => Array.isArray(groups) && groups.some((g) => (g.hooks ?? []).some(isOurs))
+  )
+}

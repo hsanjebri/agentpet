@@ -1,43 +1,47 @@
 appId: com.agentpet.app
 productName: AgentPet
+copyright: AgentPet contributors
 directories:
   buildResources: build
+  output: dist
 files:
   - '!**/.vscode/*'
-  - '!src/*'
+  - '!{src,tests,scripts,cli,recordings,docs}/**'
   - '!electron.vite.config.{js,ts,mjs,cjs}'
-  - '!{.eslintcache,eslint.config.mjs,.prettierignore,.prettierrc.yaml,dev-app-update.yml,CHANGELOG.md,README.md}'
+  - '!vitest.config.*'
+  - '!{.eslintcache,eslint.config.mjs,.prettierignore,.prettierrc.yaml,.editorconfig,.gitattributes,dev-app-update.yml,CHANGELOG.md,README.md,AGENTPET_PLAN.md}'
   - '!{.env,.env.*,.npmrc,pnpm-lock.yaml}'
   - '!{tsconfig.json,tsconfig.node.json,tsconfig.web.json}'
 asarUnpack:
   - resources/**
+# the hook script runs in the user's own Node, outside the app, so it ships as a plain file
+extraResources:
+  - from: cli
+    to: cli
+    filter:
+      - '*.mjs'
 win:
-  executableName: agentpet
+  executableName: AgentPet
+  target: nsis
 nsis:
-  artifactName: ${name}-${version}-setup.${ext}
+  artifactName: ${productName}-${version}-setup.${ext}
   shortcutName: ${productName}
   uninstallDisplayName: ${productName}
-  createDesktopShortcut: always
+  createDesktopShortcut: false
+  oneClick: true
 mac:
+  category: public.app-category.developer-tools
+  target: dmg
   entitlementsInherit: build/entitlements.mac.plist
   extendInfo:
-    - NSCameraUsageDescription: Application requests access to the device's camera.
-    - NSMicrophoneUsageDescription: Application requests access to the device's microphone.
-    - NSDocumentsFolderUsageDescription: Application requests access to the user's Documents folder.
-    - NSDownloadsFolderUsageDescription: Application requests access to the user's Downloads folder.
+    LSUIElement: true # tray app: no Dock icon
   notarize: false
 dmg:
-  artifactName: ${name}-${version}.${ext}
+  artifactName: ${productName}-${version}.${ext}
 linux:
-  target:
-    - AppImage
-    - snap
-    - deb
-  maintainer: agentpet
-  category: Utility
+  target: AppImage
+  maintainer: AgentPet contributors
+  category: Development
 appImage:
-  artifactName: ${name}-${version}.${ext}
+  artifactName: ${productName}-${version}.${ext}
 npmRebuild: false
-publish:
-  provider: generic
-  url: https://example.com/auto-updates
