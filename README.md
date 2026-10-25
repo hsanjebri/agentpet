@@ -24,13 +24,20 @@ bubble), and farts a rainbow when the task is done. 🌈
 - **Session usage bar** under Noodle: your 5-hour Claude limit (or context window), resets at…
 - **Click Noodle** to jump to the terminal / IDE where Claude is running.
 - **Hover** for what Claude is up to: `my-app · editing App.tsx · 12 tools · 4 min`.
+- **Daily recap card + weekly "Wrapped"**: tray › _profile & recap_ → save, copy or share on X.
+- **He grows up**: kitten → cat → chonky senior cat with glasses as you level up (10 tasks a level).
+- **Unlock accessories**: top hat (100 tasks), sunglasses (7-day streak), crown (1,000 approvals).
+- **Rare moments** (1 task in 50): golden rainbow, double fart, asleep on the keyboard.
+- **Pet him**: click and hold, he purrs. **Feed him**: every finished task is a fish.
+- **Wanders** along the bottom of the screen when idle; good morning / go-to-bed greetings;
+  party hat on Fridays. **Name your cat** when you first start the app.
 - Skins: Noodle, Mochi (orange tabby), Zitouna (street cat). Tray menu › Skin.
-- Tray menu: Mute, Focus mode (only shows up when needed), Start on login, Mood demo.
+- Tray menu: Mute, Wander, Focus mode (only shows up when needed), Start on login, Mood demo.
 
 ## Install
 
 1. Download the installer for your system from
-   [Releases](https://github.com/hsanjebri/agentpet/releases) (`AgentPet-0.1.0-setup.exe`,
+   [Releases](https://github.com/hsanjebri/agentpet/releases) (`AgentPet-0.2.0-setup.exe`,
    `.dmg` or `.AppImage`).
    The builds aren't code-signed yet, so Windows SmartScreen / macOS Gatekeeper will warn:
    choose "More info › Run anyway" (Windows) or right-click › Open (macOS).
