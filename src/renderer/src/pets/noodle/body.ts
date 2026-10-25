@@ -1,5 +1,6 @@
 // Noodle's body: a chubby white cat on 4 legs (or lying down), black patches, and the face.
 // He faces right: head on the right, tail on the left.
+import type { Accessory } from '@shared/progress'
 import type { Mood } from '../../moods'
 import {
   type PixelMap,
@@ -38,6 +39,22 @@ const BODY: Record<Pose, { cx: number; cy: number; rx: number; ry: number }> = {
   lying: { cx: 47, cy: 36, rx: 21, ry: 7.5 }
 }
 
+/** Things the pet can wear: unlocked accessories, plus the Friday party hat and senior glasses. */
+export type Wearable = Accessory | 'partyhat' | 'glasses'
+
+export interface BodyLook {
+  /** the senior stage: a rounder, chonkier body */
+  chonky?: boolean
+  wear?: readonly Wearable[]
+  /** walking: which way the legs are swinging (-1 / 1), 0 = standing still */
+  stride?: -1 | 0 | 1
+}
+
+function bodyShape(pose: Pose, chonky = false): (typeof BODY)[Pose] {
+  const b = BODY[pose]
+  return chonky ? { ...b, rx: b.rx + 2.5, ry: b.ry + 1 } : b
+}
+
 /** Gray line along the bottom edge of a shape (jaw, belly). */
 function shadeBottomEdge(map: PixelMap, inside: (x: number, y: number) => boolean): void {
   forEachCell(map, (x, y) => {
@@ -45,22 +62,24 @@ function shadeBottomEdge(map: PixelMap, inside: (x: number, y: number) => boolea
   })
 }
 
-function drawBody(map: PixelMap, pose: Pose): void {
-  const b = BODY[pose]
+function drawBody(map: PixelMap, pose: Pose, { chonky, stride = 0 }: BodyLook): void {
+  const b = bodyShape(pose, chonky)
+  // walking: near and far legs swing opposite ways
+  const swing = stride * 2
   const inBody = (x: number, y: number): boolean => insideEllipse(x, y, b.cx, b.cy, b.rx, b.ry)
 
   if (pose === 'standing') {
     // far-side legs, in shadow
-    fillRect(map, 68, 33, 71, 42, 'g')
-    fillRect(map, 39, 33, 42, 42, 'g')
+    fillRect(map, 68 - swing, 33, 71 - swing, 42, 'g')
+    fillRect(map, 39 + swing, 33, 42 + swing, 42, 'g')
     fillEllipse(map, b.cx, b.cy, b.rx, b.ry, 'w')
     fillEllipse(map, 66, 29, 8, 8, 'w') // chest
     shadeBottomEdge(map, inBody)
     // near-side legs, paws pointing forward
-    fillRect(map, 61, 33, 65, 43, 'w')
-    setCell(map, 66, 43, 'w')
-    fillRect(map, 32, 33, 36, 43, 'w')
-    setCell(map, 37, 43, 'w')
+    fillRect(map, 61 + swing, 33, 65 + swing, 43, 'w')
+    setCell(map, 66 + swing, 43, 'w')
+    fillRect(map, 32 - swing, 33, 36 - swing, 43, 'w')
+    setCell(map, 37 - swing, 43, 'w')
   } else {
     // loaf: legs tucked in, front paws peeking out under the chin
     fillEllipse(map, b.cx, b.cy, b.rx, b.ry, 'w')
@@ -79,8 +98,8 @@ function drawBody(map: PixelMap, pose: Pose): void {
 }
 
 /** Hiss: fur stands up along the back. */
-function drawBackFur(map: PixelMap, pose: Pose): void {
-  const b = BODY[pose]
+function drawBackFur(map: PixelMap, pose: Pose, chonky?: boolean): void {
+  const b = bodyShape(pose, chonky)
   for (let x = 30; x <= 58; x += 3) {
     let top = b.cy
     while (insideEllipse(x, top - 1, b.cx, b.cy, b.rx, b.ry)) top--
@@ -188,14 +207,40 @@ function drawFace(map: PixelMap, mood: Mood, [hx, hy]: Point): void {
   }
 }
 
+// Accessories, placed relative to the head center like the face.
+const TOP_HAT = ['..ddddddd..', '..ddddddd..', '..ddddddd..', '..rrrrrrr..', 'ddddddddddd']
+const CROWN = ['y...y...y', 'yy.yyy.yy', 'yyyyyyyyy', 'yryyYyyry']
+const PARTY_HAT = ['...r...', '...P...', '..PyP..', '..PPP..', '.PyPPP.', '.PPPPy.', 'PPyPPPP']
+const SUNGLASSES_LENS = ['kkkkkk', 'kWkkkk', 'kkkkkk', 'kkkkkk', '.kkkk.']
+const GLASSES_RING = ['.kkkk.', 'k....k', 'k....k', 'k....k', 'k....k', '.kkkk.']
+
+function drawWearables(map: PixelMap, [hx, hy]: Point, wear: readonly Wearable[]): void {
+  // eyewear: sunglasses win over the senior's reading glasses
+  const lens = wear.includes('sunglasses')
+    ? SUNGLASSES_LENS
+    : wear.includes('glasses')
+      ? GLASSES_RING
+      : null
+  if (lens) {
+    stamp(map, hx - 9, hy - 3, lens)
+    stamp(map, hx + 4, hy - 3, lens)
+    for (let x = hx - 3; x <= hx + 3; x++) setCell(map, x, hy - 2, 'k') // bridge
+  }
+  // headwear: one at a time (crown > top hat > party hat)
+  if (wear.includes('crown')) stamp(map, hx - 4, hy - 14, CROWN)
+  else if (wear.includes('tophat')) stamp(map, hx - 5, hy - 15, TOP_HAT)
+  else if (wear.includes('partyhat')) stamp(map, hx - 3, hy - 16, PARTY_HAT)
+}
+
 /** Body, legs, head and the mood's face (not outlined yet). The tail is separate (tail.ts). */
-export function buildBody(mood: Mood): PixelMap {
+export function buildBody(mood: Mood, look: BodyLook = {}): PixelMap {
   const map = createMap(GRID_W, GRID_H)
   const pose = POSES[mood]
-  drawBody(map, pose)
-  if (mood === 'hiss') drawBackFur(map, pose)
+  drawBody(map, pose, look)
+  if (mood === 'hiss') drawBackFur(map, pose, look.chonky)
   drawHead(map, HEAD[pose])
   drawFace(map, mood, HEAD[pose])
+  drawWearables(map, HEAD[pose], look.wear ?? [])
   return map
 }
 

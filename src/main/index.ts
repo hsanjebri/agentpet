@@ -1,9 +1,12 @@
 import { BrowserWindow, app } from 'electron'
 import { electronApp, optimizer } from '@electron-toolkit/utils'
-import { startBridge } from './bridge'
+import { lastAgentActivity, startBridge } from './bridge'
 import { isConnected, openConnectWindow, registerConnectIpc } from './connect'
-import { registerSettingsIpc, settings } from './settings'
+import { registerPagesIpc } from './pages'
+import { registerProgressIpc } from './progress'
+import { petSettings, registerSettingsIpc, settings } from './settings'
 import { createTray, refreshTray } from './tray'
+import { startWander } from './wander'
 import { createPetWindow } from './window'
 
 // One pet at a time (the event server will need a single owner of its port).
@@ -22,8 +25,17 @@ if (!app.requestSingleInstanceLock()) {
     registerSettingsIpc()
     startBridge()
     registerConnectIpc(refreshTray)
-    createPetWindow()
+    registerPagesIpc()
+    registerProgressIpc(refreshTray)
+    const pet = createPetWindow()
     createTray()
+    startWander(pet, {
+      enabled: () => {
+        const s = petSettings()
+        return s.wander && !s.focusMode && !s.demo
+      },
+      lastActivity: lastAgentActivity
+    })
 
     // first run: offer to connect Claude Code (once)
     if (!isConnected() && !settings.get('connectPromptShown')) {

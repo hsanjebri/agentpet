@@ -119,7 +119,7 @@ const GLIDE_MS = 260
 let restPosition: Position | null = null
 let glideTimer: NodeJS.Timeout | undefined
 
-function glideTo(win: BrowserWindow, target: Position): void {
+export function glideTo(win: BrowserWindow, target: Position): void {
   clearInterval(glideTimer)
   const [fromX, fromY] = win.getPosition()
   const started = Date.now()
@@ -131,8 +131,54 @@ function glideTo(win: BrowserWindow, target: Position): void {
   }, 16)
 }
 
+// ---------- walking (wander.ts decides when) ----------
+
+let walkTimer: NodeJS.Timeout | undefined
+let onWalkCancelled: (() => void) | undefined
+
+/** Stops a walk in progress (drag, alert…). */
+export function cancelWalk(): void {
+  if (!walkTimer) return
+  clearInterval(walkTimer)
+  walkTimer = undefined
+  const cancelled = onWalkCancelled
+  onWalkCancelled = undefined
+  cancelled?.()
+}
+
+/** Walks horizontally to `x` at a steady pace (px/s). */
+export function walkTo(
+  win: BrowserWindow,
+  x: number,
+  speed: number,
+  onArrive: () => void,
+  onCancel: () => void
+): void {
+  cancelWalk()
+  const [fromX, y] = win.getPosition()
+  const duration = (Math.abs(x - fromX) / speed) * 1000
+  const started = Date.now()
+  onWalkCancelled = onCancel
+  walkTimer = setInterval(() => {
+    if (win.isDestroyed()) return cancelWalk()
+    const t = Math.min(1, (Date.now() - started) / duration)
+    moveWindow(win, { x: fromX + (x - fromX) * t, y })
+    if (t === 1) {
+      clearInterval(walkTimer)
+      walkTimer = undefined
+      onWalkCancelled = undefined
+      onArrive()
+    }
+  }, 16)
+}
+
+export function isAlerting(): boolean {
+  return restPosition !== null
+}
+
 export function setAlert(win: BrowserWindow, on: boolean): void {
   if (win.isDestroyed()) return
+  if (on) cancelWalk()
   if (on && !restPosition) {
     const [x, y] = win.getPosition()
     restPosition = { x, y }
@@ -177,6 +223,7 @@ function registerPointerIpc(win: BrowserWindow): void {
     if (!fromPet(e)) return
     stopDrag()
     clearInterval(glideTimer)
+    cancelWalk()
     const start = screen.getCursorScreenPoint()
     const [wx, wy] = win.getPosition()
     const offset = { x: start.x - wx, y: start.y - wy }

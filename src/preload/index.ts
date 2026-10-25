@@ -23,7 +23,17 @@ const api: PetApi = {
   petClicked: () => ipcRenderer.send(IPC.petClicked),
   connectStatus: () => ipcRenderer.invoke(IPC.connectStatus),
   connect: () => ipcRenderer.invoke(IPC.connect),
-  closeWindow: () => ipcRenderer.send(IPC.closeWindow)
+  closeWindow: () => ipcRenderer.send(IPC.closeWindow),
+  getLook: () => ipcRenderer.invoke(IPC.getLook),
+  onLook: (listener) => listen(IPC.look, listener),
+  onMoment: (listener) => listen(IPC.moment, listener),
+  onWalk: (listener) => listen(IPC.walk, listener),
+  getProfile: () => ipcRenderer.invoke(IPC.getProfile),
+  setPetName: (name) => ipcRenderer.send(IPC.setPetName, name),
+  setWearing: (items) => ipcRenderer.send(IPC.setWearing, items),
+  saveCard: (dataUrl, fileName) => ipcRenderer.invoke(IPC.saveCard, dataUrl, fileName),
+  copyCard: (dataUrl) => ipcRenderer.send(IPC.copyCard, dataUrl),
+  share: (text) => ipcRenderer.send(IPC.share, text)
 }
 
 contextBridge.exposeInMainWorld('api', api)

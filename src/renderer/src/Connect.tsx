@@ -1,4 +1,5 @@
-// The "Connect Claude Code" window: explains what changes, shows the exact entries, connects.
+// The first-run window: name your cat, then connect Claude Code (explains what changes and
+// shows the exact entries first).
 import type { ConnectResult, ConnectStatus } from '@shared/ipc'
 import { useEffect, useState } from 'react'
 
@@ -6,23 +7,48 @@ export default function Connect(): React.JSX.Element {
   const [status, setStatus] = useState<ConnectStatus | null>(null)
   const [result, setResult] = useState<ConnectResult | null>(null)
   const [showDetails, setShowDetails] = useState(false)
+  const [name, setName] = useState('')
+  const [savedName, setSavedName] = useState('Noodle')
 
   useEffect(() => {
     window.api.connectStatus().then(setStatus)
+    window.api.getLook().then((look) => {
+      setName(look.petName)
+      setSavedName(look.petName)
+    })
   }, [])
+
+  /** People bond more with a pet they named. */
+  const saveName = (): void => {
+    const clean = name.trim() || 'Noodle'
+    if (clean !== savedName) window.api.setPetName(clean)
+    setSavedName(clean)
+  }
 
   const connected = status?.connected || result?.ok
 
   return (
     <div className="connect">
-      <h1>Connect Claude Code</h1>
+      <h1>Meet your cat</h1>
+      <label className="profile-name">
+        Name
+        <input
+          value={name}
+          maxLength={24}
+          placeholder="Noodle"
+          onChange={(e) => setName(e.target.value)}
+          onBlur={saveName}
+        />
+      </label>
+
+      <h1 className="connect-step">Connect Claude Code</h1>
 
       {connected ? (
         <>
           <p className="connect-ok">✅ Connected!</p>
           <p>
-            Start a <b>new</b> Claude Code session: Noodle will follow it, show your session usage,
-            and let you approve permission requests from his bubble.
+            Start a <b>new</b> Claude Code session: {savedName} will follow it, show your session
+            usage, and let you approve permission requests from his bubble.
           </p>
           {result?.backupPath && (
             <p className="connect-small">
@@ -30,14 +56,20 @@ export default function Connect(): React.JSX.Element {
             </p>
           )}
           <div className="connect-actions">
-            <button className="btn btn-approve" onClick={() => window.api.closeWindow()}>
+            <button
+              className="btn btn-approve"
+              onClick={() => {
+                saveName()
+                window.api.closeWindow()
+              }}
+            >
               Done
             </button>
           </div>
         </>
       ) : (
         <>
-          <p>Noodle can follow your Claude Code sessions. Connecting adds to</p>
+          <p>{name.trim() || 'Noodle'} can follow your Claude Code sessions. Connecting adds to</p>
           <p>
             <code>{status?.settingsPath ?? '~/.claude/settings.json'}</code>
           </p>
@@ -68,11 +100,20 @@ export default function Connect(): React.JSX.Element {
             <button
               className="btn btn-approve"
               disabled={!status}
-              onClick={() => window.api.connect().then(setResult)}
+              onClick={() => {
+                saveName()
+                window.api.connect().then(setResult)
+              }}
             >
               Connect
             </button>
-            <button className="btn btn-terminal" onClick={() => window.api.closeWindow()}>
+            <button
+              className="btn btn-terminal"
+              onClick={() => {
+                saveName()
+                window.api.closeWindow()
+              }}
+            >
               Not now
             </button>
           </div>

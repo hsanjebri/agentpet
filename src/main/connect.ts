@@ -1,12 +1,12 @@
 // "Connect Claude Code": a small window that shows what will be added to Claude Code's
 // settings and adds it with one click (backup first). Also used by the tray.
 import { execFile } from 'child_process'
-import { BrowserWindow, app, ipcMain } from 'electron'
+import { app, ipcMain } from 'electron'
 import { join } from 'path'
-import { is } from '@electron-toolkit/utils'
 import { agentPetEntries } from '../../scripts/claude-hooks.mjs'
 import { SETTINGS_PATH, connect, disconnect, isConnected } from '../../scripts/claude-settings.mjs'
 import { type ConnectResult, type ConnectStatus, IPC } from '../shared/ipc'
+import { openPage } from './pages'
 
 export { isConnected }
 
@@ -29,35 +29,8 @@ function nodeVersion(): Promise<string | null> {
   })
 }
 
-let connectWindow: BrowserWindow | null = null
-
 export function openConnectWindow(): void {
-  if (connectWindow && !connectWindow.isDestroyed()) {
-    connectWindow.focus()
-    return
-  }
-  connectWindow = new BrowserWindow({
-    width: 480,
-    height: 560,
-    resizable: false,
-    maximizable: false,
-    minimizable: false,
-    title: 'Connect Claude Code',
-    autoHideMenuBar: true,
-    backgroundColor: '#2a3142',
-    webPreferences: {
-      preload: join(__dirname, '../preload/index.js'),
-      contextIsolation: true,
-      nodeIntegration: false,
-      sandbox: true
-    }
-  })
-  connectWindow.on('closed', () => (connectWindow = null))
-  if (is.dev && process.env['ELECTRON_RENDERER_URL']) {
-    connectWindow.loadURL(`${process.env['ELECTRON_RENDERER_URL']}#connect`)
-  } else {
-    connectWindow.loadFile(join(__dirname, '../renderer/index.html'), { hash: 'connect' })
-  }
+  openPage('connect', { title: 'Connect Claude Code', width: 480, height: 600 })
 }
 
 export function disconnectClaude(): void {
@@ -80,9 +53,5 @@ export function registerConnectIpc(onChange: () => void): void {
     } catch (err) {
       return { ok: false, error: err instanceof Error ? err.message : String(err) }
     }
-  })
-  // only the connect window may close itself (never the pet)
-  ipcMain.on(IPC.closeWindow, (e) => {
-    if (connectWindow && e.sender === connectWindow.webContents) connectWindow.close()
   })
 }

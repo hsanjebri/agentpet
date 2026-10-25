@@ -9,10 +9,13 @@ import {
 } from '../shared/events'
 import { IPC } from '../shared/ipc'
 import { focusAgentWindow } from './focus'
+import { rollRare } from '../shared/progress'
 import { PermissionQueue } from './permissions'
+import { flushProgress, recordActivity, sendMoment } from './progress'
 import { RiskWatcher } from './risk'
 import { type PermissionInfo, startAgentServer } from './server'
 import { SessionTracker } from './sessions'
+import { interruptWander } from './wander'
 import { setAlert } from './window'
 
 /** After these events a session's pending permission prompts were answered somewhere else. */
@@ -29,6 +32,27 @@ function eventFor(info: PermissionInfo, type: PetEventType): PetEvent {
   return { type, agent, sessionId, cwd, toolName, target, pid, timestamp: Date.now() }
 }
 
+let lastActivityAt = 0
+
+/** When the agent last did anything (0 = not since the app started). */
+export function lastAgentActivity(): number {
+  return lastActivityAt
+}
+
+/** Feeds the pet's memory: tasks, tools, risks, and the fun bits (fish, rare moments). */
+function remember(event: PetEvent): void {
+  if (event.type === 'tool') {
+    recordActivity({ type: 'tool', toolName: event.toolName, target: event.target })
+  } else if (event.type === 'risky') {
+    recordActivity({ type: 'risky', reason: event.message ?? 'risky action' })
+  } else if (event.type === 'done') {
+    const rare = rollRare()
+    recordActivity({ type: 'task_done', rare })
+    sendMoment({ kind: 'fed' })
+    if (rare) sendMoment({ kind: 'rare', rare })
+  }
+}
+
 function broadcast(channel: string, value: unknown): void {
   for (const win of BrowserWindow.getAllWindows()) win.webContents.send(channel, value)
 }
@@ -41,16 +65,27 @@ export function startBridge(): void {
   let needsSessionId: string | undefined // who asked for the user last
 
   const sendEvent = (event: PetEvent): void => {
+    lastActivityAt = Date.now()
+    interruptWander()
     if (event.sessionId && RESOLVES_PROMPTS.has(event.type)) {
-      permissions.resolveSession(event.sessionId)
+      const answered = permissions.resolveSession(event.sessionId)
+      // the tool ran although nobody clicked the pet: approved in the terminal
+      if (event.type === 'tool_done')
+        for (let i = 0; i < answered; i++) recordActivity({ type: 'approved' })
     }
     if (event.type === 'needs_you') needsSessionId = event.sessionId
     sessions.update(event)
     broadcast(IPC.agentEvent, event)
     broadcast(IPC.session, sessions.latest())
 
+    remember(event)
+
     const risk = risks.check(event)
-    if (risk) broadcast(IPC.agentEvent, { ...event, type: 'risky', message: risk })
+    if (risk) {
+      const risky: PetEvent = { ...event, type: 'risky', message: risk }
+      broadcast(IPC.agentEvent, risky)
+      remember(risky)
+    }
   }
 
   startAgentServer({
@@ -72,6 +107,7 @@ export function startBridge(): void {
     if (!PERMISSION_DECISIONS.includes(decision as PermissionDecision)) return
     const prompt = permissions.decide(id, decision as PermissionDecision)
     // answered from the pet: the agent carries on right away
+    if (prompt && decision === 'allow') recordActivity({ type: 'approved' })
     if (prompt && decision !== 'terminal') sendEvent(eventFor(prompt, 'tool'))
   })
 
@@ -99,5 +135,8 @@ export function startBridge(): void {
   })
 
   // never leave a hook waiting on a pet that is gone
-  app.on('before-quit', () => permissions.clear())
+  app.on('before-quit', () => {
+    permissions.clear()
+    flushProgress()
+  })
 }

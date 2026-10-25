@@ -53,7 +53,7 @@ const TIP_PROPS: Partial<Record<Mood, (map: PixelMap, tip: Point) => void>> = {
   sweat: (map, [x, y]) => stamp(map, x - 4, y - 4, COIN)
 }
 
-function drawTail(mood: Mood, pose: readonly Point[]): PixelMap {
+function drawTail(mood: Mood, pose: readonly Point[], props: boolean): PixelMap {
   const map = createMap(GRID_W, GRID_H)
   const cells = polyline(pose)
   const puffed = mood === 'hiss'
@@ -80,17 +80,18 @@ function drawTail(mood: Mood, pose: readonly Point[]): PixelMap {
     }
   })
 
-  TIP_PROPS[mood]?.(map, cells[cells.length - 1])
+  if (props) TIP_PROPS[mood]?.(map, cells[cells.length - 1])
   return map
 }
 
-/** One map per animation frame (not outlined yet). */
-export function buildTailFrames(mood: Mood): PixelMap[] {
+/** One map per animation frame (not outlined yet). `props`: draw what the tip holds. */
+export function buildTailFrames(mood: Mood, props = true): PixelMap[] {
   const pose = TAIL_POSES[mood]
   return TAIL_MOTION[mood].angles.map((angle) =>
     drawTail(
       mood,
-      pose.map((p) => rotateAround(p, pose[0], angle))
+      pose.map((p) => rotateAround(p, pose[0], angle)),
+      props
     )
   )
 }

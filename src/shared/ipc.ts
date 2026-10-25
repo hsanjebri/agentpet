@@ -6,6 +6,7 @@ import type {
   SessionSummary,
   UsageInfo
 } from './events'
+import type { Accessory, PetLook, RareMoment, Recap } from './progress'
 import type { SkinId } from './skins'
 
 export const IPC = {
@@ -23,8 +24,41 @@ export const IPC = {
   petClicked: 'pet:clicked',
   connectStatus: 'pet:connect-status',
   connect: 'pet:connect',
-  closeWindow: 'pet:close-window'
+  closeWindow: 'pet:close-window',
+  look: 'pet:look',
+  getLook: 'pet:get-look',
+  moment: 'pet:moment',
+  walk: 'pet:walk',
+  getProfile: 'pet:get-profile',
+  setPetName: 'pet:set-name',
+  setWearing: 'pet:set-wearing',
+  saveCard: 'pet:save-card',
+  copyCard: 'pet:copy-card',
+  share: 'pet:share'
 } as const
+
+/** Something to celebrate or animate right now. */
+export type PetMoment =
+  | { kind: 'rare'; rare: RareMoment }
+  | { kind: 'level_up'; level: number }
+  | { kind: 'unlocked'; item: Accessory }
+  | { kind: 'fed' }
+
+/** The pet strolling along the bottom of the screen. */
+export interface WalkState {
+  walking: boolean
+  facing: 'left' | 'right'
+}
+
+export interface ProfileData {
+  look: PetLook
+  totals: { tasks: number; approvals: number; rainbows: number }
+  streak: number
+  unlocks: Array<{ item: Accessory; label: string; unlocked: boolean }>
+  today: Recap
+  week: Recap
+  lastFedAt: number | null
+}
 
 export interface ConnectStatus {
   connected: boolean
@@ -52,6 +86,8 @@ export interface PetSettings {
   muted: boolean
   /** hide the pet unless it needs you, hisses or is sad */
   focusMode: boolean
+  /** stroll along the bottom of the screen now and then when idle */
+  wander: boolean
   /** cycling through every mood (tray › Mood demo); not saved */
   demo: boolean
 }
@@ -79,4 +115,16 @@ export interface PetApi {
   connectStatus(): Promise<ConnectStatus>
   connect(): Promise<ConnectResult>
   closeWindow(): void
+  getLook(): Promise<PetLook>
+  onLook(listener: (look: PetLook) => void): () => void
+  onMoment(listener: (moment: PetMoment) => void): () => void
+  onWalk(listener: (walk: WalkState) => void): () => void
+  getProfile(): Promise<ProfileData>
+  setPetName(name: string): void
+  setWearing(items: Accessory[]): void
+  /** Asks where to save the card image; resolves with the path, or null if cancelled. */
+  saveCard(pngDataUrl: string, fileName: string): Promise<string | null>
+  copyCard(pngDataUrl: string): void
+  /** Opens "post to X" in the browser with this text. */
+  share(text: string): void
 }

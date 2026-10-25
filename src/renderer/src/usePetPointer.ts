@@ -14,17 +14,22 @@ function isDraggable(target: EventTarget | null): boolean {
   )
 }
 
+interface Handlers {
+  onClick?(): void
+  /** the pointer moved onto / off the pet itself (not its controls) */
+  onHover?(hovering: boolean): void
+  /** click and hold without moving = petting him; called with true, then false on release */
+  onPet?(petting: boolean): void
+}
+
+const HOLD_MS = 450
+const STILL_PX = 4
+
 /**
  * Click-through everywhere except the pet, plus custom dragging (the window is frameless).
  * The main process forwards mouse moves even while the window ignores the mouse, so we can
  * turn interactivity on as soon as the pointer is over the pet.
  */
-interface Handlers {
-  onClick?(): void
-  /** the pointer moved onto / off the pet itself (not its controls) */
-  onHover?(hovering: boolean): void
-}
-
 export function usePetPointer(handlers: Handlers = {}): void {
   const handlersRef = useRef(handlers)
   useEffect(() => {
@@ -35,6 +40,9 @@ export function usePetPointer(handlers: Handlers = {}): void {
     let interactive = false
     let dragging = false
     let hovering = false
+    let petting = false
+    let holdTimer: ReturnType<typeof setTimeout> | undefined
+    let downAt = { x: 0, y: 0 }
 
     const setHovering = (value: boolean): void => {
       if (value === hovering) return
@@ -49,7 +57,11 @@ export function usePetPointer(handlers: Handlers = {}): void {
     }
 
     const onMove = (e: MouseEvent): void => {
-      if (dragging) return
+      if (dragging) {
+        if (Math.hypot(e.screenX - downAt.x, e.screenY - downAt.y) > STILL_PX)
+          clearTimeout(holdTimer)
+        return
+      }
       setInteractive(isOverPet(e.target))
       setHovering(isDraggable(e.target))
     }
@@ -63,12 +75,24 @@ export function usePetPointer(handlers: Handlers = {}): void {
       e.preventDefault()
       dragging = true
       window.api.dragStart()
+      downAt = { x: e.screenX, y: e.screenY }
+      // held still for a moment: that's a stroke, not a drag or a click
+      holdTimer = setTimeout(() => {
+        petting = true
+        handlersRef.current.onPet?.(true)
+      }, HOLD_MS)
     }
     const onUp = async (e: MouseEvent): Promise<void> => {
       if (!dragging) return
       dragging = false
+      clearTimeout(holdTimer)
+      const wasPetting = petting
+      if (petting) {
+        petting = false
+        handlersRef.current.onPet?.(false)
+      }
       const { moved } = await window.api.dragEnd()
-      if (!moved) handlersRef.current.onClick?.()
+      if (!moved && !wasPetting) handlersRef.current.onClick?.()
       setInteractive(isOverPet(e.target))
     }
 

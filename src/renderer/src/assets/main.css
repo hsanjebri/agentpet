@@ -322,3 +322,135 @@ body,
   background: #ffe1e1;
   border-color: #b3261e;
 }
+
+/* the pet + things that float around him (hearts) */
+.pet-spot {
+  position: relative;
+}
+
+/* petting: hearts float up from his head */
+.hearts {
+  position: absolute;
+  top: 0;
+  right: 50px;
+  pointer-events: none;
+}
+
+.hearts span {
+  position: absolute;
+  color: #f2a0a8;
+  font-size: 18px;
+  text-shadow:
+    1px 1px 0 #1f1c1a,
+    -1px -1px 0 #1f1c1a,
+    1px -1px 0 #1f1c1a,
+    -1px 1px 0 #1f1c1a;
+  animation: heart-up 1.4s ease-out infinite;
+}
+
+.hearts span:nth-child(2) {
+  left: -26px;
+  animation-delay: 0.45s;
+}
+
+.hearts span:nth-child(3) {
+  left: 22px;
+  animation-delay: 0.9s;
+}
+
+@keyframes heart-up {
+  0% {
+    transform: translateY(20px) scale(0.6);
+    opacity: 0;
+  }
+  20% {
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(-40px) scale(1.1);
+    opacity: 0;
+  }
+}
+
+/* ---------- profile window ---------- */
+
+.profile h2 {
+  margin: 14px 0 4px;
+  font:
+    700 14px/1.3 ui-monospace,
+    'Cascadia Mono',
+    Consolas,
+    monospace;
+}
+
+.profile-tabs {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 12px;
+}
+
+.profile-tabs button {
+  padding: 5px 12px;
+  border: 2px solid #1f1c1a;
+  background: rgba(255, 255, 255, 0.12);
+  color: inherit;
+  font:
+    700 12px/1.3 ui-monospace,
+    'Cascadia Mono',
+    Consolas,
+    monospace;
+  cursor: pointer;
+}
+
+.profile-tabs button.active {
+  background: #f6c744;
+  color: #1f1c1a;
+  box-shadow: 2px 2px 0 #1f1c1a;
+}
+
+.recap-card {
+  display: block;
+  width: 100%;
+  border: 3px solid #1f1c1a;
+  box-shadow: 4px 4px 0 #1f1c1a;
+  image-rendering: pixelated;
+}
+
+.btn-share {
+  background: #1f1c1a;
+  color: #fff;
+}
+
+.profile-name {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 700;
+}
+
+.profile-name input {
+  flex: 1;
+  padding: 4px 8px;
+  border: 2px solid #1f1c1a;
+  font: inherit;
+}
+
+.profile-xp {
+  width: 100%;
+  box-sizing: border-box;
+  --fill: #f6c744;
+}
+
+.profile-unlocks {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.profile-unlocks .locked {
+  opacity: 0.6;
+}
+
+.connect-step {
+  margin-top: 18px;
+}

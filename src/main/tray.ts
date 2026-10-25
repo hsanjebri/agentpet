@@ -2,6 +2,8 @@
 import { Menu, Tray, app, nativeImage } from 'electron'
 import { SKINS } from '../shared/skins'
 import { disconnectClaude, isConnected, openConnectWindow } from './connect'
+import { openPage } from './pages'
+import { petName } from './progress'
 import { petSettings, updateSettings } from './settings'
 // tray@2x.png next to it is picked up automatically on high-DPI screens
 import trayIcon from '../../resources/tray.png?asset'
@@ -11,6 +13,11 @@ let tray: Tray | null = null // module-level so it isn't garbage collected
 function buildMenu(): Menu {
   const current = petSettings()
   return Menu.buildFromTemplate([
+    {
+      label: `${petName()}'s profile & recap…`,
+      click: () => openPage('profile', { title: `${petName()}`, width: 520, height: 640 })
+    },
+    { type: 'separator' },
     {
       label: 'Skin',
       submenu: SKINS.map((skin) => ({
@@ -29,6 +36,12 @@ function buildMenu(): Menu {
       type: 'checkbox',
       checked: current.muted,
       click: (item) => updateSettings({ muted: item.checked })
+    },
+    {
+      label: 'Wander around when idle',
+      type: 'checkbox',
+      checked: current.wander,
+      click: (item) => updateSettings({ wander: item.checked })
     },
     {
       label: 'Focus mode (only show up when needed)',

@@ -66,3 +66,49 @@ export function playToot(): void {
   buzz.stop(t + 0.45)
   wobble.stop(t + 0.45)
 }
+
+let purr: { stop(): void } | null = null
+
+/** A soft, rumbly purr that keeps going until stopPurr(). */
+export function startPurr(): void {
+  if (purr) return
+  const ac = audio()
+  const t = ac.currentTime
+  const rumble = ac.createOscillator()
+  rumble.type = 'sawtooth'
+  rumble.frequency.value = 42
+
+  // the purr's "brrr": volume pulsing ~24 times a second
+  const flutter = ac.createOscillator()
+  flutter.frequency.value = 24
+  const flutterDepth = ac.createGain()
+  flutterDepth.gain.value = 0.08
+
+  const soft = ac.createBiquadFilter()
+  soft.type = 'lowpass'
+  soft.frequency.value = 260
+
+  const gain = ac.createGain()
+  gain.gain.setValueAtTime(0.0001, t)
+  gain.gain.linearRampToValueAtTime(0.12, t + 0.3)
+  flutter.connect(flutterDepth).connect(gain.gain)
+
+  rumble.connect(soft).connect(gain).connect(ac.destination)
+  rumble.start(t)
+  flutter.start(t)
+  purr = {
+    stop: () => {
+      const end = ac.currentTime
+      gain.gain.cancelScheduledValues(end)
+      gain.gain.setValueAtTime(gain.gain.value, end)
+      gain.gain.linearRampToValueAtTime(0.0001, end + 0.25)
+      rumble.stop(end + 0.3)
+      flutter.stop(end + 0.3)
+    }
+  }
+}
+
+export function stopPurr(): void {
+  purr?.stop()
+  purr = null
+}

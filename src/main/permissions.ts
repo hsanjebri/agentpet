@@ -42,11 +42,17 @@ export class PermissionQueue {
     return pending?.prompt
   }
 
-  /** The agent moved on (tool finished, turn over…), so its prompts were answered elsewhere. */
-  resolveSession(sessionId: string): void {
+  /** The agent moved on (tool finished, turn over…), so its prompts were answered elsewhere.
+   *  Returns how many were waiting. */
+  resolveSession(sessionId: string): number {
+    let count = 0
     for (const { prompt, finish } of [...this.pending.values()]) {
-      if (prompt.sessionId === sessionId) finish(null)
+      if (prompt.sessionId === sessionId) {
+        finish(null)
+        count++
+      }
     }
+    return count
   }
 
   /** Lets every waiting hook go, e.g. when the app quits. */
