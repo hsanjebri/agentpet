@@ -91,3 +91,16 @@ describe('connect / disconnect (on a temp settings file)', () => {
     expect(isConnected(paths)).toBe(true)
   })
 })
+
+describe('backups', () => {
+  it('never overwrite each other, even within the same millisecond', () => {
+    const dir = mkdtempSync(join(tmpdir(), 'agentpet-'))
+    const paths = { settingsPath: join(dir, 'settings.json'), configPath: join(dir, 'config.json') }
+    writeFileSync(paths.settingsPath, '{}')
+    const backups = Array.from(
+      { length: 5 },
+      () => connect('/x/agentpet-send.mjs', paths).backupPath
+    )
+    expect(new Set(backups).size).toBe(5)
+  })
+})

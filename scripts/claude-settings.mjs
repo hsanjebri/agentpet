@@ -20,7 +20,10 @@ function writeJson(path, value) {
 
 function backup(path) {
   if (!existsSync(path)) return undefined
-  const copy = `${path}.agentpet-backup-${new Date().toISOString().replace(/[:.]/g, '-')}`
+  const stamp = `${path}.agentpet-backup-${new Date().toISOString().replace(/[:.]/g, '-')}`
+  // two backups in the same millisecond must not overwrite each other
+  let copy = stamp
+  for (let n = 2; existsSync(copy); n++) copy = `${stamp}-${n}`
   copyFileSync(path, copy)
   return copy
 }
