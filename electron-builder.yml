@@ -31,13 +31,15 @@ nsis:
   oneClick: true
 mac:
   category: public.app-category.developer-tools
-  target: dmg
+  target:
+    - target: dmg
+      arch: [arm64, x64] # Apple silicon + Intel
   entitlementsInherit: build/entitlements.mac.plist
   extendInfo:
     LSUIElement: true # tray app: no Dock icon
   notarize: false
 dmg:
-  artifactName: ${productName}-${version}.${ext}
+  artifactName: ${productName}-${version}-${arch}.${ext}
 linux:
   target: AppImage
   maintainer: AgentPet contributors

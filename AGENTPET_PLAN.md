@@ -4,6 +4,13 @@
 > types while it works, **jumps and meows when the agent needs your approval**, and
 > dances when the task is done.
 
+> **Status (Oct 2026):** Phases 0–4 are built (v0.1.0). Changes from the original plan, made
+> while building: Noodle became a white Beluga-inspired cat on 4 legs (section 6); vector skins
+> were dropped for pixel recolors; the agent's permission prompts can be **approved from the
+> pet** (`PermissionRequest` hook) and a **session usage bar** reads Claude Code's status line;
+> the hook script is `cli/agentpet-send.mjs` and the install scripts are plain `.mjs`; renderer
+> code lives in `src/renderer/src/` (electron-vite layout); events gained `tool_done` and `pid`.
+
 This file is the source of truth for building AgentPet. Work through the phases in
 order. Each phase ends with acceptance criteria — don't start the next phase until
 they pass.
@@ -206,95 +213,72 @@ Flag as `risky` when:
 
 ### 6.1 Main mascot: Noodle 🐱 (pixel art)
 
-**Noodle** is AgentPet's official mascot and default pet: a chubby gray tabby in
-pixel-art style whose **ridiculously long tail is the status display**. The face
-reacts, but the tail does the talking. Noodle is an original character — keep him
-original (no meme-cat lookalikes) so the brand is fully ours.
+**Noodle** is AgentPet's mascot and default pet: a chubby **white cat with black patches**
+(one over the back ear and eye, one on his back), small shiny eyes and a wide calm smile, in
+light pixel art. He stands **on 4 legs** (side view, face turned to the viewer) and lies down
+like a loaf to sleep or sulk. His **long tail is the status display**, and he **farts a
+rainbow** when a task is done.
 
 **Concept line for the README:** "Noodle's tail tells you what your agent is doing."
 
 #### Pixel spec
-- Grid: **34 × 22 pixels** (cat body uses roughly cols 2–18, tail space cols 16–33)
-- Render scale: 7 px per pixel by default (238 × 154), integer scaling only (×1, ×2, ×3)
-- Always render with `shape-rendering: crispEdges` (SVG) or `image-rendering: pixelated` (canvas/PNG)
-- 1-pixel dark outline around body and tail, computed automatically (any empty cell
-  touching a filled cell becomes outline)
-- Tail is drawn as a separate layer from the body so it can animate independently
-  (rotation origin = tail base)
+- Grid: **88 × 46 cells**, plus a 1-cell border for outlines; rendered at **4 px per cell**
+  (360 × 192). He faces **right**, so his head sits near the screen corner and the tail and
+  rainbow extend toward the middle of the screen
+- Always rendered with `shape-rendering: crispEdges`; motion uses `steps()` keyframes
+- 1-cell dark outline computed automatically (any empty cell touching a filled cell)
+- Layers, back to front: rainbow (happy only) → tail → body → tail in front (sleeping only),
+  plus an effects layer on top
+- Tail animation re-rasterizes the tail polyline rotated around its base, so it stays crisp
+- Code: `src/renderer/src/pets/pixel/` (generic toolkit: canvas, outline, renderer) and
+  `src/renderer/src/pets/noodle/` (body + face, tail, effects, palette)
 
-#### Palette
+#### Palette (one character per color in the text sprites)
 | Key | Use | Hex |
 |---|---|---|
-| `k` | outline, eyes, mouth | `#2B2724` |
-| `g` | body gray | `#B9B4AC` |
-| `s` | tabby stripes, tail bands | `#7E7870` |
-| `c` | cream muzzle, belly, paws | `#F3EEE6` |
-| `p` | pink nose, inner ears | `#F2A0A8` |
-| `w` | eye shine, fangs | `#FFFFFF` |
-| `b` | sweat, tears | `#5AA9E6` |
-| `r` | alert red | `#E24B4A` |
-| `y` | coin, sparkles | `#EF9F27` |
-| `m` | coffee mug | `#8A5A3B` |
-| `v` | sleep "Z" | `#7F77DD` |
-
-#### Body construction (grid coordinates)
-- Head: ellipse center (10, 6.5), rx 7.6, ry 5.2
-- Body: ellipse center (10, 15), rx 6.6, ry 5
-- Ears: triangles from y 0–3 on cols 4–8 (left) and 12–16 (right), pink pixel at (5,2) and (15,2)
-- Cream muzzle: ellipse (10, 9) rx 3.2 ry 1.7; cream belly: ellipse (10, 16) rx 3.6 ry 3
-- Stripes: forehead (9,2) (10,2) (11,2) (10,3); cheeks (3,7) (17,7); sides (4,13) (4,14) (16,13) (16,14)
-- Nose: (10, 8) pink; paws: (6,19) (7,19) (13,19) (14,19) cream
-- Tail: 1 pixel thick (3 with outline), bands alternate `g`/`s` every 2 pixels,
-  drawn as a polyline (Bresenham) from the base at about (16, 16–18)
+| `k` | outline, mouth | `#1F1C1A` |
+| `w` | fur (changes per skin) | `#FFFFFF` |
+| `W` | always white: eye shine, fangs, cloud | `#FFFFFF` |
+| `d` | patches, tail tip | `#43403D` |
+| `g` | far-side legs (in shadow) | `#D9D5CF` |
+| `s` | soft shading lines (jaw, belly), steam | `#BDB8B1` |
+| `e` | eyes | `#2A221E` |
+| `p` | nose, inner ears, tongue | `#F4A0AE` |
+| `r o y G B P` | rainbow (`r` also alerts, `y` coin + sparkles) | |
+| `b` `m` `c` `v` `Y` | sweat/tears, mug, coffee, sleep Z, coin detail | |
 
 #### Moods — the tail is the star
-| Mood | Tail pose (polyline) | Face | Extra pixels | Animation |
-|---|---|---|---|---|
-| sleeping | wraps around the front like a blanket: (16,18)→(19,19)→(23,19)→(25,17)→(24,15)→(22,16) | closed line eyes | purple "z Z" | slow breathing |
-| working | raised, tip holds a tiny coffee mug: (16,16)→(20,14)→(22,10)→(22,5) | half-lidded dot eyes | brown mug + steam at tail tip | tail sways while sipping |
-| needs | **straight up like an antenna**, tip pixel turns red: (16,16)→(20,15)→(22,12)→(22,2) | big 2×2 eyes with shine, "o" mouth | red "!" next to the tail | body hops, tail vibrates |
-| happy | **draws a heart** in the air: (16,16)→(20,14)→(23,11)→(21,8)→(21,6)→(23,5)→(24,6)→(25,5)→(27,6)→(27,8)→(24,11) | "^ ^" eyes, open smile | yellow/pink sparkles | tail wiggles fast |
-| sweat | fans himself, tip holds a coin: (16,16)→(20,13)→(24,10)→(27,9) | dot eyes | sweat drop, 2×2 gold coin at tip | tail fans rapidly, body shivers |
-| sad | **lies flat on the floor**, fully defeated: (16,18)→(19,20)→(31,20)→(32,19) | dot eyes + blue tear | — | slow droop |
-| hiss | **puffed bottle brush** (3 pixels wide): (16,16)→(20,14)→(21,10)→(21,3) | angry diagonal brows, open mouth with fangs | red lightning | whole body shakes |
+| Mood | Pose | Tail | Face | Extras | Motion |
+|---|---|---|---|---|---|
+| sleeping | lying (loaf) | wrapped around the front like a blanket | closed eyes, small smile | z Z | slow breathing |
+| working | standing | raised, tip holds a coffee mug | the classic: small shiny eyes, wide smile | steam | tail sways |
+| needs | standing | straight up like an antenna, red tip | big shiny eyes, "o" mouth | red "!" | hops, tail vibrates |
+| happy | standing | draws a heart | "^ ^", open smile | **rainbow fart** + cloud, sparkles | bounces, tail wiggles |
+| sweat | standing | fans himself, tip holds a coin | worried brows, wavy mouth | sweat drop | shivers |
+| sad | lying | flat on the floor | worried brows, tears, frown | — | droops |
+| hiss | standing, fur up along the back | puffed bottle brush | angry brows, fangs | lightning | shakes |
 
-#### Implementation notes
-- Build `src/renderer/pets/pixel/` with:
-  - `grid.ts` — rasterizes the body shapes + mood face pixels into a cell map
-  - `tail.ts` — tail polylines per mood + Bresenham line + banding
-  - `outline.ts` — auto outline pass
-  - `NoodleSprite.tsx` — renders the cell maps as SVG `<rect>`s in two layers
-    (`<g class="tail">`, `<g class="body">`) plus an effects layer
-- Animations are CSS keyframes using `steps()` timing so motion feels pixel-art (not smooth)
-- Later, export each mood as a PNG sprite sheet (for tray icons, README GIFs, stickers)
-- The reference prototype was designed in chat (interactive mood viewer); match its look
+### 6.2 Skins
+Recolors of Noodle's pixels (same shapes, every mood):
 
-### 6.2 Additional skins (vector style)
-
-Vector skins are SVG React components built from parts so every skin supports every mood.
-
-| Skin | Description | Base / dark / belly |
+| Skin | Description | Fur / patches |
 |---|---|---|
-| **Noodle** (default) | Pixel-art gray tabby, tail shows status (see 6.1) | `#B9B4AC` / `#7E7870` / `#F3EEE6` |
-| **Mochi** | Orange tabby cat | `#F2A65A` / `#B8682A` / `#FCE3C4` |
-| **Zitouna** | Tunisian street cat, white eye patch | `#A8A49C` / `#5F5E5A` / `#F4F2EC` |
-| **Byte** | Dog with floppy ears | `#C58B5A` / `#7A4F2C` / `#F1DCC4` |
-| **Ribbit** | Frog, eyes on top bumps | `#7CC36A` / `#3B6D11` / `#DDF0C8` |
-| **Bolt** | Robot with antenna and face screen | `#AEB8C4` / `#4E5A68` / `#E3E8EE` |
+| **Noodle** (default) | white cat, black patches | `#FFFFFF` / `#43403D` |
+| **Mochi** | orange tabby | `#F2A65A` / `#B8682A` |
+| **Zitouna** | gray Tunisian street cat, white eye patch | `#A8A49C` / `#F4F2EC` |
 
-### 6.3 Moods for vector skins
-| Mood | Eyes | Mouth | Effect | Animation |
-|---|---|---|---|---|
-| sleeping | closed arcs | small "w" | floating "z Z" | slow breathing |
-| working | dots | small "w" | tiny laptop with code lines | typing jiggle |
-| needs | big shiny eyes | open "o" | red "!" bubble + meow | jumping |
-| happy | "^ ^" | open smile | confetti | dance (rotate) |
-| sweat | dots | wavy | sweat drop + "$" coin | shiver |
-| sad | dots + tears | frown | "FAIL" tag | droop |
-| hiss | angry brows | open with fangs | lightning bolt | shake |
+Still to draw in the same pixel style (need their own shapes): **Byte** (dog with floppy ears),
+**Ribbit** (frog), **Bolt** (robot).
 
-All animations are CSS keyframes with `transform-origin: bottom center`. Respect
-`prefers-reduced-motion` (swap animations for simple opacity pulses).
+### 6.3 Around the pet
+- **Approval bubble** (permission requests): what the agent wants to run, with Approve / Deny /
+  answer-in-terminal buttons
+- **Usage bar** under the pet: the 5-hour session limit (or context window), green → yellow → red
+- **Hover bubble**: `project · last action · N tools · M min`
+- **Warning bubble** while hissing: why (`touching .env`, `rm -rf`…)
+- Sounds are synthesized (Web Audio): a meow for needs-you, a little "toot" for the rainbow
+
+All motion respects `prefers-reduced-motion` (animations become gentle opacity pulses).
 
 ---
 
@@ -386,14 +370,14 @@ All animations are CSS keyframes with `transform-origin: bottom center`. Respect
 ---
 
 ## 9. Definition of done for v0.1
-- [ ] Pet floats above windows, click-through outside the pet, draggable
-- [ ] Noodle (pixel mascot) with all 7 tail moods, plus 5 vector skins
-- [ ] Claude Code hooks installed with one click, with backup and clean uninstall
-- [ ] Needs-you alert with sound, bubble message, click-to-focus
-- [ ] Hook script never blocks or breaks the agent (tested with app closed)
-- [ ] Installers for Windows / macOS / Linux
-- [ ] README with GIF, privacy note, and uninstall instructions
-- [ ] Mood machine unit tests passing
+- [x] Pet floats above windows, click-through outside the pet, draggable
+- [x] Noodle (pixel mascot) with all 7 tail moods, plus skins (Mochi, Zitouna; Byte, Ribbit, Bolt still to draw)
+- [x] Claude Code hooks installed with one click, with backup and clean uninstall
+- [x] Needs-you alert with sound, bubble message, click-to-focus
+- [x] Hook script never blocks or breaks the agent (tested with app closed)
+- [x] Installers for Windows / macOS / Linux (built by `.github/workflows/release.yml`)
+- [x] README with GIF, privacy note, and uninstall instructions
+- [x] Mood machine unit tests passing
 
 ---
 

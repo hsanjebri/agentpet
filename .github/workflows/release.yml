@@ -1,0 +1,46 @@
+# Builds the installers for Windows, macOS and Linux.
+# - pushing a tag like v0.1.0 (or creating a release) attaches them to that GitHub release
+# - running it by hand (Actions › Release › Run workflow) keeps them as downloadable artifacts
+name: Release
+
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: windows-latest
+            build: build:win
+            files: dist/*-setup.exe
+          - os: macos-latest
+            build: build:mac
+            files: dist/*.dmg
+          - os: ubuntu-latest
+            build: build:linux
+            files: dist/*.AppImage
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm test
+      - run: npm run ${{ matrix.build }} -- --publish never
+      - uses: actions/upload-artifact@v4
+        with:
+          name: installer-${{ matrix.os }}
+          path: ${{ matrix.files }}
+      - if: startsWith(github.ref, 'refs/tags/')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: ${{ matrix.files }}
