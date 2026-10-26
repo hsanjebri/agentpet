@@ -1,5 +1,6 @@
 import { BrowserWindow, app } from 'electron'
 import { electronApp, optimizer } from '@electron-toolkit/utils'
+import { registerActionsIpc } from './actions'
 import { lastAgentActivity, startBridge } from './bridge'
 import {
   disconnectClaude,
@@ -10,6 +11,7 @@ import {
 } from './connect'
 import { musicPlaying, registerMusic } from './music'
 import { registerPagesIpc } from './pages'
+import { inFocusRound, onPomodoroChange, registerPomodoro } from './pomodoro'
 import { startPhone } from './phone'
 import { registerProgressIpc } from './progress'
 import { petSettings, registerSettingsIpc } from './settings'
@@ -41,24 +43,27 @@ else if (!app.requestSingleInstanceLock()) {
       optimizer.watchWindowShortcuts(window)
     })
 
-    registerSettingsIpc(() => refreshTray())
+    registerSettingsIpc()
     startBridge()
     // an update may change the hooks (0.4.1: Node script -> curl): bring Claude Code along
     upgradeClaude()
     registerConnectIpc(refreshTray, () => lastAgentActivity() > 0)
     registerPagesIpc()
+    registerActionsIpc()
+    registerPomodoro()
     startPhone()
     registerProgressIpc(refreshTray)
     // before the pet window exists, so it gets the current song once it has loaded
     registerMusic(petSettings().music)
     const pet = createPetWindow()
     createTray()
+    onPomodoroChange(refreshTray)
     startUpdater(refreshTray)
     startWander(pet, {
       enabled: () => {
         const s = petSettings()
         // music outranks wandering: he stays put and vibes
-        return s.wander && !s.focusMode && !s.demo && !musicPlaying()
+        return s.wander && !s.focusMode && !s.demo && !musicPlaying() && !inFocusRound()
       },
       lastActivity: lastAgentActivity
     })

@@ -16,8 +16,9 @@ import {
 } from '../shared/music'
 import { IPC } from '../shared/ipc'
 import { recordActivity } from './progress'
+import { MUSIC_SUPPORTED, onSettingsChange } from './settings'
 
-export const MUSIC_SUPPORTED = process.platform === 'win32'
+export { MUSIC_SUPPORTED }
 
 /** A run this long counts as healthy: the next crash starts the backoff from scratch. */
 const STABLE_MS = 60_000
@@ -115,4 +116,7 @@ export function registerMusic(enabled: boolean): void {
     stop()
   })
   setMusicEnabled(enabled)
+  onSettingsChange((now, before) => {
+    if (now.music !== before.music) setMusicEnabled(now.music)
+  })
 }

@@ -158,3 +158,42 @@ describe('time of day', () => {
     expect(timeMood(NOW).partyHat).toBe(false)
   })
 })
+
+describe('without Claude (Fun & focus)', () => {
+  const pomodoro: Activity = { type: 'pomodoro' }
+  const petted: Activity = { type: 'petted' }
+
+  it('Pomodoros earn XP, a fish and count toward the recap', () => {
+    const p = apply([pomodoro, pomodoro])
+    expect(p.xp).toBe(20)
+    expect(p.totalPomodoros).toBe(2)
+    expect(p.lastFedAt).toBe(NOW)
+    expect(recap(p, 'day', NOW)).toMatchObject({ pomodoros: 2, fish: 2, daysTogether: 1 })
+  })
+
+  it('petting and songs give a little XP, capped per day', () => {
+    const p = apply(Array(30).fill(petted))
+    expect(p.xp).toBe(10)
+    expect(recap(p, 'day', NOW).pets).toBe(30)
+    const songs = apply(Array(30).fill({ type: 'song' }))
+    expect(songs.xp).toBe(10)
+  })
+
+  it('keeping a streak going gives bonus XP once a day', () => {
+    const yesterday = apply([pomodoro], emptyProgress(), NOW - DAY)
+    const today = apply([pomodoro, pomodoro], yesterday)
+    expect(today.xp).toBe(30 + 5)
+    expect(streak(today, NOW)).toBe(2)
+  })
+
+  it('every accessory can be unlocked without Claude', () => {
+    const p = apply(Array(300).fill(pomodoro))
+    expect(p.unlocked).toEqual(expect.arrayContaining(['tophat', 'crown']))
+  })
+
+  it('the share text has no agent wording', () => {
+    const text = shareText(recap(apply([pomodoro]), 'day', NOW), true)
+    expect(text).toContain('1 focus session')
+    expect(text).not.toMatch(/\bagent\b|claude|task|approv/i)
+  })
+})

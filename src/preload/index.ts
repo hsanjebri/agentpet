@@ -42,7 +42,17 @@ const api: PetApi = {
   testPhone: (settings) => ipcRenderer.invoke(IPC.testPhone, settings),
   changeSettings: (change) => ipcRenderer.send(IPC.changeSettings, change),
   openPhone: () => ipcRenderer.send(IPC.openPhone),
-  finishSetup: () => ipcRenderer.send(IPC.finishSetup)
+  finishSetup: () => ipcRenderer.send(IPC.finishSetup),
+  onShowSection: (listener) => listen(IPC.showSection, listener),
+  petMenu: () => ipcRenderer.send(IPC.petMenu),
+  openSettings: (section) => ipcRenderer.send(IPC.openSettings, section),
+  action: (action) => ipcRenderer.invoke(IPC.action, action),
+  appInfo: () => ipcRenderer.invoke(IPC.appInfo),
+  getPomodoro: () => ipcRenderer.invoke(IPC.getPomodoro),
+  onPomodoro: (listener) => listen(IPC.pomodoro, listener),
+  pomodoro: (command) => ipcRenderer.send(IPC.pomodoroCmd, command),
+  setDemo: (on) => ipcRenderer.send(IPC.setDemo, on),
+  petted: () => ipcRenderer.send(IPC.petted)
 }
 
 contextBridge.exposeInMainWorld('api', api)

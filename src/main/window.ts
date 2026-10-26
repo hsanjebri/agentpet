@@ -3,17 +3,27 @@ import { BrowserWindow, ipcMain, screen, shell } from 'electron'
 import { join } from 'path'
 import { is } from '@electron-toolkit/utils'
 import { IPC, type DragResult } from '../shared/ipc'
-import { type Position, settings } from './settings'
+import { SIZE_SCALE } from '../shared/settings'
+import { type Position, onSettingsChange, settings, storedSettings } from './settings'
 
-// Noodle is 90×48 cells at 4px (360×192); above him sit the approval bubble and demo label,
-// below him the usage bar.
-export const WINDOW_WIDTH = 360
-export const WINDOW_HEIGHT = 340
+// Noodle is 88×46 cells (at 4 px: 352×184); above him sit the approval bubble and demo label,
+// below him the usage bar. Size S/M/L draws him at 3/4/5 px per cell.
+const SPRITE_W = 90
+const SPRITE_H = 46
+/** room above and below the sprite for bubbles and the usage bar */
+const EXTRA_H = 156
+/** bubbles need this much width even when the pet is small */
+const MIN_W = 330
+
+export function windowSize(): { width: number; height: number } {
+  const scale = SIZE_SCALE[storedSettings().size]
+  return { width: Math.max(SPRITE_W * scale, MIN_W), height: SPRITE_H * scale + EXTRA_H }
+}
 const SCREEN_MARGIN = 16
 const CLICK_TOLERANCE = 4 // px the pointer may move before a press counts as a drag
 
 function isOnSomeDisplay({ x, y }: Position): boolean {
-  const center = { x: x + WINDOW_WIDTH / 2, y: y + WINDOW_HEIGHT / 2 }
+  const center = { x: x + windowSize().width / 2, y: y + windowSize().height / 2 }
   return screen.getAllDisplays().some(({ workArea: a }) => {
     return (
       center.x >= a.x && center.x < a.x + a.width && center.y >= a.y && center.y < a.y + a.height
@@ -25,8 +35,8 @@ function isOnSomeDisplay({ x, y }: Position): boolean {
 export function homePosition(): Position {
   const { workArea } = screen.getPrimaryDisplay()
   return {
-    x: workArea.x + workArea.width - WINDOW_WIDTH - SCREEN_MARGIN,
-    y: workArea.y + workArea.height - WINDOW_HEIGHT
+    x: workArea.x + workArea.width - windowSize().width - SCREEN_MARGIN,
+    y: workArea.y + workArea.height - windowSize().height
   }
 }
 
@@ -35,12 +45,12 @@ function clampToDisplay({ x, y }: Position): Position {
   const { workArea: a } = screen.getDisplayMatching({
     x,
     y,
-    width: WINDOW_WIDTH,
-    height: WINDOW_HEIGHT
+    width: windowSize().width,
+    height: windowSize().height
   })
   return {
-    x: Math.min(Math.max(x, a.x), a.x + a.width - WINDOW_WIDTH),
-    y: Math.min(Math.max(y, a.y), a.y + a.height - WINDOW_HEIGHT)
+    x: Math.min(Math.max(x, a.x), a.x + a.width - windowSize().width),
+    y: Math.min(Math.max(y, a.y), a.y + a.height - windowSize().height)
   }
 }
 
@@ -54,8 +64,8 @@ export function createPetWindow(): BrowserWindow {
   const win = new BrowserWindow({
     x,
     y,
-    width: WINDOW_WIDTH,
-    height: WINDOW_HEIGHT,
+    width: windowSize().width,
+    height: windowSize().height,
     show: false,
     transparent: true,
     backgroundColor: '#00000000',
@@ -97,6 +107,7 @@ export function createPetWindow(): BrowserWindow {
   })
 
   registerPointerIpc(win)
+  pet = win
 
   if (is.dev && process.env['ELECTRON_RENDERER_URL']) {
     win.loadURL(process.env['ELECTRON_RENDERER_URL'])
@@ -106,9 +117,35 @@ export function createPetWindow(): BrowserWindow {
   return win
 }
 
+let pet: BrowserWindow | null = null
+
+// size S/M/L changed: resize, keeping his feet where they were (bottom center)
+onSettingsChange((now, before) => {
+  if (now.size === before.size || !pet || pet.isDestroyed()) return
+  const old = pet.getBounds()
+  const { width, height } = windowSize()
+  const next = clampToDisplay({
+    x: old.x + (old.width - width) / 2,
+    y: old.y + old.height - height
+  })
+  moveWindow(pet, next)
+  settings.set('windowPosition', next)
+})
+
+/** Back to the bottom-right corner (Settings › General). */
+export function resetPetPosition(): void {
+  settings.delete('windowPosition')
+  if (pet && !pet.isDestroyed()) moveWindow(pet, homePosition())
+}
+
 /** Moves the window keeping its size fixed (setPosition can resize it on mixed-DPI setups). */
 export function moveWindow(win: BrowserWindow, { x, y }: Position): void {
-  win.setBounds({ x: Math.round(x), y: Math.round(y), width: WINDOW_WIDTH, height: WINDOW_HEIGHT })
+  win.setBounds({
+    x: Math.round(x),
+    y: Math.round(y),
+    width: windowSize().width,
+    height: windowSize().height
+  })
 }
 
 // ---------- needs-you alert: hop a bit toward the middle of the screen, then back ----------
@@ -184,8 +221,8 @@ export function setAlert(win: BrowserWindow, on: boolean): void {
     restPosition = { x, y }
     const { workArea: a } = screen.getDisplayMatching(win.getBounds())
     const center = {
-      x: a.x + (a.width - WINDOW_WIDTH) / 2,
-      y: a.y + (a.height - WINDOW_HEIGHT) / 2
+      x: a.x + (a.width - windowSize().width) / 2,
+      y: a.y + (a.height - windowSize().height) / 2
     }
     glideTo(
       win,

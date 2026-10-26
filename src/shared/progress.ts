@@ -21,6 +21,12 @@ export interface DayStats {
   rare: number
   /** songs listened to (just the count: no song history is kept) */
   songs: number
+  /** Pomodoro focus rounds finished */
+  pomodoros: number
+  /** times he was petted (click and hold) */
+  pets: number
+  /** fish eaten (finished tasks and Pomodoro rounds) */
+  fish: number
   /** tool calls per hour of the day, for "busiest hour" */
   hours: number[]
 }
@@ -31,6 +37,7 @@ export interface Progress {
   totalTasks: number
   totalApprovals: number
   totalRainbows: number
+  totalPomodoros: number
   lastFedAt: number | null
   unlocked: Accessory[]
   /** accessories the user chose to wear (from the unlocked ones) */
@@ -45,6 +52,8 @@ export type Activity =
   | { type: 'tool'; toolName?: string; target?: string }
   | { type: 'risky'; reason: string }
   | { type: 'song' }
+  | { type: 'pomodoro' }
+  | { type: 'petted' }
 
 /** Things worth celebrating, produced by recording an activity. */
 export type Milestone = { type: 'level_up'; level: number } | { type: 'unlocked'; item: Accessory }
@@ -56,8 +65,14 @@ export const XP: Record<Activity['type'], number> = {
   approved: 2,
   tool: 0,
   risky: 0,
-  song: 0
+  song: 1,
+  pomodoro: 10,
+  petted: 1
 }
+/** XP for these stops after this many a day (so nobody levels up by clicking all day). */
+export const DAILY_XP_CAP: Partial<Record<Activity['type'], number>> = { song: 10, petted: 10 }
+/** First activity of a day that keeps a streak going. */
+export const STREAK_XP = 5
 export const HUNGRY_AFTER_MS = 3 * 24 * 60 * 60_000
 export const RARE_CHANCE = 1 / 50
 const KEEP_DAYS = 60
@@ -68,10 +83,25 @@ export const UNLOCKS: ReadonlyArray<{
   label: string
   done(p: Progress, now: number): boolean
 }> = [
-  { item: 'tophat', label: '100 tasks done', done: (p) => p.totalTasks >= 100 },
+  {
+    item: 'tophat',
+    label: '100 tasks or 100 Pomodoros',
+    done: (p) => p.totalTasks >= 100 || p.totalPomodoros >= 100
+  },
   { item: 'sunglasses', label: '7-day streak', done: (p, now) => streak(p, now) >= 7 },
-  { item: 'crown', label: '1,000 approvals', done: (p) => p.totalApprovals >= 1000 }
+  {
+    item: 'crown',
+    label: '1,000 approvals or 300 Pomodoros',
+    done: (p) => p.totalApprovals >= 1000 || p.totalPomodoros >= 300
+  }
 ]
+
+/** Unlock hints without any Claude wording (Fun & focus mode). */
+export const FUN_UNLOCK_LABELS: Record<Accessory, string> = {
+  tophat: '100 Pomodoros',
+  sunglasses: '7-day streak',
+  crown: '300 Pomodoros'
+}
 
 export function emptyProgress(): Progress {
   return {
@@ -80,6 +110,7 @@ export function emptyProgress(): Progress {
     totalTasks: 0,
     totalApprovals: 0,
     totalRainbows: 0,
+    totalPomodoros: 0,
     lastFedAt: null,
     unlocked: [],
     wearing: [],
@@ -97,6 +128,9 @@ export function emptyDay(): DayStats {
     risky: [],
     rare: 0,
     songs: 0,
+    pomodoros: 0,
+    pets: 0,
+    fish: 0,
     hours: Array(24).fill(0)
   }
 }
@@ -125,10 +159,12 @@ export function stageOf(level: number): Stage {
 }
 
 function isActive(day: DayStats | undefined): boolean {
-  return Boolean(day && (day.tasks > 0 || day.tools > 0))
+  return Boolean(
+    day && (day.tasks > 0 || day.tools > 0 || day.pomodoros > 0 || day.pets > 0 || day.songs > 0)
+  )
 }
 
-/** Days in a row with agent activity, counting back from today (or yesterday). */
+/** Days in a row with activity (agent work, Pomodoros, petting or music), counting back from today (or yesterday). */
 export function streak(progress: Progress, now: number): number {
   let count = 0
   let time = now
@@ -164,7 +200,10 @@ export function record(
 ): { progress: Progress; milestones: Milestone[] } {
   const next: Progress = structuredClone(progress)
   const key = dayKey(now)
-  const day = (next.days[key] ??= emptyDay())
+  // older files lack the newer counters
+  const day = (next.days[key] = { ...emptyDay(), ...next.days[key] })
+  next.totalPomodoros ??= 0
+  const wasActiveToday = isActive(day)
 
   switch (activity.type) {
     case 'task_done':
@@ -173,7 +212,17 @@ export function record(
       day.rainbows += activity.rare === 'double' ? 2 : 1
       next.totalRainbows += activity.rare === 'double' ? 2 : 1
       next.lastFedAt = now // every finished task earns a fish
+      day.fish++
       if (activity.rare) day.rare++
+      break
+    case 'pomodoro':
+      day.pomodoros++
+      next.totalPomodoros++
+      next.lastFedAt = now // and so does every focus round
+      day.fish++
+      break
+    case 'petted':
+      day.pets++
       break
     case 'approved':
       day.approvals++
@@ -197,7 +246,11 @@ export function record(
 
   const milestones: Milestone[] = []
   const before = levelOf(next.xp)
-  next.xp += XP[activity.type]
+  const cap = DAILY_XP_CAP[activity.type]
+  const count = activity.type === 'song' ? day.songs : activity.type === 'petted' ? day.pets : 0
+  if (cap === undefined || count <= cap) next.xp += XP[activity.type]
+  const yesterday = next.days[dayKey(now - 24 * 60 * 60_000)]
+  if (!wasActiveToday && isActive(day) && isActive(yesterday)) next.xp += STREAK_XP
   if (levelOf(next.xp) > before) milestones.push({ type: 'level_up', level: levelOf(next.xp) })
 
   for (const { item, done } of UNLOCKS) {
@@ -231,6 +284,11 @@ export interface Recap {
   scariestMoment?: RiskyMoment
   streak: number
   songs: number
+  pomodoros: number
+  pets: number
+  fish: number
+  /** days with any activity in the period */
+  daysTogether: number
 }
 
 function mergeDays(days: DayStats[]): DayStats {
@@ -242,6 +300,9 @@ function mergeDays(days: DayStats[]): DayStats {
     total.tools += d.tools
     total.rare += d.rare
     total.songs += d.songs ?? 0
+    total.pomodoros += d.pomodoros ?? 0
+    total.pets += d.pets ?? 0
+    total.fish += d.fish ?? d.tasks
     total.risky.push(...d.risky)
     d.hours.forEach((n, h) => (total.hours[h] += n))
     for (const [file, n] of Object.entries(d.files))
@@ -288,12 +349,23 @@ export function recap(progress: Progress, period: 'day' | 'week', now: number): 
     scariestMoment:
       total.risky.filter((r) => new Date(r.at).getHours() < 6).at(-1) ?? total.risky.at(-1),
     streak: streak(progress, now),
-    songs: total.songs
+    songs: total.songs,
+    pomodoros: total.pomodoros,
+    pets: total.pets,
+    fish: total.fish,
+    daysTogether: perDay.filter(isActive).length
   }
 }
 
-/** Text for "Share to X". */
-export function shareText(r: Recap): string {
+/** Text for "Share to X". `fun` = no agent wording (Fun & focus mode). */
+export function shareText(r: Recap, fun = false): string {
+  if (fun) {
+    const s = (n: number, word: string): string => `${n} ${word}${n === 1 ? '' : 's'}`
+    return `${r.title} with ${r.petName}: ${s(r.pomodoros, 'focus session')} 🍅, ${s(
+      r.songs,
+      'song'
+    )} vibed 🎵, ${s(r.fish, 'fish')} fed 🐟. #AgentPet`
+  }
   const parts = [
     `${r.title} my AI agent finished ${r.tasks} task${r.tasks === 1 ? '' : 's'}`,
     `I approved ${r.approvals} time${r.approvals === 1 ? '' : 's'}`,

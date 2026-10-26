@@ -4,13 +4,14 @@ import { ipcMain } from 'electron'
 import Store from 'electron-store'
 import type { PetEvent } from '../shared/events'
 import { IPC } from '../shared/ipc'
-import { openPage } from './pages'
+import { openSettingsWindow } from './pages'
 import {
   type Ping,
   type PhoneSettings,
   PingWatcher,
   defaultPhoneSettings,
-  parsePhoneSettings
+  parsePhoneSettings,
+  randomTopic
 } from './phonePing'
 
 const CHECK_MS = 15_000
@@ -95,8 +96,15 @@ export function phoneUserIsHere(): void {
   watcher.userIsHere()
 }
 
+/** A fresh random topic: the old one stops getting pings (the phone must subscribe again). */
+export function newPhoneTopic(): string {
+  const topic = randomTopic()
+  store.set('phone', { ...settings(), topic })
+  return topic
+}
+
 export function openPhoneWindow(): void {
-  openPage('phone', { title: 'Phone ping', width: 480, height: 600 })
+  openSettingsWindow('phone')
 }
 
 export function startPhone(): void {

@@ -20,6 +20,8 @@ interface Handlers {
   onHover?(hovering: boolean): void
   /** click and hold without moving = petting him; called with true, then false on release */
   onPet?(petting: boolean): void
+  /** right-click on the pet */
+  onMenu?(): void
 }
 
 const HOLD_MS = 450
@@ -96,12 +98,19 @@ export function usePetPointer(handlers: Handlers = {}): void {
       setInteractive(isOverPet(e.target))
     }
 
+    const onContextMenu = (e: MouseEvent): void => {
+      e.preventDefault()
+      if (isDraggable(e.target)) handlersRef.current.onMenu?.()
+    }
+
     window.addEventListener('mousemove', onMove)
+    window.addEventListener('contextmenu', onContextMenu)
     window.addEventListener('mousedown', onDown)
     window.addEventListener('mouseup', onUp)
     document.documentElement.addEventListener('mouseleave', onLeave)
     return () => {
       window.removeEventListener('mousemove', onMove)
+      window.removeEventListener('contextmenu', onContextMenu)
       window.removeEventListener('mousedown', onDown)
       window.removeEventListener('mouseup', onUp)
       document.documentElement.removeEventListener('mouseleave', onLeave)

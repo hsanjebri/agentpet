@@ -15,7 +15,7 @@ const ICONS = {
 
 const ICON_SCALE = 2
 
-function PixelIcon({ rows }: { rows: readonly string[] }): React.JSX.Element {
+export function PixelIcon({ rows }: { rows: readonly string[] }): React.JSX.Element {
   const w = rows[0].length
   const h = rows.length
   const map = createMap(w, h)

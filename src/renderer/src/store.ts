@@ -44,6 +44,8 @@ interface PetStore {
   musicResumed: number
   /** bumps when the first-run setup is done (he says hi) */
   hello: number
+  /** bumps when a Pomodoro break starts (he wakes up and stretches) */
+  breakStarted: number
   setMusic(music: MusicState): void
   dispatch(input: MoodInput): void
   setUsage(usage: UsageInfo): void
@@ -69,6 +71,7 @@ export const usePetStore = create<PetStore>()((set, get) => ({
   grooving: false,
   musicResumed: 0,
   hello: 0,
+  breakStarted: 0,
   setMusic: (next) => {
     const prev = get().music
     const sameTrack = trackKey(next) !== null && trackKey(next) === trackKey(prev)
@@ -125,6 +128,17 @@ function onMoment(moment: PetMoment): void {
     case 'hello':
       usePetStore.setState({ hello: usePetStore.getState().hello + 1 })
       showToast(`hi! I'm ${name} 👋`)
+      break
+    case 'pomodoro':
+      if (moment.event === 'focus_done') {
+        usePetStore.setState({ breakStarted: usePetStore.getState().breakStarted + 1 })
+        showToast(`Break time! 🍵 stand up & stretch${moment.fish ? ' · +1 🐟' : ''}`)
+      } else {
+        showToast('Back to focus 🍅')
+      }
+      break
+    case 'settings_hint':
+      showToast('You can change anything later in Settings ⚙️')
       break
     case 'fed':
       // a quieter thank-you, only when nothing bigger is showing

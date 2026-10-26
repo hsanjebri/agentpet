@@ -16,7 +16,7 @@ export function InfoBubble({
   const hungry = look?.hungry ? 'a bit hungry 🐟 · ' : ''
 
   if (!session) {
-    const who = look ? `${look.petName} · lv ${look.level}` : 'no agent yet'
+    const who = look ? `${look.petName} · lv ${look.level}` : '…'
     return <div className="bubble bubble-info">{`${hungry}${who} · zzz`}</div>
   }
   return <div className="bubble bubble-info">{hungry + sessionLine(session, now)}</div>

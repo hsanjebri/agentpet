@@ -1,63 +1,40 @@
-// Tray icon + menu: skin, mute, focus mode, start on login, demo, setup, connect, quit.
-import { Menu, Tray, app, nativeImage } from 'electron'
-import { SKINS } from '../shared/skins'
-import { disconnectClaude, isConnected, openConnectWindow, openWelcomeWindow } from './connect'
-import { MUSIC_SUPPORTED } from './music'
-import { openPage } from './pages'
-import { openPhoneWindow } from './phone'
+// Tray icon + menu, and the pet's right-click menu. Both stay short: everything else is in
+// Settings.
+import { Menu, type MenuItemConstructorOptions, Tray, app, ipcMain, nativeImage } from 'electron'
+import { IPC } from '../shared/ipc'
+import { openProfileWindow, openSettingsWindow } from './pages'
+import { pomodoroMenuItems } from './pomodoro'
 import { petName } from './progress'
-import { petSettings, updateSettings } from './settings'
+import { onSettingsChange, petSettings, updateSettings } from './settings'
 import { restartToUpdate, updateReady } from './updater'
 // tray@2x.png next to it is picked up automatically on high-DPI screens
 import trayIcon from '../../resources/tray.png?asset'
 
 let tray: Tray | null = null // module-level so it isn't garbage collected
 
+const settingsItem = (): MenuItemConstructorOptions => ({
+  label: 'Settings…',
+  click: () => openSettingsWindow()
+})
+
+const profileItem = (): MenuItemConstructorOptions => ({
+  label: `${petName()}'s profile & recap…`,
+  click: () => openProfileWindow(petName())
+})
+
 function buildMenu(): Menu {
   const current = petSettings()
+  const update = updateReady()
   return Menu.buildFromTemplate([
-    {
-      label: `${petName()}'s profile & recap…`,
-      click: () => openPage('profile', { title: `${petName()}`, width: 520, height: 640 })
-    },
-    { label: 'Phone ping…', click: openPhoneWindow },
-    { label: 'Run setup again…', click: openWelcomeWindow },
+    settingsItem(),
+    profileItem(),
     { type: 'separator' },
-    {
-      label: 'Skin',
-      submenu: SKINS.map((skin) => ({
-        label: skin.ready ? skin.name : `${skin.name} (coming soon)`,
-        type: 'radio' as const,
-        checked: skin.id === current.skin,
-        enabled: skin.ready,
-        click: () => {
-          updateSettings({ skin: skin.id })
-          refreshTray()
-        }
-      }))
-    },
+    ...pomodoroMenuItems(),
     {
       label: 'Mute',
       type: 'checkbox',
       checked: current.muted,
       click: (item) => updateSettings({ muted: item.checked })
-    },
-    // music: Windows only for now
-    ...(MUSIC_SUPPORTED
-      ? [
-          {
-            label: 'Music (vibe to what you play)',
-            type: 'checkbox' as const,
-            checked: current.music,
-            click: (item: Electron.MenuItem) => updateSettings({ music: item.checked })
-          }
-        ]
-      : []),
-    {
-      label: 'Wander around when idle',
-      type: 'checkbox',
-      checked: current.wander,
-      click: (item) => updateSettings({ wander: item.checked })
     },
     {
       label: 'Focus mode (only show up when needed)',
@@ -65,35 +42,19 @@ function buildMenu(): Menu {
       checked: current.focusMode,
       click: (item) => updateSettings({ focusMode: item.checked })
     },
-    {
-      // registering the dev build would start a bare Electron at login
-      label: app.isPackaged ? 'Start on login' : 'Start on login (installed app only)',
-      type: 'checkbox',
-      enabled: app.isPackaged,
-      checked: app.isPackaged && app.getLoginItemSettings().openAtLogin,
-      click: (item) => updateSettings({ startOnLogin: item.checked })
-    },
-    {
-      label: 'Mood demo',
-      type: 'checkbox',
-      checked: current.demo,
-      click: (item) => updateSettings({ demo: item.checked })
-    },
     { type: 'separator' },
-    isConnected()
-      ? {
-          label: 'Disconnect Claude Code',
-          click: () => {
-            disconnectClaude()
-            refreshTray()
-          }
-        }
-      : { label: 'Connect Claude Code…', click: openConnectWindow },
-    { type: 'separator' },
-    ...(updateReady()
-      ? [{ label: `Restart to update to ${updateReady()} ✨`, click: restartToUpdate }]
-      : []),
+    ...(update ? [{ label: `Restart to update to ${update} ✨`, click: restartToUpdate }] : []),
     { label: 'Quit AgentPet', role: 'quit' }
+  ])
+}
+
+/** Right-click on the pet. */
+function petMenu(): Menu {
+  return Menu.buildFromTemplate([
+    ...pomodoroMenuItems(),
+    { type: 'separator' },
+    settingsItem(),
+    profileItem()
   ])
 }
 
@@ -105,5 +66,10 @@ export function createTray(): Tray {
   tray = new Tray(nativeImage.createFromPath(trayIcon))
   tray.setToolTip(`AgentPet ${app.getVersion()}`)
   refreshTray()
+  onSettingsChange(() => refreshTray())
+  ipcMain.on(IPC.petMenu, () => petMenu().popup())
+  ipcMain.on(IPC.openSettings, (_, section: unknown) =>
+    openSettingsWindow(typeof section === 'string' ? section : undefined)
+  )
   return tray
 }

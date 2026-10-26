@@ -8,7 +8,8 @@ import type {
 } from './events'
 import type { MusicCommand, MusicState } from './music'
 import type { Accessory, PetLook, RareMoment, Recap } from './progress'
-import type { SkinId } from './skins'
+import type { PomodoroCommand, PomodoroEvent, PomodoroState } from './pomodoro'
+import type { PetSettings, SettingsChange } from './settings'
 
 export const IPC = {
   setInteractive: 'pet:set-interactive',
@@ -44,7 +45,17 @@ export const IPC = {
   testPhone: 'pet:test-phone',
   changeSettings: 'pet:change-settings',
   openPhone: 'pet:open-phone',
-  finishSetup: 'pet:finish-setup'
+  finishSetup: 'pet:finish-setup',
+  showSection: 'pet:show-section',
+  petMenu: 'pet:menu',
+  openSettings: 'pet:open-settings',
+  action: 'pet:action',
+  appInfo: 'pet:app-info',
+  pomodoro: 'pet:pomodoro',
+  getPomodoro: 'pet:get-pomodoro',
+  pomodoroCmd: 'pet:pomodoro-cmd',
+  setDemo: 'pet:set-demo',
+  petted: 'pet:petted'
 } as const
 
 /** Phone ping settings (ntfy). */
@@ -69,6 +80,10 @@ export type PetMoment =
   | { kind: 'unlocked'; item: Accessory }
   | { kind: 'fed' }
   | { kind: 'update'; version: string }
+  /** a Pomodoro focus round or break just ended */
+  | { kind: 'pomodoro'; event: PomodoroEvent; fish: boolean }
+  /** once, after the first-run setup */
+  | { kind: 'settings_hint' }
   /** first-run setup finished: say hi */
   | { kind: 'hello' }
 
@@ -80,7 +95,7 @@ export interface WalkState {
 
 export interface ProfileData {
   look: PetLook
-  totals: { tasks: number; approvals: number; rainbows: number }
+  totals: { tasks: number; approvals: number; rainbows: number; pomodoros: number }
   streak: number
   unlocks: Array<{ item: Accessory; label: string; unlocked: boolean }>
   today: Recap
@@ -97,6 +112,47 @@ export interface ConnectStatus {
   outdated: boolean
   /** an agent event reached the app since it started: the connection really works */
   heardFromAgent: boolean
+  /** Claude Code has been used on this computer (~/.claude exists) */
+  claudeFound: boolean
+  /** AgentPet's backups of the Claude Code settings file */
+  backups: number
+}
+
+/** One-off things a Settings button does. */
+export type SettingsAction =
+  | 'disconnectClaude'
+  | 'restoreClaudeBackup'
+  | 'newPhoneTopic'
+  | 'checkUpdates'
+  | 'resetPosition'
+  | 'replayOnboarding'
+  | 'resetStats'
+  | 'resetProgress'
+  | 'resetSettings'
+  | 'openDataFolder'
+
+export const SETTINGS_ACTIONS: readonly SettingsAction[] = [
+  'disconnectClaude',
+  'restoreClaudeBackup',
+  'newPhoneTopic',
+  'checkUpdates',
+  'resetPosition',
+  'replayOnboarding',
+  'resetStats',
+  'resetProgress',
+  'resetSettings',
+  'openDataFolder'
+]
+
+export interface ActionResult {
+  ok: boolean
+  /** what to tell the user */
+  message?: string
+}
+
+export interface AppInfo {
+  version: string
+  dataPath: string
 }
 
 export interface ConnectResult {
@@ -110,28 +166,7 @@ export interface DragResult {
   moved: boolean
 }
 
-/** The settings the renderer needs to know about. */
-export interface PetSettings {
-  skin: SkinId
-  muted: boolean
-  /** hide the pet unless it needs you, hisses or is sad */
-  focusMode: boolean
-  /** stroll along the bottom of the screen now and then when idle */
-  wander: boolean
-  /** react to the music playing on the PC */
-  music: boolean
-  /** the music feature exists on this OS (Windows only for now) */
-  musicSupported: boolean
-  /** cycling through every mood (tray › Mood demo); not saved */
-  demo: boolean
-  /** starts with the computer (installed app only) */
-  startOnLogin: boolean
-  /** false in dev: registering a dev build would start a bare Electron at login */
-  startOnLoginSupported: boolean
-}
-
-/** What the setup window may change. */
-export type SettingsChange = Partial<Pick<PetSettings, 'skin' | 'music' | 'startOnLogin'>>
+export type { PetSettings, SettingsChange } from './settings'
 
 export interface PetApi {
   /** true = the window catches the mouse, false = clicks pass through to apps below */
@@ -180,4 +215,18 @@ export interface PetApi {
   openPhone(): void
   /** Ends the first-run setup: closes the window, the pet says hi. */
   finishSetup(): void
+  /** Settings window: another part of the app asked to show this section. */
+  onShowSection(listener: (section: string) => void): () => void
+  /** Right-click on the pet: the native pet menu. */
+  petMenu(): void
+  openSettings(section?: string): void
+  action(action: SettingsAction): Promise<ActionResult>
+  appInfo(): Promise<AppInfo>
+  getPomodoro(): Promise<PomodoroState>
+  onPomodoro(listener: (state: PomodoroState) => void): () => void
+  pomodoro(command: PomodoroCommand): void
+  /** Mood demo (not saved). */
+  setDemo(on: boolean): void
+  /** He was petted (click and hold): a little XP, counted for the recap. */
+  petted(): void
 }

@@ -66,3 +66,28 @@ describe('RiskWatcher', () => {
     expect(watcher.check(edit('b0.ts', 'b'))).toBeNull()
   })
 })
+
+describe('risk settings', () => {
+  const bash = (command: string): PetEvent => ({
+    type: 'tool',
+    agent: 'claude-code',
+    sessionId: 's',
+    toolName: 'Bash',
+    target: command,
+    timestamp: 0
+  })
+
+  it('a kind switched off never hisses', () => {
+    const watcher = new RiskWatcher()
+    expect(watcher.check(bash('rm -rf build'), { enabled: { rm_rf: false } })).toBeNull()
+    expect(watcher.check(bash('git push --force'), { enabled: { rm_rf: false } })).toBe(
+      'git push --force'
+    )
+  })
+
+  it('the allow-list wins (paths or commands, any case)', () => {
+    const watcher = new RiskWatcher()
+    expect(watcher.check(bash('rm -rf dist'), { allow: ['RM -RF DIST'] })).toBeNull()
+    expect(watcher.check(bash('rm -rf src'), { allow: ['rm -rf dist'] })).toBe('rm -rf')
+  })
+})

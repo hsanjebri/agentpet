@@ -45,6 +45,10 @@ const SAMPLE: Recap = {
   busiestHour: 15,
   scariestMoment: { reason: 'rm -rf', at: new Date(2026, 9, 21, 2, 13).getTime() },
   streak: 6,
+  pomodoros: 4,
+  pets: 12,
+  fish: 9,
+  daysTogether: 1,
   songs: 31
 }
 

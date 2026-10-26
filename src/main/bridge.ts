@@ -18,6 +18,7 @@ import { flushProgress, recordActivity, sendMoment } from './progress'
 import { RiskWatcher } from './risk'
 import { type PermissionInfo, startAgentServer } from './server'
 import { SessionTracker } from './sessions'
+import { storedSettings } from './settings'
 import { interruptWander } from './wander'
 import { setAlert } from './window'
 
@@ -49,9 +50,10 @@ function remember(event: PetEvent): void {
   } else if (event.type === 'risky') {
     recordActivity({ type: 'risky', reason: event.message ?? 'risky action' })
   } else if (event.type === 'done') {
-    const rare = rollRare()
+    const { rareMoments, feeding } = storedSettings()
+    const rare = rareMoments ? rollRare() : null
     recordActivity({ type: 'task_done', rare })
-    sendMoment({ kind: 'fed' })
+    if (feeding) sendMoment({ kind: 'fed' })
     if (rare) sendMoment({ kind: 'rare', rare })
   }
 }
@@ -84,7 +86,8 @@ export function startBridge(): void {
     remember(event)
     phoneOnEvent(event)
 
-    const risk = risks.check(event)
+    const { risks: enabled, riskAllow } = storedSettings()
+    const risk = risks.check(event, { enabled, allow: riskAllow })
     if (risk) {
       const risky: PetEvent = { ...event, type: 'risky', message: risk }
       broadcast(IPC.agentEvent, risky)
@@ -92,14 +95,23 @@ export function startBridge(): void {
     }
   }
 
+  // Fun & focus mode: the pet doesn't follow Claude Code (even if it's still connected)
+  const following = (): boolean => storedSettings().mode === 'developer'
+
   startAgentServer({
-    onEvent: sendEvent,
+    onEvent: (event) => {
+      if (following()) sendEvent(event)
+    },
     onUsage: (usage) => {
+      if (!following()) return
       lastUsage = usage
       broadcast(IPC.usage, usage)
     },
-    onPermission: (info, cancelled) => {
+    onPermission: async (info, cancelled) => {
+      if (!following()) return null
       sendEvent(eventFor(info, 'needs_you'))
+      // bubble off: he only alerts, Claude Code asks in the terminal as usual
+      if (!storedSettings().approvalBubble) return null
       return permissions.request(info, cancelled)
     },
     // keep the user's own status line if they had one before AgentPet

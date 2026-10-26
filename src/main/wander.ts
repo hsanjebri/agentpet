@@ -2,7 +2,7 @@
 // bottom of the screen, sits for a bit, and walks back home.
 import { type BrowserWindow, screen } from 'electron'
 import { IPC, type WalkState } from '../shared/ipc'
-import { WINDOW_WIDTH, cancelWalk, glideTo, isAlerting, walkTo } from './window'
+import { cancelWalk, glideTo, isAlerting, walkTo, windowSize } from './window'
 
 const CHECK_MS = 60_000
 const QUIET_MS = 5 * 60_000 // only after 5 minutes without agent activity
@@ -35,7 +35,7 @@ function stroll(win: BrowserWindow): void {
   const [x, y] = win.getPosition()
   const { workArea: a } = screen.getDisplayMatching(win.getBounds())
   const left = a.x
-  const right = a.x + a.width - WINDOW_WIDTH
+  const right = a.x + a.width - windowSize().width
   // pick a spot far enough away, on whichever side has room
   const target =
     x - left > right - x

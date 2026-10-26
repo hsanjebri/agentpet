@@ -3,12 +3,16 @@ import { BrowserWindow, ClipboardItem, clipboard, dialog, ipcMain, shell } from 
 import { writeFileSync } from 'fs'
 import Store from 'electron-store'
 import { IPC, type PetMoment, type ProfileData } from '../shared/ipc'
+import { onSettingsChange, storedSettings } from './settings'
 import {
   type Accessory,
   type Activity,
   DEFAULT_NAME,
+  FUN_UNLOCK_LABELS,
+  type PetLook,
   type Progress,
   UNLOCKS,
+  dayKey,
   emptyProgress,
   lookOf,
   recap,
@@ -24,6 +28,12 @@ const store = new Store<{ progress: Progress }>({
 // older files may miss newer fields
 let progress: Progress = { ...emptyProgress(), ...store.get('progress') }
 let saveTimer: NodeJS.Timeout | undefined
+
+/** What the pet looks like now; no hunger when feeding is off. */
+function look(): PetLook {
+  const l = lookOf(progress, Date.now())
+  return storedSettings().feeding ? l : { ...l, hungry: false }
+}
 
 function broadcast(channel: string, value: unknown): void {
   for (const win of BrowserWindow.getAllWindows()) win.webContents.send(channel, value)
@@ -41,12 +51,17 @@ export function flushProgress(): void {
 }
 
 function update(next: Progress): void {
-  const looked = JSON.stringify(lookOf(progress, Date.now()))
+  const looked = JSON.stringify(look())
   progress = next
   save()
-  const look = lookOf(progress, Date.now())
-  if (JSON.stringify(look) !== looked) broadcast(IPC.look, look)
+  const now = look()
+  if (JSON.stringify(now) !== looked) broadcast(IPC.look, now)
 }
+
+// feeding switched on / off: hunger shows or goes
+onSettingsChange((now, before) => {
+  if (now.feeding !== before.feeding) broadcast(IPC.look, look())
+})
 
 export function recordActivity(activity: Activity): void {
   const { progress: next, milestones } = record(progress, activity, Date.now())
@@ -60,8 +75,32 @@ export function recordActivity(activity: Activity): void {
   }
 }
 
+/** Settings › Privacy: forget daily stats and totals; level, accessories and name stay. */
+export function resetStats(): void {
+  const fresh = emptyProgress()
+  update({
+    ...progress,
+    totalTasks: 0,
+    totalApprovals: 0,
+    totalRainbows: 0,
+    lastFedAt: null,
+    days: fresh.days
+  })
+  flushProgress()
+}
+
+/** Settings › Privacy: a brand-new kitten (keeps only the name). */
+export function resetProgress(): void {
+  update({ ...emptyProgress(), petName: progress.petName })
+  flushProgress()
+}
+
 export function sendMoment(moment: PetMoment): void {
   broadcast(IPC.moment, moment)
+}
+
+export function pomodorosToday(): number {
+  return progress.days[dayKey(Date.now())]?.pomodoros ?? 0
 }
 
 export function petName(): string {
@@ -71,16 +110,18 @@ export function petName(): string {
 function profile(): ProfileData {
   const now = Date.now()
   return {
-    look: lookOf(progress, now),
+    look: look(),
     totals: {
       tasks: progress.totalTasks,
       approvals: progress.totalApprovals,
-      rainbows: progress.totalRainbows
+      rainbows: progress.totalRainbows,
+      pomodoros: progress.totalPomodoros ?? 0
     },
     streak: streak(progress, now),
     unlocks: UNLOCKS.map(({ item, label }) => ({
       item,
-      label,
+      // Fun & focus mode: no agent wording
+      label: storedSettings().mode === 'fun' ? FUN_UNLOCK_LABELS[item] : label,
       unlocked: progress.unlocked.includes(item)
     })),
     today: recap(progress, 'day', now),
@@ -98,8 +139,10 @@ function pngFromDataUrl(dataUrl: unknown): Buffer | null {
 
 /** `onNameChange` lets the tray relabel itself. */
 export function registerProgressIpc(onNameChange: () => void): void {
-  ipcMain.handle(IPC.getLook, () => lookOf(progress, Date.now()))
+  ipcMain.handle(IPC.getLook, () => look())
   ipcMain.handle(IPC.getProfile, () => profile())
+
+  ipcMain.on(IPC.petted, () => recordActivity({ type: 'petted' }))
 
   ipcMain.on(IPC.setPetName, (_, name: unknown) => {
     if (typeof name !== 'string') return

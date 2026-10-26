@@ -1,4 +1,7 @@
+import type { PetSettings } from '@shared/ipc'
+import { leftMs } from '@shared/pomodoro'
 import { timeMood } from '@shared/progress'
+import type { SoundName } from '@shared/settings'
 import { useEffect, useRef, useState } from 'react'
 import { ApprovalBubble } from './ApprovalBubble'
 import { demoUsage, useDemo } from './demo'
@@ -6,38 +9,49 @@ import { InfoBubble } from './InfoBubble'
 import type { Mood } from './moods'
 import { MusicBubble } from './MusicBubble'
 import { Pet } from './pets/Pet'
+import { Tomato } from './pets/Tomato'
+import { PomodoroBubble } from './PomodoroBubble'
 import { sessionLine } from './sessionLine'
-import { playMeow, playToot, startPurr, stopPurr } from './sounds'
+import { playMeow, playTick, playToot, setVolume, startPurr, stopPurr } from './sounds'
 import { useAgentBridge, useMood, usePetStore } from './store'
 import { UsageBar } from './UsageBar'
 import { usePetPointer } from './usePetPointer'
+import { usePomodoro } from './usePomodoro'
 import { useSettings } from './useSettings'
 
 const FOCUS_MOODS: ReadonlySet<Mood> = new Set(['needs', 'hiss', 'sad'])
 const TOAST_MS = 4000
 /** keeps the hover bubble open while the pointer crosses the gap to its buttons */
 const HOVER_GRACE_MS = 500
+const STRETCH_MS = 1400
 
-/** Meow when the agent starts needing you, toot when a task is done (unless muted). */
-function useMoodSounds(mood: Mood, muted: boolean, double: boolean): void {
+/** Whether this sound may play now (Mute, and each sound's own switch). */
+function soundOn(settings: PetSettings, name: SoundName): boolean {
+  return !settings.muted && settings.sounds[name]
+}
+
+/** Meow when the agent starts needing you, toot when a task is done (if those sounds are on). */
+function useMoodSounds(mood: Mood, settings: PetSettings, double: boolean): void {
   const previous = useRef(mood)
+  const meow = soundOn(settings, 'meow')
+  const toot = soundOn(settings, 'toot')
   useEffect(() => {
-    if (mood !== previous.current && !muted) {
-      if (mood === 'needs') playMeow()
-      if (mood === 'happy') {
+    if (mood !== previous.current) {
+      if (mood === 'needs' && meow) playMeow()
+      if (mood === 'happy' && toot) {
         playToot()
         if (double) setTimeout(playToot, 380)
       }
     }
     previous.current = mood
-  }, [mood, muted, double])
+  }, [mood, meow, toot, double])
 }
 
 /** "go to bed 😴" when the agent works late at night, "good morning ☕" once a day. */
-function useTimeGreetings(mood: Mood, name: string): void {
+function useTimeGreetings(mood: Mood, name: string, enabled: boolean): void {
   const greeted = useRef<{ morning?: string; lateNight?: number }>({})
   useEffect(() => {
-    if (mood !== 'working') return
+    if (!enabled || mood !== 'working') return
     const now = Date.now()
     const { greeting } = timeMood(now)
     const { showToast } = usePetStore.getState()
@@ -50,7 +64,7 @@ function useTimeGreetings(mood: Mood, name: string): void {
       greeted.current.lateNight = now
       showToast('it’s late… go to bed 😴')
     }
-  }, [mood, name])
+  }, [mood, name, enabled])
 }
 
 /** A counter that bumps to replay a one-shot animation, and resets once it has played. */
@@ -64,10 +78,39 @@ function useOneShot(durationMs: number): [number, () => void] {
   return [count, () => setCount((c) => c + 1)]
 }
 
+/** The time, updated every second while `active` (for timers drawn on the pet). */
+function useNow(active: boolean): number {
+  const [now, setNow] = useState(0)
+  useEffect(() => {
+    if (!active) return
+    const update = (): void => setNow(Date.now())
+    update()
+    const timer = setInterval(update, 1000)
+    return () => clearInterval(timer)
+  }, [active])
+  return now
+}
+
+/** Calls `run` whenever `value` changes after the first render. */
+function useOnChange(value: number, run: () => void): void {
+  const seen = useRef(value)
+  const runRef = useRef(run)
+  useEffect(() => {
+    runRef.current = run
+  })
+  useEffect(() => {
+    if (value === seen.current) return
+    seen.current = value
+    runRef.current()
+  }, [value])
+}
+
 function App(): React.JSX.Element {
-  const { skin, demo, muted, focusMode, music: musicOn } = useSettings()
+  const settings = useSettings()
+  const { skin, size, demo, focusMode, music: musicOn } = settings
   const { step: demoStep, next: nextDemoStep } = useDemo(demo)
   useAgentBridge()
+  const pomodoro = usePomodoro()
   const liveMood = useMood()
   const liveUsage = usePetStore((s) => s.usage)
   const prompts = usePetStore((s) => s.prompts)
@@ -82,6 +125,7 @@ function App(): React.JSX.Element {
   const grooving = usePetStore((s) => s.grooving)
   const musicResumed = usePetStore((s) => s.musicResumed)
   const hello = usePetStore((s) => s.hello)
+  const breakStarted = usePetStore((s) => s.breakStarted)
   const dispatch = usePetStore((s) => s.dispatch)
   const [hoveredAt, setHoveredAt] = useState<number | null>(null)
   const hoverTimer = useRef<ReturnType<typeof setTimeout>>(undefined)
@@ -89,6 +133,10 @@ function App(): React.JSX.Element {
   const [partyHat] = useState(() => timeMood(Date.now()).partyHat)
   const [flick, playFlick] = useOneShot(260)
   const [wiggle, playWiggle] = useOneShot(620)
+  const [stretch, playStretch] = useOneShot(STRETCH_MS)
+  const purrOn = soundOn(settings, 'purr')
+
+  useEffect(() => setVolume(settings.sounds.volume), [settings.sounds.volume])
 
   usePetPointer({
     onClick: () => {
@@ -102,39 +150,62 @@ function App(): React.JSX.Element {
     },
     onPet: (on) => {
       setPetting(on)
-      if (on && !muted) startPurr()
+      if (on) window.api.petted()
+      if (on && purrOn) startPurr()
       else stopPurr()
-    }
+    },
+    onMenu: () => window.api.petMenu()
   })
 
-  // music resumed: a quick happy wiggle
-  const resumedRef = useRef(musicResumed)
+  // any change in Settings: a small happy wiggle, so you see it landed
+  const wiggleRef = useRef(playWiggle)
   useEffect(() => {
-    if (musicResumed !== resumedRef.current) playWiggle()
-    resumedRef.current = musicResumed
-  }, [musicResumed, playWiggle])
+    wiggleRef.current = playWiggle
+  })
+  useEffect(() => window.api.onSettings(() => wiggleRef.current()), [])
+
+  // music resumed: a quick happy wiggle
+  useOnChange(musicResumed, playWiggle)
 
   // setup finished: a wiggle and a meow to say hi
-  const helloRef = useRef(hello)
-  useEffect(() => {
-    if (hello === helloRef.current) return
-    helloRef.current = hello
+  useOnChange(hello, () => {
     playWiggle()
-    if (!muted) playMeow()
-  }, [hello, muted, playWiggle])
+    if (soundOn(settings, 'meow')) playMeow()
+  })
 
-  const mood = demoStep?.mood ?? liveMood
+  // a Pomodoro break: he wakes up, stretches and meows softly
+  useOnChange(breakStarted, () => {
+    playStretch()
+    if (soundOn(settings, 'meow')) playMeow(0.4)
+  })
+
+  // Pomodoro focus round: curled up on the tomato, quiet. Approvals still get through.
+  const focusRound = !demoStep && pomodoro?.phase === 'focus'
+  const focusRunning = focusRound && pomodoro?.pausedLeftMs === null
+  const now = useNow(focusRound)
+  const tickOn = soundOn(settings, 'tick')
+  useEffect(() => {
+    if (!focusRunning || !tickOn) return
+    const timer = setInterval(playTick, 1000)
+    return () => clearInterval(timer)
+  }, [focusRunning, tickOn])
+
+  const agentMood = demoStep?.mood ?? liveMood
+  // during focus only "needs you" breaks the calm; the rest waits for the break
+  const mood: Mood = focusRound && agentMood !== 'needs' ? 'sleeping' : agentMood
   const usage = demoStep ? demoUsage(demoStep) : liveUsage
   const prompt = demoStep ? demoStep.prompt : prompts[0]
-  const walking = !demoStep && walk.walking
+  const walking = !demoStep && !focusRound && walk.walking
 
   // Music sits below every agent mood and above wandering / sleeping:
   // idle + music = vibing; working + music = working with headphones on.
+  // During a focus round the vibing is calmer (no grooving).
   const listening = !demoStep && musicOn && headphones
-  const vibe = listening && mood === 'sleeping' ? (grooving ? 'groove' : 'still') : undefined
+  const vibe =
+    listening && mood === 'sleeping' ? (grooving && !focusRound ? 'groove' : 'still') : undefined
 
-  useMoodSounds(mood, muted, rare === 'double')
-  useTimeGreetings(liveMood, look?.petName ?? 'Noodle')
+  useMoodSounds(mood, settings, rare === 'double')
+  useTimeGreetings(liveMood, look?.petName ?? 'Noodle', settings.greetings && !focusRound)
 
   // celebration bubbles fade away by themselves
   useEffect(() => {
@@ -147,12 +218,23 @@ function App(): React.JSX.Element {
   const alert = !demoStep && mood === 'needs'
   useEffect(() => window.api.setAlert(alert), [alert])
 
-  // focus mode: stay out of sight unless something needs attention (or he's vibing)
-  if (focusMode && !demoStep && !prompt && !FOCUS_MOODS.has(mood) && !vibe) {
+  // focus mode: stay out of sight unless something needs attention (or he's vibing, or a
+  // Pomodoro is on: then he's curled up on the tomato)
+  const pomodoroOn = !demoStep && pomodoro?.phase != null
+  if (
+    focusMode &&
+    !demoStep &&
+    !prompt &&
+    !FOCUS_MOODS.has(mood) &&
+    !vibe &&
+    !pomodoroOn &&
+    !toast
+  ) {
     return <main className="stage" />
   }
 
   const showMusicBubble = musicOn && !demoStep && (music.hasSession || headphones)
+  const hovered = hoveredAt !== null && !demoStep
   let bubble: React.JSX.Element | null = null
   if (prompt) {
     bubble = (
@@ -166,7 +248,9 @@ function App(): React.JSX.Element {
     )
   } else if (!demoStep && mood === 'hiss' && warning) {
     bubble = <div className="bubble bubble-warning">⚠ {warning}</div>
-  } else if (hoveredAt !== null && !demoStep && showMusicBubble) {
+  } else if (hovered && pomodoroOn && pomodoro) {
+    bubble = <PomodoroBubble state={pomodoro} />
+  } else if (hovered && showMusicBubble) {
     // focus mode: music animation only, no song bubbles
     if (!focusMode) {
       bubble = (
@@ -186,17 +270,29 @@ function App(): React.JSX.Element {
         {toast.text}
       </div>
     )
-  } else if (hoveredAt !== null && !demoStep) {
+  } else if (hovered) {
     bubble = <InfoBubble session={session} look={look} now={hoveredAt} />
   }
+
+  const focusLength = (settings.pomodoro.focusMin || 25) * 60_000
+  const showUsage = usage && (demoStep || (settings.usageBar && settings.mode === 'developer'))
 
   return (
     <main className="stage">
       {demoStep && <div className="demo-label">{demoStep.label}</div>}
       {bubble}
-      <div className="pet-spot">
+      <div className={`pet-spot${stretch ? ' stretching' : ''}`}>
+        {focusRound && pomodoro && (
+          <div className="pomodoro-tomato" aria-hidden>
+            <Tomato
+              progress={now ? 1 - leftMs(pomodoro, now) / focusLength : 0}
+              scale={size === 's' ? 2 : 3}
+            />
+          </div>
+        )}
         <Pet
           skin={skin}
+          size={size}
           mood={walking ? 'working' : mood}
           look={look}
           partyHat={partyHat}
@@ -216,7 +312,7 @@ function App(): React.JSX.Element {
           </div>
         )}
       </div>
-      {usage && <UsageBar usage={usage} />}
+      {showUsage && usage && <UsageBar usage={usage} />}
     </main>
   )
 }

@@ -1,16 +1,37 @@
 // Tiny synthesized sounds (Web Audio), so there are no audio files to ship or license.
-//   meow: the agent needs you
+//   meow: the agent needs you (soft: a Pomodoro break)
 //   toot: task done (the rainbow fart)
+//   purr: while being petted
+//   tick: softly, once a second during a Pomodoro focus round (off by default)
+// Everything goes through one master volume (Settings › Features › Sounds).
 
 let context: AudioContext | null = null
+let master: GainNode | null = null
+let volume = 0.8
 
 function audio(): AudioContext {
   context ??= new AudioContext()
   return context
 }
 
+/** Where every sound plays into. */
+function out(): GainNode {
+  if (!master) {
+    master = audio().createGain()
+    master.gain.value = volume
+    master.connect(audio().destination)
+  }
+  return master
+}
+
+/** 0–1. */
+export function setVolume(value: number): void {
+  volume = value
+  if (master) master.gain.value = value
+}
+
 /** A short "mi-aow": a voice-like buzz whose pitch rises then falls, through a vowel filter. */
-export function playMeow(): void {
+export function playMeow(loudness = 1): void {
   const ac = audio()
   const t = ac.currentTime
   const voice = ac.createOscillator()
@@ -28,10 +49,10 @@ export function playMeow(): void {
 
   const gain = ac.createGain()
   gain.gain.setValueAtTime(0.0001, t)
-  gain.gain.exponentialRampToValueAtTime(0.35, t + 0.05)
+  gain.gain.exponentialRampToValueAtTime(0.35 * loudness, t + 0.05)
   gain.gain.exponentialRampToValueAtTime(0.0001, t + 0.55)
 
-  voice.connect(vowel).connect(gain).connect(ac.destination)
+  voice.connect(vowel).connect(gain).connect(out())
   voice.start(t)
   voice.stop(t + 0.6)
 }
@@ -60,7 +81,7 @@ export function playToot(): void {
   gain.gain.exponentialRampToValueAtTime(0.25, t + 0.03)
   gain.gain.exponentialRampToValueAtTime(0.0001, t + 0.4)
 
-  buzz.connect(muffle).connect(gain).connect(ac.destination)
+  buzz.connect(muffle).connect(gain).connect(out())
   buzz.start(t)
   wobble.start(t)
   buzz.stop(t + 0.45)
@@ -93,7 +114,7 @@ export function startPurr(): void {
   gain.gain.linearRampToValueAtTime(0.12, t + 0.3)
   flutter.connect(flutterDepth).connect(gain.gain)
 
-  rumble.connect(soft).connect(gain).connect(ac.destination)
+  rumble.connect(soft).connect(gain).connect(out())
   rumble.start(t)
   flutter.start(t)
   purr = {
@@ -111,4 +132,19 @@ export function startPurr(): void {
 export function stopPurr(): void {
   purr?.stop()
   purr = null
+}
+
+/** A tiny wooden "tk", like a kitchen timer. */
+export function playTick(): void {
+  const ac = audio()
+  const t = ac.currentTime
+  const click = ac.createOscillator()
+  click.type = 'triangle'
+  click.frequency.setValueAtTime(1800, t)
+  const gain = ac.createGain()
+  gain.gain.setValueAtTime(0.06, t)
+  gain.gain.exponentialRampToValueAtTime(0.0001, t + 0.03)
+  click.connect(gain).connect(out())
+  click.start(t)
+  click.stop(t + 0.04)
 }

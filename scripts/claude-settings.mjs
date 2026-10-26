@@ -1,8 +1,15 @@
 // Reads and writes ~/.claude/settings.json for AgentPet. Used by the npm scripts and the app's
 // "Connect Claude Code" screen. Always backs the file up before changing it.
-import { copyFileSync, existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs'
+import {
+  copyFileSync,
+  existsSync,
+  mkdirSync,
+  readFileSync,
+  readdirSync,
+  writeFileSync
+} from 'node:fs'
 import { homedir } from 'node:os'
-import { dirname, join } from 'node:path'
+import { basename, dirname, join } from 'node:path'
 import {
   addAgentPet,
   hasAgentPet,
@@ -34,6 +41,36 @@ function backup(path) {
   for (let n = 2; existsSync(copy); n++) copy = `${stamp}-${n}`
   copyFileSync(path, copy)
   return copy
+}
+
+/** Claude Code has been run on this computer (it creates ~/.claude). */
+export function claudeFound({ settingsPath = SETTINGS_PATH } = {}) {
+  return existsSync(dirname(settingsPath))
+}
+
+/** AgentPet's backups of the settings file, newest first. */
+export function listBackups({ settingsPath = SETTINGS_PATH } = {}) {
+  const dir = dirname(settingsPath)
+  const prefix = `${basename(settingsPath)}.agentpet-backup-`
+  if (!existsSync(dir)) return []
+  return readdirSync(dir)
+    .filter((name) => name.startsWith(prefix))
+    .sort()
+    .reverse()
+    .map((name) => join(dir, name))
+}
+
+/**
+ * Puts the newest backup back (the file as it was before AgentPet last changed it). The current
+ * file is backed up first, so this can be undone too.
+ */
+export function restoreLatestBackup({ settingsPath = SETTINGS_PATH } = {}) {
+  const [latest] = listBackups({ settingsPath })
+  if (!latest) return { restored: undefined }
+  JSON.parse(readFileSync(latest, 'utf8')) // never restore a broken file
+  const backupPath = backup(settingsPath)
+  copyFileSync(latest, settingsPath)
+  return { restored: latest, backupPath }
 }
 
 export function isConnected({ settingsPath = SETTINGS_PATH } = {}) {

@@ -15,8 +15,24 @@ export interface RecapCardHandle {
   toPng(): string
 }
 
-function lines(r: Recap): string[] {
-  const s = (n: number, word: string): string => `${n} ${word}${n === 1 ? '' : 's'}`
+const s = (n: number, word: string): string => `${n} ${word}${n === 1 ? '' : 's'}`
+
+/** Fun & focus mode: only things you did together, no agent stats. */
+function funLines(r: Recap): string[] {
+  return [
+    `🍅  ${s(r.pomodoros, 'focus session')}`,
+    `🎵  ${s(r.songs, 'song')} vibed`,
+    `❤️  petted ${s(r.pets, 'time')}`,
+    `🐟  ${s(r.fish, 'fish')} fed`,
+    r.title === 'Today'
+      ? `🔥  ${s(r.streak, 'day')} in a row`
+      : `📅  ${s(r.daysTogether, 'day')} together · 🔥 ${r.streak}-day streak`
+  ]
+}
+
+function lines(r: Recap, fun: boolean): string[] {
+  if (fun) return funLines(r)
+  const focus = r.pomodoros ? [`🍅  ${s(r.pomodoros, 'focus session')}`] : []
   if (r.title === 'Today') {
     return [
       `🤖  Claude finished ${s(r.tasks, 'task')}`,
@@ -24,8 +40,9 @@ function lines(r: Recap): string[] {
       `✅  you approved ${s(r.approvals, 'time')}`,
       `🌈  ${r.petName} farted ${s(r.rainbows, 'rainbow')}`,
       `🔥  ${s(r.streak, 'day')} in a row`,
-      ...(r.songs ? [`🎵  ${s(r.songs, 'song')} vibed`] : [])
-    ]
+      ...(r.songs ? [`🎵  ${s(r.songs, 'song')} vibed`] : []),
+      ...focus
+    ].slice(0, 7)
   }
   const scary = r.scariestMoment
   return [
@@ -36,11 +53,12 @@ function lines(r: Recap): string[] {
       : '😺  no scary moments. nice.',
     `🌈  ${s(r.rainbows, 'rainbow')} · ✅ ${s(r.approvals, 'approval')}`,
     `🤖  ${s(r.tasks, 'task')} · 🔥 ${r.streak}-day streak`,
-    ...(r.songs ? [`🎵  ${s(r.songs, 'song')} vibed`] : [])
-  ]
+    ...(r.songs ? [`🎵  ${s(r.songs, 'song')} vibed`] : []),
+    ...focus
+  ].slice(0, 7)
 }
 
-function draw(ctx: CanvasRenderingContext2D, r: Recap, skin: SkinId): void {
+function draw(ctx: CanvasRenderingContext2D, r: Recap, skin: SkinId, fun: boolean): void {
   const bg = ctx.createLinearGradient(0, 0, W, H)
   bg.addColorStop(0, '#4a5a78')
   bg.addColorStop(1, '#232a3a')
@@ -79,26 +97,26 @@ function draw(ctx: CanvasRenderingContext2D, r: Recap, skin: SkinId): void {
   const left = 500
   const heading = r.title === 'Today' ? `Today with ${r.petName}` : `${r.petName} Wrapped`
   text(heading, left, 130, 58, '#ffffff', 800)
-  text(
-    r.title === 'Today' ? 'your AI agent’s day' : 'your week with your AI agent',
-    left,
-    178,
-    28,
-    '#c9d3e6',
-    500
-  )
-  lines(r).forEach((line, i) => text(line, left, 262 + i * 60, 34, '#f6f2ea', 600))
+  const subtitle = fun
+    ? r.title === 'Today'
+      ? 'our day together'
+      : 'our week together'
+    : r.title === 'Today'
+      ? 'your AI agent’s day'
+      : 'your week with your AI agent'
+  text(subtitle, left, 178, 28, '#c9d3e6', 500)
+  lines(r, fun).forEach((line, i) => text(line, left, 262 + i * 60, 34, '#f6f2ea', 600))
   text(`AgentPet · ${r.petName} is level ${r.level}`, left, H - 40, 24, '#9fb0cc', 500)
 }
 
-export const RecapCard = forwardRef<RecapCardHandle, { recap: Recap; skin: SkinId }>(
-  function RecapCard({ recap, skin }, ref) {
+export const RecapCard = forwardRef<RecapCardHandle, { recap: Recap; skin: SkinId; fun?: boolean }>(
+  function RecapCard({ recap, skin, fun = false }, ref) {
     const canvas = useRef<HTMLCanvasElement>(null)
     useImperativeHandle(ref, () => ({ toPng: () => canvas.current?.toDataURL('image/png') ?? '' }))
     useEffect(() => {
       const ctx = canvas.current?.getContext('2d')
-      if (ctx) draw(ctx, recap, skin)
-    }, [recap, skin])
+      if (ctx) draw(ctx, recap, skin, fun)
+    }, [recap, skin, fun])
     return <canvas ref={canvas} width={W} height={H} className="recap-card" />
   }
 )

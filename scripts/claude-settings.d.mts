@@ -8,6 +8,12 @@ export const SETTINGS_PATH: string
 export const CONFIG_PATH: string
 export const CURL_CONFIG_PATH: string
 export function isConnected(paths?: Paths): boolean
+export function claudeFound(paths?: Paths): boolean
+export function listBackups(paths?: Paths): string[]
+export function restoreLatestBackup(paths?: Paths): {
+  restored: string | undefined
+  backupPath?: string
+}
 export function isUpToDate(curlConfigPath?: string, paths?: Paths): boolean
 export function previousStatusLine(paths?: Paths): string | undefined
 export function connect(

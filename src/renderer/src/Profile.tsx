@@ -30,18 +30,20 @@ function ago(time: number): string {
 function CardTab({
   recap,
   skin,
-  fileName
+  fileName,
+  fun
 }: {
   recap: Recap
   skin: SkinId
   fileName: string
+  fun: boolean
 }): React.JSX.Element {
   const card = useRef<RecapCardHandle>(null)
   const [note, setNote] = useState('')
 
   return (
     <>
-      <RecapCard ref={card} recap={recap} skin={skin} />
+      <RecapCard ref={card} recap={recap} skin={skin} fun={fun} />
       <div className="connect-actions">
         <button
           className="btn btn-approve"
@@ -66,7 +68,7 @@ function CardTab({
           onClick={() => {
             // X can't take an image from a link: copy it so it can be pasted into the post
             window.api.copyCard(card.current?.toPng() ?? '')
-            window.api.share(shareText(recap))
+            window.api.share(shareText(recap, fun))
             setNote('Image copied: paste it into your post (Ctrl+V).')
           }}
         >
@@ -80,10 +82,12 @@ function CardTab({
 
 function PetTab({
   profile,
-  onRename
+  onRename,
+  fun
 }: {
   profile: ProfileData
   onRename(): void
+  fun: boolean
 }): React.JSX.Element {
   const [name, setName] = useState(profile.look.petName)
   const [wearing, setWearing] = useState(profile.look.wearing)
@@ -137,13 +141,24 @@ function PetTab({
 
       <h2>Together</h2>
       <p>
-        🤖 {profile.totals.tasks} tasks · ✅ {profile.totals.approvals} approvals · 🌈{' '}
-        {profile.totals.rainbows} rainbows · 🔥 {profile.streak}-day streak
+        {fun ? (
+          <>
+            🍅 {profile.totals.pomodoros} focus sessions · 🔥 {profile.streak}-day streak
+          </>
+        ) : (
+          <>
+            🤖 {profile.totals.tasks} tasks · ✅ {profile.totals.approvals} approvals · 🌈{' '}
+            {profile.totals.rainbows} rainbows · 🍅 {profile.totals.pomodoros} focus sessions · 🔥{' '}
+            {profile.streak}-day streak
+          </>
+        )}
       </p>
       <p>
         🐟{' '}
         {profile.lastFedAt === null
-          ? 'Every finished task feeds him a fish.'
+          ? fun
+            ? 'Every Pomodoro feeds him a fish.'
+            : 'Every finished task or Pomodoro feeds him a fish.'
           : look.hungry
             ? `Last fish ${ago(profile.lastFedAt)}: he's a bit hungry.`
             : `Last fish ${ago(profile.lastFedAt)}. Happy and fed.`}
@@ -156,6 +171,7 @@ export default function Profile(): React.JSX.Element {
   const [profile, setProfile] = useState<ProfileData | null>(null)
   const [skin, setSkin] = useState<SkinId>('noodle')
   const [tab, setTab] = useState<Tab>('today')
+  const [fun, setFun] = useState(false)
 
   const load = (): void => {
     window.api.getProfile().then((p) => {
@@ -165,7 +181,10 @@ export default function Profile(): React.JSX.Element {
   }
   useEffect(() => {
     load()
-    window.api.getSettings().then((s) => setSkin(s.skin))
+    window.api.getSettings().then((s) => {
+      setSkin(s.skin)
+      setFun(s.mode === 'fun')
+    })
   }, [])
 
   if (!profile) return <div className="connect" />
@@ -180,12 +199,12 @@ export default function Profile(): React.JSX.Element {
         ))}
       </nav>
       {tab === 'today' && (
-        <CardTab recap={profile.today} skin={skin} fileName="agentpet-today.png" />
+        <CardTab recap={profile.today} skin={skin} fileName="agentpet-today.png" fun={fun} />
       )}
       {tab === 'week' && (
-        <CardTab recap={profile.week} skin={skin} fileName="agentpet-wrapped.png" />
+        <CardTab recap={profile.week} skin={skin} fileName="agentpet-wrapped.png" fun={fun} />
       )}
-      {tab === 'pet' && <PetTab profile={profile} onRename={load} />}
+      {tab === 'pet' && <PetTab profile={profile} onRename={load} fun={fun} />}
     </div>
   )
 }

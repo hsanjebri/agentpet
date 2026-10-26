@@ -6,6 +6,8 @@ import { agentPetEntries } from '../../scripts/claude-hooks.mjs'
 import {
   CURL_CONFIG_PATH,
   SETTINGS_PATH,
+  claudeFound,
+  listBackups,
   connect,
   disconnect,
   isConnected,
@@ -21,6 +23,7 @@ import { settings } from './settings'
 export { isConnected }
 
 const STATUS_LINE_TIMEOUT_MS = 2000
+const HINT_DELAY_MS = 4500
 
 export function openConnectWindow(): void {
   openPage('connect', { title: 'Connect Claude Code', width: 480, height: 600 })
@@ -38,7 +41,10 @@ export function shouldShowWelcome(): boolean {
 
 export function disconnectClaude(): void {
   disconnect()
+  onConnectionChange()
 }
+
+let onConnectionChange = (): void => {}
 
 /** Older installs (e.g. the Node hooks) are switched to the current hooks, with a backup. */
 export function upgradeClaude(): void {
@@ -77,6 +83,7 @@ export function runPreviousStatusLine(raw: string): Promise<string | null> {
  * whether an agent event got through since the app started.
  */
 export function registerConnectIpc(onChange: () => void, heardFromAgent: () => boolean): void {
+  onConnectionChange = onChange
   ipcMain.handle(IPC.connectStatus, (): ConnectStatus => {
     const connected = isConnected()
     return {
@@ -84,7 +91,9 @@ export function registerConnectIpc(onChange: () => void, heardFromAgent: () => b
       settingsPath: SETTINGS_PATH,
       preview: JSON.stringify(agentPetEntries(CURL_CONFIG_PATH), null, 2),
       outdated: connected && !isUpToDate(CURL_CONFIG_PATH),
-      heardFromAgent: heardFromAgent()
+      heardFromAgent: heardFromAgent(),
+      claudeFound: claudeFound(),
+      backups: listBackups().length
     }
   })
   ipcMain.on(IPC.openPhone, () => openPhoneWindow())
@@ -92,6 +101,14 @@ export function registerConnectIpc(onChange: () => void, heardFromAgent: () => b
     BrowserWindow.fromWebContents(e.sender)?.close()
     for (const win of BrowserWindow.getAllWindows())
       win.webContents.send(IPC.moment, { kind: 'hello' })
+    // once: where to find everything later (after the hello bubble has had its moment)
+    if (!settings.get('settingsHintShown')) {
+      settings.set('settingsHintShown', true)
+      setTimeout(() => {
+        for (const win of BrowserWindow.getAllWindows())
+          win.webContents.send(IPC.moment, { kind: 'settings_hint' })
+      }, HINT_DELAY_MS)
+    }
   })
   ipcMain.handle(IPC.connect, (): ConnectResult => {
     try {
