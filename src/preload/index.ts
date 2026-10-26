@@ -36,7 +36,10 @@ const api: PetApi = {
   share: (text) => ipcRenderer.send(IPC.share, text),
   onMusic: (listener) => listen(IPC.music, listener),
   musicCommand: (command) => ipcRenderer.send(IPC.musicCmd, command),
-  setMusic: (on) => ipcRenderer.send(IPC.setMusic, on)
+  setMusic: (on) => ipcRenderer.send(IPC.setMusic, on),
+  getPhone: () => ipcRenderer.invoke(IPC.getPhone),
+  setPhone: (settings) => ipcRenderer.invoke(IPC.setPhone, settings),
+  testPhone: (settings) => ipcRenderer.invoke(IPC.testPhone, settings)
 }
 
 contextBridge.exposeInMainWorld('api', api)

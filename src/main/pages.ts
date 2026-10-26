@@ -4,7 +4,7 @@ import { join } from 'path'
 import { is } from '@electron-toolkit/utils'
 import { IPC } from '../shared/ipc'
 
-export type Page = 'connect' | 'profile'
+export type Page = 'connect' | 'profile' | 'phone'
 
 const open = new Map<Page, BrowserWindow>()
 

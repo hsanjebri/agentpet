@@ -4,6 +4,7 @@ import { SKINS } from '../shared/skins'
 import { disconnectClaude, isConnected, openConnectWindow } from './connect'
 import { MUSIC_SUPPORTED } from './music'
 import { openPage } from './pages'
+import { openPhoneWindow } from './phone'
 import { petName } from './progress'
 import { petSettings, updateSettings } from './settings'
 // tray@2x.png next to it is picked up automatically on high-DPI screens
@@ -18,6 +19,7 @@ function buildMenu(): Menu {
       label: `${petName()}'s profile & recap…`,
       click: () => openPage('profile', { title: `${petName()}`, width: 520, height: 640 })
     },
+    { label: 'Phone ping…', click: openPhoneWindow },
     { type: 'separator' },
     {
       label: 'Skin',

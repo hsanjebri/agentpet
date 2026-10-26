@@ -4,6 +4,7 @@ import { lastAgentActivity, startBridge } from './bridge'
 import { isConnected, openConnectWindow, registerConnectIpc } from './connect'
 import { musicPlaying, registerMusic } from './music'
 import { registerPagesIpc } from './pages'
+import { startPhone } from './phone'
 import { registerProgressIpc } from './progress'
 import { petSettings, registerSettingsIpc, settings } from './settings'
 import { createTray, refreshTray } from './tray'
@@ -27,6 +28,7 @@ if (!app.requestSingleInstanceLock()) {
     startBridge()
     registerConnectIpc(refreshTray)
     registerPagesIpc()
+    startPhone()
     registerProgressIpc(refreshTray)
     // before the pet window exists, so it gets the current song once it has loaded
     registerMusic(petSettings().music)

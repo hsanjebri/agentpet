@@ -38,8 +38,26 @@ export const IPC = {
   share: 'pet:share',
   music: 'music',
   musicCmd: 'music-cmd',
-  setMusic: 'pet:set-music'
+  setMusic: 'pet:set-music',
+  getPhone: 'pet:get-phone',
+  setPhone: 'pet:set-phone',
+  testPhone: 'pet:test-phone'
 } as const
+
+/** Phone ping settings (ntfy). */
+export interface PhoneSettings {
+  enabled: boolean
+  server: string
+  topic: string
+  delayMin: number
+  details: boolean
+  done: boolean
+}
+
+export interface PhoneResult {
+  ok: boolean
+  error?: string
+}
 
 /** Something to celebrate or animate right now. */
 export type PetMoment =
@@ -139,4 +157,8 @@ export interface PetApi {
   onMusic(listener: (music: MusicState) => void): () => void
   musicCommand(command: MusicCommand): void
   setMusic(on: boolean): void
+  getPhone(): Promise<PhoneSettings>
+  setPhone(settings: PhoneSettings): Promise<PhoneResult>
+  /** Sends a test notification with these settings (saved or not). */
+  testPhone(settings: PhoneSettings): Promise<PhoneResult>
 }

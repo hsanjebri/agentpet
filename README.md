@@ -22,6 +22,8 @@ bubble), and farts a rainbow when the task is done. 🌈
 
 - **Approve / Deny from the pet**: no need to go back to the terminal for every permission.
 - **Session usage bar** under Noodle: your 5-hour Claude limit (or context window), resets at…
+- **📱 Phone ping** (opt-in): your phone buzzes (free ntfy app) when Claude has waited for you
+  for a few minutes, or when a long task finishes. Tray › Phone ping…
 - **Click Noodle** to jump to the terminal / IDE where Claude is running.
 - **Hover** for what Claude is up to: `my-app · editing App.tsx · 12 tools · 4 min`.
 - **Daily recap card + weekly "Wrapped"**: tray › _profile & recap_ → save, copy or share on X.
@@ -51,7 +53,8 @@ Requires [Node.js](https://nodejs.org) on your PATH (the hooks are a tiny Node s
 
 ## Privacy
 
-Everything stays on your computer. The app only listens on `127.0.0.1`, refuses requests
+Everything stays on your computer (except Phone ping, which is off unless you turn it on and
+only sends the project name to your own ntfy topic). The app only listens on `127.0.0.1`, refuses requests
 from web pages, keeps nothing on disk except its settings, and has no telemetry.
 
 ## Uninstall

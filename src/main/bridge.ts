@@ -11,6 +11,7 @@ import { IPC } from '../shared/ipc'
 import { focusAgentWindow } from './focus'
 import { rollRare } from '../shared/progress'
 import { PermissionQueue } from './permissions'
+import { phoneOnEvent, phoneUserIsHere } from './phone'
 import { flushProgress, recordActivity, sendMoment } from './progress'
 import { RiskWatcher } from './risk'
 import { type PermissionInfo, startAgentServer } from './server'
@@ -79,6 +80,7 @@ export function startBridge(): void {
     broadcast(IPC.session, sessions.latest())
 
     remember(event)
+    phoneOnEvent(event)
 
     const risk = risks.check(event)
     if (risk) {
@@ -107,6 +109,7 @@ export function startBridge(): void {
     if (!PERMISSION_DECISIONS.includes(decision as PermissionDecision)) return
     const prompt = permissions.decide(id, decision as PermissionDecision)
     // answered from the pet: the agent carries on right away
+    if (prompt) phoneUserIsHere()
     if (prompt && decision === 'allow') recordActivity({ type: 'approved' })
     if (prompt && decision !== 'terminal') sendEvent(eventFor(prompt, 'tool'))
   })
@@ -118,6 +121,7 @@ export function startBridge(): void {
 
   // clicking the pet: go to whoever needs the user (or the latest session), pet back home
   ipcMain.on(IPC.petClicked, (e) => {
+    phoneUserIsHere()
     const sessionId = permissions.list()[0]?.sessionId ?? needsSessionId
     const pid = sessions.pidFor(sessionId)
     if (pid) focusAgentWindow(pid)

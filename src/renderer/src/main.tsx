@@ -12,11 +12,14 @@ const Showcase = lazy(() => import('./Showcase'))
 const Connect = lazy(() => import('./Connect'))
 // eslint-disable-next-line react-refresh/only-export-components -- entry file, never hot-swapped
 const Profile = lazy(() => import('./Profile'))
+// eslint-disable-next-line react-refresh/only-export-components -- entry file, never hot-swapped
+const Phone = lazy(() => import('./Phone'))
 const devPage = import.meta.env.DEV ? location.hash : ''
 
 function page(): React.JSX.Element {
   if (location.hash === '#connect') return <Connect />
   if (location.hash === '#profile') return <Profile />
+  if (location.hash === '#phone') return <Phone />
   if (devPage.startsWith('#gallery')) return <Gallery />
   if (devPage.startsWith('#showcase')) return <Showcase />
   return <App />
