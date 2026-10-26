@@ -41,7 +41,7 @@ bubble), and farts a rainbow when the task is done. 🌈
 ## Install
 
 1. Download the installer for your system from
-   [Releases](https://github.com/hsanjebri/agentpet/releases) (`AgentPet-0.3.0-setup.exe`,
+   [Releases](https://github.com/hsanjebri/agentpet/releases) (`AgentPet-0.4.0-setup.exe`,
    `.dmg` or `.AppImage`).
    The builds aren't code-signed yet, so Windows SmartScreen / macOS Gatekeeper will warn:
    choose "More info › Run anyway" (Windows) or right-click › Open (macOS).
