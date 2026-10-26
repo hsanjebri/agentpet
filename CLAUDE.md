@@ -4,7 +4,7 @@ A desktop pet (Noodle, a white pixel-art cat) that babysits your AI coding agent
 It floats above all windows, shows the agent's state with its mood/tail, lets you **approve
 permission requests from its bubble**, shows session usage, pings your phone, and vibes to music.
 `AGENTPET_PLAN.md` is the original build plan (status note at its top); `README.md` is user-facing.
-Repo: github.com/hsanjebri/agentpet (**private** for now). Current version: **0.4.0**.
+Repo: github.com/hsanjebri/agentpet (**private** for now). Current version: **0.4.1**.
 
 ## Stack
 Electron 44 + electron-vite, React 19 + TypeScript, Zustand, electron-store, electron-updater,
@@ -50,7 +50,7 @@ Vitest, ESLint + Prettier, electron-builder. Hook CLI: plain Node (zero deps). M
   (top hat/sunglasses/crown), rare moments, hold-to-pet + purr, fish feeding, wandering, time greetings, naming
 - v0.3.0: **Music** (Windows): nowplaying helper, headphones/vibing, pixel ⏮⏯⏭ in bubble, songs in recaps
 - v0.4.0: **Phone ping** via ntfy (opt-in): ping after N min waiting, optional long-task-done ping
-- unreleased (on main): uninstaller disconnects Claude, auto-update, landing page, version-free asset names
+- v0.4.1: curl hooks (no Node.js needed), first-run Welcome window, uninstaller disconnects Claude, auto-update, landing page
 
 ## Commands
 - `npm run dev` · `AGENTPET_DEMO=1 npm run dev` (mood demo) · `npm test` · `npm run lint` · `npm run typecheck`
