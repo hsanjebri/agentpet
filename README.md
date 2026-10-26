@@ -31,13 +31,15 @@ bubble), and farts a rainbow when the task is done. 🌈
 - **Pet him**: click and hold, he purrs. **Feed him**: every finished task is a fish.
 - **Wanders** along the bottom of the screen when idle; good morning / go-to-bed greetings;
   party hat on Fridays. **Name your cat** when you first start the app.
+- **🎵 Music** (Windows): Noodle puts on headphones and vibes to Spotify, YouTube, Deezer…
+  Hover him for pixel play / pause / next buttons.
 - Skins: Noodle, Mochi (orange tabby), Zitouna (street cat). Tray menu › Skin.
 - Tray menu: Mute, Wander, Focus mode (only shows up when needed), Start on login, Mood demo.
 
 ## Install
 
 1. Download the installer for your system from
-   [Releases](https://github.com/hsanjebri/agentpet/releases) (`AgentPet-0.2.1-setup.exe`,
+   [Releases](https://github.com/hsanjebri/agentpet/releases) (`AgentPet-0.3.0-setup.exe`,
    `.dmg` or `.AppImage`).
    The builds aren't code-signed yet, so Windows SmartScreen / macOS Gatekeeper will warn:
    choose "More info › Run anyway" (Windows) or right-click › Open (macOS).
