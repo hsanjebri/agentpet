@@ -2,6 +2,7 @@
 import { Menu, Tray, app, nativeImage } from 'electron'
 import { SKINS } from '../shared/skins'
 import { disconnectClaude, isConnected, openConnectWindow } from './connect'
+import { MUSIC_SUPPORTED } from './music'
 import { openPage } from './pages'
 import { petName } from './progress'
 import { petSettings, updateSettings } from './settings'
@@ -37,6 +38,17 @@ function buildMenu(): Menu {
       checked: current.muted,
       click: (item) => updateSettings({ muted: item.checked })
     },
+    // music: Windows only for now
+    ...(MUSIC_SUPPORTED
+      ? [
+          {
+            label: 'Music (vibe to what you play)',
+            type: 'checkbox' as const,
+            checked: current.music,
+            click: (item: Electron.MenuItem) => updateSettings({ music: item.checked })
+          }
+        ]
+      : []),
     {
       label: 'Wander around when idle',
       type: 'checkbox',

@@ -6,7 +6,7 @@ directories:
   output: dist
 files:
   - '!**/.vscode/*'
-  - '!{src,tests,scripts,cli,recordings,docs}/**'
+  - '!{src,tests,scripts,cli,recordings,docs,helper}/**'
   - '!electron.vite.config.{js,ts,mjs,cjs}'
   - '!vitest.config.*'
   - '!{.eslintcache,eslint.config.mjs,.prettierignore,.prettierrc.yaml,.editorconfig,.gitattributes,dev-app-update.yml,CHANGELOG.md,README.md,AGENTPET_PLAN.md}'
@@ -23,6 +23,12 @@ extraResources:
 win:
   executableName: AgentPet
   target: nsis
+  # the music helper (Windows media session API), built by npm run helper:build
+  extraResources:
+    - from: helper/nowplaying/dist
+      to: nowplaying
+      filter:
+        - nowplaying.exe
 nsis:
   artifactName: ${productName}-${version}-setup.${ext}
   shortcutName: ${productName}

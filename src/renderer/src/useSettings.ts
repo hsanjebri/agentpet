@@ -7,6 +7,8 @@ const INITIAL: PetSettings = {
   muted: false,
   focusMode: false,
   wander: true,
+  music: false,
+  musicSupported: false,
   demo: false
 }
 

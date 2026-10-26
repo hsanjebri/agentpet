@@ -16,11 +16,17 @@ export interface NoodleOptions {
   /** strolling along the screen: legs swing, eyes open, nothing in the tail */
   walking?: boolean
   rare?: RareMoment | null
+  /** idle with music on: grooving (head bob, tail tapping) or paused (just standing, listening) */
+  vibe?: 'groove' | 'still'
 }
+
+/** 110 BPM: one tail tap per beat, two frames per cycle. */
+export const BEAT_S = 60 / 110
+const TAP_ANGLES = [0, -7]
 
 export function buildNoodle(
   mood: Mood,
-  { look = {}, walking, rare }: NoodleOptions = {}
+  { look = {}, walking, rare, vibe }: NoodleOptions = {}
 ): NoodleLayers {
   if (walking) {
     return {
@@ -38,6 +44,22 @@ export function buildNoodle(
           ),
           speed: '0.5s'
         }
+      ],
+      effects: []
+    }
+  }
+
+  if (vibe) {
+    return {
+      sprite: [
+        {
+          name: 'tail',
+          frames: buildTailFrames('working', false, vibe === 'groove' ? TAP_ANGLES : [0]).map((f) =>
+            withOutline(f)
+          ),
+          speed: `${(BEAT_S * 2).toFixed(3)}s`
+        },
+        { name: 'body', frames: [withOutline(buildBody('happy', look))] }
       ],
       effects: []
     }

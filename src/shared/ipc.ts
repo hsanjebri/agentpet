@@ -6,6 +6,7 @@ import type {
   SessionSummary,
   UsageInfo
 } from './events'
+import type { MusicCommand, MusicState } from './music'
 import type { Accessory, PetLook, RareMoment, Recap } from './progress'
 import type { SkinId } from './skins'
 
@@ -34,7 +35,10 @@ export const IPC = {
   setWearing: 'pet:set-wearing',
   saveCard: 'pet:save-card',
   copyCard: 'pet:copy-card',
-  share: 'pet:share'
+  share: 'pet:share',
+  music: 'music',
+  musicCmd: 'music-cmd',
+  setMusic: 'pet:set-music'
 } as const
 
 /** Something to celebrate or animate right now. */
@@ -88,6 +92,10 @@ export interface PetSettings {
   focusMode: boolean
   /** stroll along the bottom of the screen now and then when idle */
   wander: boolean
+  /** react to the music playing on the PC */
+  music: boolean
+  /** the music feature exists on this OS (Windows only for now) */
+  musicSupported: boolean
   /** cycling through every mood (tray › Mood demo); not saved */
   demo: boolean
 }
@@ -127,4 +135,8 @@ export interface PetApi {
   copyCard(pngDataUrl: string): void
   /** Opens "post to X" in the browser with this text. */
   share(text: string): void
+  /** What's playing on the PC (Spotify, browsers...). */
+  onMusic(listener: (music: MusicState) => void): () => void
+  musicCommand(command: MusicCommand): void
+  setMusic(on: boolean): void
 }

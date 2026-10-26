@@ -1,10 +1,11 @@
 // The first-run window: name your cat, then connect Claude Code (explains what changes and
 // shows the exact entries first).
-import type { ConnectResult, ConnectStatus } from '@shared/ipc'
+import type { ConnectResult, ConnectStatus, PetSettings } from '@shared/ipc'
 import { useEffect, useState } from 'react'
 
 export default function Connect(): React.JSX.Element {
   const [status, setStatus] = useState<ConnectStatus | null>(null)
+  const [settings, setSettings] = useState<PetSettings | null>(null)
   const [result, setResult] = useState<ConnectResult | null>(null)
   const [showDetails, setShowDetails] = useState(false)
   const [name, setName] = useState('')
@@ -12,6 +13,7 @@ export default function Connect(): React.JSX.Element {
 
   useEffect(() => {
     window.api.connectStatus().then(setStatus)
+    window.api.getSettings().then(setSettings)
     window.api.getLook().then((look) => {
       setName(look.petName)
       setSavedName(look.petName)
@@ -40,6 +42,25 @@ export default function Connect(): React.JSX.Element {
           onBlur={saveName}
         />
       </label>
+
+      {settings?.musicSupported && (
+        <label className="connect-toggle">
+          <input
+            type="checkbox"
+            checked={settings.music}
+            onChange={(e) => {
+              const on = e.target.checked
+              setSettings({ ...settings, music: on })
+              window.api.setMusic(on)
+            }}
+          />
+          🎵 Vibe to my music
+          <span className="connect-small">
+            {' '}
+            (Spotify, YouTube, Deezer… read on this PC only, nothing is sent anywhere)
+          </span>
+        </label>
+      )}
 
       <h1 className="connect-step">Connect Claude Code</h1>
 

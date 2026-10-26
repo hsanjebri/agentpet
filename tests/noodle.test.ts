@@ -121,3 +121,31 @@ describe('looks: growth, accessories, walking, rare moments', () => {
     expect(names).toEqual(['body', 'tail', 'keyboard'])
   })
 })
+
+describe('music looks', () => {
+  it.each(MOODS)('%s: headphones stay on the grid with the real palette', (mood) => {
+    for (const layer of buildNoodle(mood, { look: { wear: ['headphones', 'tophat'] } }).sprite) {
+      for (const frame of layer.frames) {
+        for (const run of toRuns(frame)) {
+          expect(PALETTE[run.key]).toBeDefined()
+          expect(run.x).toBeGreaterThanOrEqual(-1)
+          expect(run.x + run.width).toBeLessThanOrEqual(GRID_W + 1)
+        }
+      }
+    }
+  })
+
+  it('headphones: ear cups beside the head, band over it', () => {
+    const body = buildBody('working', { wear: ['headphones'] })
+    expect(getCell(body, 70 - 17, 14)).toBe('r') // left cup (head center 70,16)
+    expect(getCell(body, 70 + 16, 14)).toBe('r') // right cup
+    expect(getCell(body, 70, 5)).toBe('d') // band
+  })
+
+  it('vibing: standing, happy face, tail taps in two frames (paused: one)', () => {
+    const groove = buildNoodle('sleeping', { vibe: 'groove' }).sprite
+    expect(groove.map((l) => l.name)).toEqual(['tail', 'body'])
+    expect(groove[0].frames).toHaveLength(2)
+    expect(buildNoodle('sleeping', { vibe: 'still' }).sprite[0].frames).toHaveLength(1)
+  })
+})

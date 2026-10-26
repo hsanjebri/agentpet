@@ -16,7 +16,7 @@ function isDraggable(target: EventTarget | null): boolean {
 
 interface Handlers {
   onClick?(): void
-  /** the pointer moved onto / off the pet itself (not its controls) */
+  /** the pointer moved onto / off the pet or one of his bubbles' controls */
   onHover?(hovering: boolean): void
   /** click and hold without moving = petting him; called with true, then false on release */
   onPet?(petting: boolean): void
@@ -63,7 +63,7 @@ export function usePetPointer(handlers: Handlers = {}): void {
         return
       }
       setInteractive(isOverPet(e.target))
-      setHovering(isDraggable(e.target))
+      setHovering(isOverPet(e.target))
     }
     const onLeave = (): void => {
       if (dragging) return

@@ -2,6 +2,7 @@ import { BrowserWindow, app } from 'electron'
 import { electronApp, optimizer } from '@electron-toolkit/utils'
 import { lastAgentActivity, startBridge } from './bridge'
 import { isConnected, openConnectWindow, registerConnectIpc } from './connect'
+import { musicPlaying, registerMusic } from './music'
 import { registerPagesIpc } from './pages'
 import { registerProgressIpc } from './progress'
 import { petSettings, registerSettingsIpc, settings } from './settings'
@@ -22,17 +23,20 @@ if (!app.requestSingleInstanceLock()) {
       optimizer.watchWindowShortcuts(window)
     })
 
-    registerSettingsIpc()
+    registerSettingsIpc(() => refreshTray())
     startBridge()
     registerConnectIpc(refreshTray)
     registerPagesIpc()
     registerProgressIpc(refreshTray)
+    // before the pet window exists, so it gets the current song once it has loaded
+    registerMusic(petSettings().music)
     const pet = createPetWindow()
     createTray()
     startWander(pet, {
       enabled: () => {
         const s = petSettings()
-        return s.wander && !s.focusMode && !s.demo
+        // music outranks wandering: he stays put and vibes
+        return s.wander && !s.focusMode && !s.demo && !musicPlaying()
       },
       lastActivity: lastAgentActivity
     })

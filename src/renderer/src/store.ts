@@ -1,6 +1,13 @@
 // Renderer state: mood, latest usage and waiting permission prompts.
 import type { PermissionPrompt, SessionSummary, UsageInfo } from '@shared/events'
 import type { PetMoment, WalkState } from '@shared/ipc'
+import {
+  HEADPHONES_OFF_AFTER_MS,
+  type MusicState,
+  NO_MUSIC,
+  songLine,
+  trackKey
+} from '@shared/music'
 import type { PetLook, RareMoment } from '@shared/progress'
 import { useEffect, useState } from 'react'
 import { create } from 'zustand'
@@ -26,14 +33,23 @@ interface PetStore {
   walk: WalkState
   /** a rare moment in progress (golden rainbow, double fart, asleep on the keyboard) */
   rare: RareMoment | null
-  /** a short celebration bubble ("level 10!", "yum 🐟") */
-  toast: { text: string; id: number } | null
-  showToast(text: string): void
+  /** a short celebration bubble ("level 10!", "yum 🐟"); music ones are hidden in focus mode */
+  toast: { text: string; id: number; music?: boolean } | null
+  showToast(text: string, music?: boolean): void
+  music: MusicState
+  /** headphones stay on for a while after the music stops */
+  headphones: boolean
+  grooving: boolean
+  /** bumps when playback resumes (for a happy wiggle) */
+  musicResumed: number
+  setMusic(music: MusicState): void
   dispatch(input: MoodInput): void
   setUsage(usage: UsageInfo): void
   setPrompts(prompts: PermissionPrompt[]): void
   setSession(session: SessionSummary | null): void
 }
+
+let quietTimer: ReturnType<typeof setTimeout> | undefined
 
 export const usePetStore = create<PetStore>()((set, get) => ({
   moodState: initialMoodState(Date.now()),
@@ -45,7 +61,35 @@ export const usePetStore = create<PetStore>()((set, get) => ({
   walk: { walking: false, facing: 'right' },
   rare: null,
   toast: null,
-  showToast: (text) => set({ toast: { text, id: Date.now() } }),
+  showToast: (text, music) => set({ toast: { text, id: Date.now(), music } }),
+  music: NO_MUSIC,
+  headphones: false,
+  grooving: false,
+  musicResumed: 0,
+  setMusic: (next) => {
+    const prev = get().music
+    const sameTrack = trackKey(next) !== null && trackKey(next) === trackKey(prev)
+    // keep the album art of the current track (the helper only sends it once)
+    const music = sameTrack && !next.thumb ? { ...next, thumb: prev.thumb } : next
+    if (next.playing) {
+      clearTimeout(quietTimer)
+      quietTimer = undefined
+      set({
+        music,
+        headphones: true,
+        grooving: true,
+        musicResumed: sameTrack && !prev.playing ? get().musicResumed + 1 : get().musicResumed
+      })
+      if (!sameTrack && next.title) get().showToast(`🎵 ${songLine(next)}`, true)
+      return
+    }
+    // paused or gone: stop bobbing now, take the headphones off a bit later
+    if (get().grooving) {
+      clearTimeout(quietTimer)
+      quietTimer = setTimeout(() => set({ headphones: false }), HEADPHONES_OFF_AFTER_MS)
+    }
+    set({ music, grooving: false })
+  },
   dispatch: (input) => set({ moodState: nextMoodState(get().moodState, input, Date.now()) }),
   setUsage: (usage) => {
     if (crossedWarning(get().usage, usage)) get().dispatch({ type: 'sweat' })
@@ -96,7 +140,8 @@ export function useAgentBridge(): void {
       window.api.onSession(setSession),
       window.api.onLook((look) => usePetStore.setState({ look })),
       window.api.onWalk((walk) => usePetStore.setState({ walk })),
-      window.api.onMoment(onMoment)
+      window.api.onMoment(onMoment),
+      window.api.onMusic((music) => usePetStore.getState().setMusic(music))
     ]
     window.api.getLook().then((look) => usePetStore.setState({ look }))
     return () => unsubscribe.forEach((off) => off())

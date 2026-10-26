@@ -33,6 +33,10 @@ jobs:
         with:
           node-version: 22
           cache: npm
+      - if: runner.os == 'Windows'
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 8.0.x
       - run: npm ci
       - run: npm test
       - run: npm run ${{ matrix.build }} -- --publish never

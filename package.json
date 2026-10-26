@@ -16,7 +16,7 @@
     "build": "npm run typecheck && electron-vite build",
     "postinstall": "install-electron && electron-builder install-app-deps",
     "build:unpack": "npm run build && electron-builder --dir",
-    "build:win": "npm run build && electron-builder --win",
+    "build:win": "npm run helper:build && npm run build && electron-builder --win",
     "build:mac": "electron-vite build && electron-builder --mac",
     "build:linux": "electron-vite build && electron-builder --linux",
     "test": "vitest run",
@@ -24,7 +24,8 @@
     "hooks:install": "node scripts/install-hooks.mjs",
     "hooks:preview": "node scripts/install-hooks.mjs --dry-run",
     "hooks:uninstall": "node scripts/uninstall-hooks.mjs",
-    "icons": "vitest run --config scripts/icons/vitest.config.mts"
+    "icons": "vitest run --config scripts/icons/vitest.config.mts",
+    "helper:build": "dotnet publish helper/nowplaying -c Release -r win-x64 --self-contained -p:PublishSingleFile=true -o helper/nowplaying/dist"
   },
   "dependencies": {
     "@electron-toolkit/utils": "^4.0.0",

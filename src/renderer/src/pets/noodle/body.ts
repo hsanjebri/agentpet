@@ -12,6 +12,7 @@ import {
   forEachCell,
   insideEllipse,
   paint,
+  polyline,
   recolor,
   setCell,
   stamp
@@ -40,7 +41,7 @@ const BODY: Record<Pose, { cx: number; cy: number; rx: number; ry: number }> = {
 }
 
 /** Things the pet can wear: unlocked accessories, plus the Friday party hat and senior glasses. */
-export type Wearable = Accessory | 'partyhat' | 'glasses'
+export type Wearable = Accessory | 'partyhat' | 'glasses' | 'headphones'
 
 export interface BodyLook {
   /** the senior stage: a rounder, chonkier body */
@@ -214,7 +215,19 @@ const PARTY_HAT = ['...r...', '...P...', '..PyP..', '..PPP..', '.PyPPP.', '.PPPP
 const SUNGLASSES_LENS = ['kkkkkk', 'kWkkkk', 'kkkkkk', 'kkkkkk', '.kkkk.']
 const GLASSES_RING = ['.kkkk.', 'k....k', 'k....k', 'k....k', 'k....k', '.kkkk.']
 
+// headphones: a band over the head, ear cups on both sides of it
+const EAR_CUP = ['kk', 'rr', 'rr', 'rr', 'kk']
+
+function drawHeadphones(map: PixelMap, [hx, hy]: Point): void {
+  // prettier-ignore
+  const band = polyline([[hx - 15, hy - 4], [hx - 14, hy - 8], [hx - 9, hy - 11], [hx + 9, hy - 11], [hx + 14, hy - 8], [hx + 15, hy - 4]])
+  paint(map, 'd', band)
+  stamp(map, hx - 17, hy - 4, EAR_CUP)
+  stamp(map, hx + 16, hy - 4, EAR_CUP)
+}
+
 function drawWearables(map: PixelMap, [hx, hy]: Point, wear: readonly Wearable[]): void {
+  if (wear.includes('headphones')) drawHeadphones(map, [hx, hy])
   // eyewear: sunglasses win over the senior's reading glasses
   const lens = wear.includes('sunglasses')
     ? SUNGLASSES_LENS

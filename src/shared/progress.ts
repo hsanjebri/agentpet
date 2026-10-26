@@ -19,6 +19,8 @@ export interface DayStats {
   files: Record<string, number> // file name -> edits
   risky: RiskyMoment[]
   rare: number
+  /** songs listened to (just the count: no song history is kept) */
+  songs: number
   /** tool calls per hour of the day, for "busiest hour" */
   hours: number[]
 }
@@ -42,6 +44,7 @@ export type Activity =
   | { type: 'approved' }
   | { type: 'tool'; toolName?: string; target?: string }
   | { type: 'risky'; reason: string }
+  | { type: 'song' }
 
 /** Things worth celebrating, produced by recording an activity. */
 export type Milestone = { type: 'level_up'; level: number } | { type: 'unlocked'; item: Accessory }
@@ -52,7 +55,8 @@ export const XP: Record<Activity['type'], number> = {
   task_done: 10,
   approved: 2,
   tool: 0,
-  risky: 0
+  risky: 0,
+  song: 0
 }
 export const HUNGRY_AFTER_MS = 3 * 24 * 60 * 60_000
 export const RARE_CHANCE = 1 / 50
@@ -92,6 +96,7 @@ export function emptyDay(): DayStats {
     files: {},
     risky: [],
     rare: 0,
+    songs: 0,
     hours: Array(24).fill(0)
   }
 }
@@ -182,6 +187,9 @@ export function record(
         day.files[name] = (day.files[name] ?? 0) + 1
       }
       break
+    case 'song':
+      day.songs = (day.songs ?? 0) + 1
+      break
     case 'risky':
       day.risky = [...day.risky, { reason: activity.reason, at: now }].slice(-20)
       break
@@ -222,6 +230,7 @@ export interface Recap {
   busiestHour?: number
   scariestMoment?: RiskyMoment
   streak: number
+  songs: number
 }
 
 function mergeDays(days: DayStats[]): DayStats {
@@ -232,6 +241,7 @@ function mergeDays(days: DayStats[]): DayStats {
     total.approvals += d.approvals
     total.tools += d.tools
     total.rare += d.rare
+    total.songs += d.songs ?? 0
     total.risky.push(...d.risky)
     d.hours.forEach((n, h) => (total.hours[h] += n))
     for (const [file, n] of Object.entries(d.files))
@@ -277,7 +287,8 @@ export function recap(progress: Progress, period: 'day' | 'week', now: number): 
     // the scariest moment: the latest one at night if there is one, else the latest
     scariestMoment:
       total.risky.filter((r) => new Date(r.at).getHours() < 6).at(-1) ?? total.risky.at(-1),
-    streak: streak(progress, now)
+    streak: streak(progress, now),
+    songs: total.songs
   }
 }
 

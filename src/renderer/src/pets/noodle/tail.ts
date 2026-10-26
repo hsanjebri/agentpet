@@ -84,10 +84,15 @@ function drawTail(mood: Mood, pose: readonly Point[], props: boolean): PixelMap 
   return map
 }
 
-/** One map per animation frame (not outlined yet). `props`: draw what the tip holds. */
-export function buildTailFrames(mood: Mood, props = true): PixelMap[] {
+/** One map per animation frame (not outlined yet). `props`: draw what the tip holds;
+ *  `angles` overrides the mood's motion (e.g. tapping along to music). */
+export function buildTailFrames(
+  mood: Mood,
+  props = true,
+  angles: readonly number[] = TAIL_MOTION[mood].angles
+): PixelMap[] {
   const pose = TAIL_POSES[mood]
-  return TAIL_MOTION[mood].angles.map((angle) =>
+  return angles.map((angle) =>
     drawTail(
       mood,
       pose.map((p) => rotateAround(p, pose[0], angle)),

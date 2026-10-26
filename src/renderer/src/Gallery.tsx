@@ -44,7 +44,8 @@ const SAMPLE: Recap = {
   busiestDay: 'Tuesday',
   busiestHour: 15,
   scariestMoment: { reason: 'rm -rf', at: new Date(2026, 9, 21, 2, 13).getTime() },
-  streak: 6
+  streak: 6,
+  songs: 31
 }
 
 export default function Gallery(): React.JSX.Element {

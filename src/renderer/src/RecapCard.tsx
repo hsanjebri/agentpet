@@ -23,7 +23,8 @@ function lines(r: Recap): string[] {
       `✏️  ${s(r.filesEdited, 'file')} edited`,
       `✅  you approved ${s(r.approvals, 'time')}`,
       `🌈  ${r.petName} farted ${s(r.rainbows, 'rainbow')}`,
-      `🔥  ${s(r.streak, 'day')} in a row`
+      `🔥  ${s(r.streak, 'day')} in a row`,
+      ...(r.songs ? [`🎵  ${s(r.songs, 'song')} vibed`] : [])
     ]
   }
   const scary = r.scariestMoment
@@ -34,7 +35,8 @@ function lines(r: Recap): string[] {
       ? `😾  scariest: ${scary.reason} at ${new Date(scary.at).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })}`
       : '😺  no scary moments. nice.',
     `🌈  ${s(r.rainbows, 'rainbow')} · ✅ ${s(r.approvals, 'approval')}`,
-    `🤖  ${s(r.tasks, 'task')} · 🔥 ${r.streak}-day streak`
+    `🤖  ${s(r.tasks, 'task')} · 🔥 ${r.streak}-day streak`,
+    ...(r.songs ? [`🎵  ${s(r.songs, 'song')} vibed`] : [])
   ]
 }
 
@@ -85,7 +87,7 @@ function draw(ctx: CanvasRenderingContext2D, r: Recap, skin: SkinId): void {
     '#c9d3e6',
     500
   )
-  lines(r).forEach((line, i) => text(line, left, 270 + i * 70, 36, '#f6f2ea', 600))
+  lines(r).forEach((line, i) => text(line, left, 262 + i * 60, 34, '#f6f2ea', 600))
   text(`AgentPet · ${r.petName} is level ${r.level}`, left, H - 40, 24, '#9fb0cc', 500)
 }
 

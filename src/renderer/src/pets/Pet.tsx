@@ -11,6 +11,10 @@ interface Props {
   look?: PetLook | null
   /** Friday! */
   partyHat?: boolean
+  headphones?: boolean
+  vibe?: 'groove' | 'still'
+  flick?: number
+  wiggle?: number
   walking?: boolean
   facing?: 'left' | 'right'
   rare?: RareMoment | null
@@ -26,11 +30,16 @@ export function Pet({
   partyHat,
   walking,
   facing,
-  rare
+  rare,
+  headphones,
+  vibe,
+  flick,
+  wiggle
 }: Props): React.JSX.Element {
   const wear: Wearable[] = [...(look?.wearing ?? [])]
   if (look?.stage === 'senior') wear.push('glasses')
   if (partyHat) wear.push('partyhat')
+  if (headphones) wear.push('headphones')
 
   return (
     <Noodle
@@ -40,6 +49,9 @@ export function Pet({
       walking={walking}
       facing={facing}
       rare={rare}
+      vibe={vibe}
+      flick={flick}
+      wiggle={wiggle}
       // kittens are smaller
       scale={look?.stage === 'kitten' ? 3 : 4}
     />

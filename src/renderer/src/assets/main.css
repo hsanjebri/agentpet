@@ -454,3 +454,61 @@ body,
 .connect-step {
   margin-top: 18px;
 }
+
+/* ---------- music bubble ---------- */
+
+.bubble-music {
+  max-width: 280px;
+}
+
+.bubble-sub {
+  margin-top: 1px;
+  font-weight: 500;
+  opacity: 0.75;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.bubble-music .bubble-actions {
+  margin-top: 6px;
+}
+
+/* pixel-art icon buttons: same border and shadow as Approve / Deny, 20 px+ hit area */
+.btn-icon {
+  display: grid;
+  place-items: center;
+  min-width: 30px;
+  min-height: 24px;
+  padding: 3px 7px;
+  background: #fffdf8;
+}
+
+.btn-icon svg {
+  display: block;
+  image-rendering: pixelated;
+}
+
+.btn-icon:hover:not(:disabled) {
+  background: #ffffff;
+  transform: translateY(-1px);
+  box-shadow: 2px 3px 0 #1f1c1a;
+}
+
+.btn-icon:active:not(:disabled) {
+  transform: translateY(1px);
+  box-shadow: 1px 1px 0 #1f1c1a;
+}
+
+.btn-icon:disabled {
+  cursor: default;
+  opacity: 0.4;
+  filter: grayscale(1);
+  box-shadow: none;
+}
+
+.connect-toggle {
+  display: block;
+  margin-top: 12px;
+  font-weight: 700;
+}

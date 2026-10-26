@@ -208,3 +208,78 @@
     }
   }
 }
+
+/* ---------- music ---------- */
+
+/* grooving: head bob on the beat (110 BPM) */
+.noodle.mood-vibing-groove .sprite {
+  animation: nd-bob 0.545s steps(1, end) infinite;
+}
+
+@keyframes nd-bob {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(1px);
+  }
+}
+
+/* a music button was pressed: quick tail flick. Two class names (flick-0 / flick-1)
+   alternate so the same animation can replay on every press. */
+.noodle .tail {
+  transform-box: view-box;
+  transform-origin: 28px 26px; /* the tail base, in grid cells */
+}
+
+.noodle.flick-0 .tail {
+  animation: nd-flick-a 0.25s steps(2, end);
+}
+
+.noodle.flick-1 .tail {
+  animation: nd-flick-b 0.25s steps(2, end);
+}
+
+@keyframes nd-flick-a {
+  50% {
+    transform: rotate(-10deg);
+  }
+}
+
+@keyframes nd-flick-b {
+  50% {
+    transform: rotate(-10deg);
+  }
+}
+
+/* music resumed: a happy wiggle */
+.noodle.wiggle-0 .sprite {
+  animation: nd-wiggle-a 0.6s steps(1, end);
+}
+
+.noodle.wiggle-1 .sprite {
+  animation: nd-wiggle-b 0.6s steps(1, end);
+}
+
+@keyframes nd-wiggle-a {
+  0%,
+  50% {
+    transform: translateX(-1px);
+  }
+  25%,
+  75% {
+    transform: translateX(1px);
+  }
+}
+
+@keyframes nd-wiggle-b {
+  0%,
+  50% {
+    transform: translateX(-1px);
+  }
+  25%,
+  75% {
+    transform: translateX(1px);
+  }
+}
