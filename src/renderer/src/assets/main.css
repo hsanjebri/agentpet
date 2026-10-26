@@ -1025,3 +1025,23 @@ body,
 .welcome-features {
   margin-top: 6px;
 }
+
+/* ---------- Settings › Friends ---------- */
+
+.friend-dot {
+  flex: 0 0 auto;
+  width: 10px;
+  height: 10px;
+  border: 2px solid #1f1c1a;
+  background: #6b7385;
+}
+
+.friend-dot.online {
+  background: #5cc46b;
+}
+
+.friend-code {
+  font-size: 15px !important;
+  letter-spacing: 1px;
+  padding: 3px 8px !important;
+}

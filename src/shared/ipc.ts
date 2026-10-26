@@ -8,6 +8,7 @@ import type {
 } from './events'
 import type { MusicCommand, MusicState } from './music'
 import type { Accessory, PetLook, RareMoment, Recap } from './progress'
+import type { FriendsCommand, FriendsResult, FriendsView } from './friends'
 import type { PomodoroCommand, PomodoroEvent, PomodoroState } from './pomodoro'
 import type { PetSettings, SettingsChange } from './settings'
 
@@ -55,7 +56,10 @@ export const IPC = {
   getPomodoro: 'pet:get-pomodoro',
   pomodoroCmd: 'pet:pomodoro-cmd',
   setDemo: 'pet:set-demo',
-  petted: 'pet:petted'
+  petted: 'pet:petted',
+  friends: 'pet:friends',
+  getFriends: 'pet:get-friends',
+  friendsCmd: 'pet:friends-cmd'
 } as const
 
 /** Phone ping settings (ntfy). */
@@ -229,4 +233,7 @@ export interface PetApi {
   setDemo(on: boolean): void
   /** He was petted (click and hold): a little XP, counted for the recap. */
   petted(): void
+  getFriends(): Promise<FriendsView>
+  onFriends(listener: (view: FriendsView) => void): () => void
+  friends(command: FriendsCommand): Promise<FriendsResult>
 }

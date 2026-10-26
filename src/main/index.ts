@@ -11,6 +11,7 @@ import {
   upgradeClaude
 } from './connect'
 import { musicPlaying, registerMusic } from './music'
+import { startFriends } from './friends'
 import { registerPagesIpc } from './pages'
 import { inFocusRound, onPomodoroChange, registerPomodoro } from './pomodoro'
 import { startPhone } from './phone'
@@ -53,6 +54,7 @@ else if (!app.requestSingleInstanceLock()) {
     registerActionsIpc()
     registerPomodoro()
     startPhone()
+    startFriends()
     registerProgressIpc(refreshTray)
     // before the pet window exists, so it gets the current song once it has loaded
     registerMusic(petSettings().music)

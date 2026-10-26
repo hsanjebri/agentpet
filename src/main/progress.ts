@@ -14,6 +14,7 @@ import {
   UNLOCKS,
   dayKey,
   emptyProgress,
+  levelOf,
   lookOf,
   recap,
   record,
@@ -101,6 +102,10 @@ export function sendMoment(moment: PetMoment): void {
 
 export function pomodorosToday(): number {
   return progress.days[dayKey(Date.now())]?.pomodoros ?? 0
+}
+
+export function petLevel(): number {
+  return levelOf(progress.xp)
 }
 
 export function petName(): string {
