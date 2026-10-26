@@ -1,7 +1,7 @@
-import { BrowserWindow, ipcMain } from 'electron'
+import { BrowserWindow, app, ipcMain } from 'electron'
 import Store from 'electron-store'
-import { IPC, type PetSettings } from '../shared/ipc'
-import { DEFAULT_SKIN, type SkinId, usableSkin } from '../shared/skins'
+import { IPC, type PetSettings, type SettingsChange } from '../shared/ipc'
+import { DEFAULT_SKIN, SKINS, type SkinId, usableSkin } from '../shared/skins'
 import { MUSIC_SUPPORTED, setMusicEnabled } from './music'
 
 export interface Position {
@@ -16,8 +16,10 @@ interface Settings {
   focusMode: boolean
   wander: boolean
   music: boolean
-  /** the first-run "Connect Claude Code" window was shown once */
+  /** the first-run "Connect Claude Code" window was shown once (before 0.4.1) */
   connectPromptShown: boolean
+  /** the first-run Welcome window was shown once */
+  setupShown: boolean
 }
 
 export const settings = new Store<Settings>({
@@ -28,7 +30,8 @@ export const settings = new Store<Settings>({
     focusMode: false,
     wander: true,
     music: true,
-    connectPromptShown: false
+    connectPromptShown: false,
+    setupShown: false
   }
 })
 
@@ -43,7 +46,9 @@ export function petSettings(): PetSettings {
     wander: settings.get('wander'),
     music: settings.get('music') && MUSIC_SUPPORTED,
     musicSupported: MUSIC_SUPPORTED,
-    demo
+    demo,
+    startOnLogin: app.isPackaged && app.getLoginItemSettings().openAtLogin,
+    startOnLoginSupported: app.isPackaged
   }
 }
 
@@ -58,6 +63,8 @@ export function updateSettings(change: Partial<PetSettings>): void {
     setMusicEnabled(change.music)
   }
   if (change.demo !== undefined) demo = change.demo
+  if (change.startOnLogin !== undefined && app.isPackaged)
+    app.setLoginItemSettings({ openAtLogin: change.startOnLogin })
   const current = petSettings()
   for (const win of BrowserWindow.getAllWindows()) win.webContents.send(IPC.settings, current)
 }
@@ -67,6 +74,16 @@ export function registerSettingsIpc(onChange: () => void): void {
   ipcMain.on(IPC.setMusic, (_, on: unknown) => {
     if (typeof on !== 'boolean') return
     updateSettings({ music: on })
+    onChange()
+  })
+  // the Welcome window: only these few settings, checked one by one
+  ipcMain.on(IPC.changeSettings, (_, change: SettingsChange) => {
+    if (typeof change !== 'object' || change === null) return
+    const clean: SettingsChange = {}
+    if (SKINS.some((s) => s.ready && s.id === change.skin)) clean.skin = change.skin
+    if (typeof change.music === 'boolean') clean.music = change.music
+    if (typeof change.startOnLogin === 'boolean') clean.startOnLogin = change.startOnLogin
+    updateSettings(clean)
     onChange()
   })
 }

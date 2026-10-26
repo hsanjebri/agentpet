@@ -41,7 +41,10 @@ export const IPC = {
   setMusic: 'pet:set-music',
   getPhone: 'pet:get-phone',
   setPhone: 'pet:set-phone',
-  testPhone: 'pet:test-phone'
+  testPhone: 'pet:test-phone',
+  changeSettings: 'pet:change-settings',
+  openPhone: 'pet:open-phone',
+  finishSetup: 'pet:finish-setup'
 } as const
 
 /** Phone ping settings (ntfy). */
@@ -66,6 +69,8 @@ export type PetMoment =
   | { kind: 'unlocked'; item: Accessory }
   | { kind: 'fed' }
   | { kind: 'update'; version: string }
+  /** first-run setup finished: say hi */
+  | { kind: 'hello' }
 
 /** The pet strolling along the bottom of the screen. */
 export interface WalkState {
@@ -88,8 +93,10 @@ export interface ConnectStatus {
   settingsPath: string
   /** the JSON AgentPet adds, shown before connecting */
   preview: string
-  /** the hooks run with Node; null when `node` isn't installed / on PATH */
-  nodeVersion: string | null
+  /** hooks are installed but not the ones this version writes (e.g. moved or old) */
+  outdated: boolean
+  /** an agent event reached the app since it started: the connection really works */
+  heardFromAgent: boolean
 }
 
 export interface ConnectResult {
@@ -117,7 +124,14 @@ export interface PetSettings {
   musicSupported: boolean
   /** cycling through every mood (tray › Mood demo); not saved */
   demo: boolean
+  /** starts with the computer (installed app only) */
+  startOnLogin: boolean
+  /** false in dev: registering a dev build would start a bare Electron at login */
+  startOnLoginSupported: boolean
 }
+
+/** What the setup window may change. */
+export type SettingsChange = Partial<Pick<PetSettings, 'skin' | 'music' | 'startOnLogin'>>
 
 export interface PetApi {
   /** true = the window catches the mouse, false = clicks pass through to apps below */
@@ -162,4 +176,8 @@ export interface PetApi {
   setPhone(settings: PhoneSettings): Promise<PhoneResult>
   /** Sends a test notification with these settings (saved or not). */
   testPhone(settings: PhoneSettings): Promise<PhoneResult>
+  changeSettings(change: SettingsChange): void
+  openPhone(): void
+  /** Ends the first-run setup: closes the window, the pet says hi. */
+  finishSetup(): void
 }

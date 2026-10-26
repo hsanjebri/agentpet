@@ -1,7 +1,7 @@
-// Tray icon + menu: skin, mute, focus mode, start on login, demo, connect, quit.
+// Tray icon + menu: skin, mute, focus mode, start on login, demo, setup, connect, quit.
 import { Menu, Tray, app, nativeImage } from 'electron'
 import { SKINS } from '../shared/skins'
-import { disconnectClaude, isConnected, openConnectWindow } from './connect'
+import { disconnectClaude, isConnected, openConnectWindow, openWelcomeWindow } from './connect'
 import { MUSIC_SUPPORTED } from './music'
 import { openPage } from './pages'
 import { openPhoneWindow } from './phone'
@@ -21,6 +21,7 @@ function buildMenu(): Menu {
       click: () => openPage('profile', { title: `${petName()}`, width: 520, height: 640 })
     },
     { label: 'Phone ping…', click: openPhoneWindow },
+    { label: 'Run setup again…', click: openWelcomeWindow },
     { type: 'separator' },
     {
       label: 'Skin',
@@ -70,7 +71,7 @@ function buildMenu(): Menu {
       type: 'checkbox',
       enabled: app.isPackaged,
       checked: app.isPackaged && app.getLoginItemSettings().openAtLogin,
-      click: (item) => app.setLoginItemSettings({ openAtLogin: item.checked })
+      click: (item) => updateSettings({ startOnLogin: item.checked })
     },
     {
       label: 'Mood demo',

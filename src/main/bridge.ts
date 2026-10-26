@@ -8,7 +8,9 @@ import {
   type UsageInfo
 } from '../shared/events'
 import { IPC } from '../shared/ipc'
+import { runPreviousStatusLine } from './connect'
 import { focusAgentWindow } from './focus'
+import { statusLineText } from './hookInput'
 import { rollRare } from '../shared/progress'
 import { PermissionQueue } from './permissions'
 import { phoneOnEvent, phoneUserIsHere } from './phone'
@@ -99,7 +101,11 @@ export function startBridge(): void {
     onPermission: (info, cancelled) => {
       sendEvent(eventFor(info, 'needs_you'))
       return permissions.request(info, cancelled)
-    }
+    },
+    // keep the user's own status line if they had one before AgentPet
+    statusLine: async (raw, usage) => (await runPreviousStatusLine(raw)) ?? statusLineText(usage),
+    wantsPid: (sessionId) => sessions.needsPid(sessionId),
+    onAgentPid: (sessionId, pid) => sessions.setPid(sessionId, pid)
   })
     .then(({ port }) => console.log(`[agentpet] event server on 127.0.0.1:${port}`))
     .catch((err) => console.error('[agentpet] event server failed to start:', err))

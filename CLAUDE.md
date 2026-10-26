@@ -26,13 +26,14 @@ Vitest, ESLint + Prettier, electron-builder. Hook CLI: plain Node (zero deps). M
   - `App.tsx` decides what shows (mood, bubbles, music, focus mode) · `store.ts` Zustand state + IPC wiring
   - `moodMachine.ts` pure mood logic · `usePetPointer.ts` hover/click/drag/hold-to-pet
   - Bubbles: `ApprovalBubble.tsx`, `MusicBubble.tsx`, `InfoBubble.tsx` · `UsageBar.tsx` · `sounds.ts` (Web Audio synth)
-  - Pages by URL hash: `Connect.tsx` (#connect, first run), `Profile.tsx` + `RecapCard.tsx` (#profile), `Phone.tsx` (#phone); dev only: `Gallery.tsx` (#gallery, #gallery-extras, #gallery-cards), `Showcase.tsx` (#showcase)
+  - Pages by URL hash: `Welcome.tsx` (#welcome, first-run wizard: cat, name, Claude Code, extras; tray › Run setup again), `Connect.tsx` (#connect, `ConnectPanel` reused by Welcome; shows connected / needs fixing / heard from agent), `Profile.tsx` + `RecapCard.tsx` (#profile), `Phone.tsx` (#phone); dev only: `Gallery.tsx` (#gallery, #gallery-extras, #gallery-cards), `Showcase.tsx` (#showcase)
   - `pets/pixel/` generic pixel toolkit (`canvas.ts`, `PixelSprite.tsx`) · `pets/noodle/` the cat (body.ts face+accessories, tail.ts, effects.ts, layers.ts, palette.ts skins, noodle.css)
-- `cli/agentpet-send.mjs` hook script Claude Code runs (events, `permission` mode, `statusline` mode)
+- Hooks = `curl` (exec form) POSTing Claude Code's raw JSON to `/hook` with `X-AgentPet-Hook: event|permission|statusline`;
+  `~/.agentpet/agentpet-send.curl` (url + bearer token, rewritten each start) · `hookInput.ts` translates · `peerPid.ts` finds the agent PID for click-to-focus
 - `scripts/claude-hooks.mjs` (pure merge/remove of our entries), `claude-settings.mjs` (file I/O + backups), `install-hooks.mjs` / `uninstall-hooks.mjs`, `icons/` (icon generator)
 - `helper/nowplaying/` C# helper: Windows media session → JSON lines on stdout, `toggle/next/prev` on stdin
 - `build/installer.nsh` NSIS uninstall step · `electron-builder.yml` · `site/` landing page · `.github/workflows/` release (3 OS) + pages
-- `tests/` Vitest (171 tests)
+- `tests/` Vitest (178 tests)
 
 ## How moods work
 - Agent events (from hooks → server → bridge → renderer) feed `moodMachine.ts`: base `sleeping|working`,
@@ -65,7 +66,7 @@ Vitest, ESLint + Prettier, electron-builder. Hook CLI: plain Node (zero deps). M
 - Bubbles reuse the `.bubble` / `.btn` styles (thick ink border, hard shadow); controls get `data-ui`
   (clickable, not draggable); only `data-pet-hit` and `data-ui` catch the mouse, everything else is click-through.
 - Pure logic in testable modules (`shared/*`, `moodMachine.ts`, `phonePing.ts`, `risk.ts`); Electron glue stays thin.
-- Hook script: zero deps, always exits 0, prints only a permission decision or the status line.
+- Hooks: curl only (no Node needed), quiet on failure (`silent`+`fail`), print only a permission decision or the status line. On start the app upgrades older installs (`upgrade()` in claude-settings.mjs).
 - Privacy: everything local (server on 127.0.0.1, rejects requests with an Origin header). Only Phone ping
   sends data out, opt-in, project name only by default. No song history (daily count only). No telemetry.
 - Always back up `~/.claude/settings.json` before changing it; only touch entries containing `agentpet-send`.

@@ -4,7 +4,7 @@
   "description": "A desktop pet that babysits your AI coding agent",
   "main": "./out/main/index.js",
   "author": "AgentPet",
-  "homepage": "https://github.com/agentpet/agentpet",
+  "homepage": "https://github.com/hsanjebri/agentpet",
   "scripts": {
     "format": "prettier --write .",
     "lint": "eslint --cache .",

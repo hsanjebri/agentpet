@@ -533,3 +533,111 @@ body,
   color: #a8f0b4;
   font-weight: 700;
 }
+
+.connect-warn {
+  color: #f6c744;
+  font-size: 18px;
+  font-weight: 700;
+}
+
+/* ---------- first-run Welcome window ---------- */
+
+.welcome {
+  display: flex;
+  flex-direction: column;
+}
+
+.welcome-body {
+  flex: 1;
+}
+
+.welcome-steps {
+  display: flex;
+  gap: 4px;
+  margin: 0 0 16px;
+  padding: 0;
+  list-style: none;
+  font:
+    700 11px/1 ui-monospace,
+    'Cascadia Mono',
+    Consolas,
+    monospace;
+}
+
+.welcome-steps li {
+  flex: 1;
+  padding: 6px 4px;
+  border: 2px solid #1f1c1a;
+  background: rgba(0, 0, 0, 0.25);
+  text-align: center;
+  white-space: nowrap;
+  opacity: 0.6;
+}
+
+.welcome-steps li.done {
+  opacity: 0.85;
+  color: #a8f0b4;
+}
+
+.welcome-steps li.current {
+  opacity: 1;
+  background: #f6c744;
+  color: #1f1c1a;
+  box-shadow: 2px 2px 0 #1f1c1a;
+}
+
+.skin-cards {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 12px;
+}
+
+.skin-card {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 6px 12px;
+  border: 2px solid #1f1c1a;
+  background: rgba(255, 255, 255, 0.08);
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.skin-card:hover {
+  background: rgba(255, 255, 255, 0.16);
+}
+
+.skin-card.selected {
+  border-color: #f6c744;
+  background: rgba(246, 199, 68, 0.18);
+  box-shadow: 3px 3px 0 #1f1c1a;
+}
+
+.welcome-hero {
+  display: flex;
+  justify-content: center;
+  margin: 8px 0 14px;
+}
+
+.welcome-extra {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 14px;
+}
+
+.welcome-extra .btn {
+  margin-left: auto;
+  white-space: nowrap;
+}
+
+.welcome .connect-actions {
+  justify-content: flex-end;
+}
+
+.welcome .connect-actions .btn-terminal {
+  margin-left: 0;
+}

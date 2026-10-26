@@ -83,6 +83,17 @@ export class SessionTracker {
     return this.pick(sessionId)?.pid
   }
 
+  /** True when the session is tracked but its process isn't known yet. */
+  needsPid(sessionId: string): boolean {
+    const session = this.sessions.get(sessionId)
+    return Boolean(session && !session.pid)
+  }
+
+  setPid(sessionId: string, pid: number): void {
+    const session = this.sessions.get(sessionId)
+    if (session) session.pid = pid
+  }
+
   latest(): SessionSummary | null {
     const s = this.pick()
     if (!s) return null

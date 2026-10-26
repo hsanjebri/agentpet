@@ -9,6 +9,8 @@ const Gallery = lazy(() => import('./Gallery'))
 // eslint-disable-next-line react-refresh/only-export-components -- entry file, never hot-swapped
 const Showcase = lazy(() => import('./Showcase'))
 // eslint-disable-next-line react-refresh/only-export-components -- entry file, never hot-swapped
+const Welcome = lazy(() => import('./Welcome'))
+// eslint-disable-next-line react-refresh/only-export-components -- entry file, never hot-swapped
 const Connect = lazy(() => import('./Connect'))
 // eslint-disable-next-line react-refresh/only-export-components -- entry file, never hot-swapped
 const Profile = lazy(() => import('./Profile'))
@@ -17,6 +19,7 @@ const Phone = lazy(() => import('./Phone'))
 const devPage = import.meta.env.DEV ? location.hash : ''
 
 function page(): React.JSX.Element {
+  if (location.hash === '#welcome') return <Welcome />
   if (location.hash === '#connect') return <Connect />
   if (location.hash === '#profile') return <Profile />
   if (location.hash === '#phone') return <Phone />

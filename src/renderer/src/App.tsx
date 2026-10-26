@@ -81,6 +81,7 @@ function App(): React.JSX.Element {
   const headphones = usePetStore((s) => s.headphones)
   const grooving = usePetStore((s) => s.grooving)
   const musicResumed = usePetStore((s) => s.musicResumed)
+  const hello = usePetStore((s) => s.hello)
   const dispatch = usePetStore((s) => s.dispatch)
   const [hoveredAt, setHoveredAt] = useState<number | null>(null)
   const hoverTimer = useRef<ReturnType<typeof setTimeout>>(undefined)
@@ -112,6 +113,15 @@ function App(): React.JSX.Element {
     if (musicResumed !== resumedRef.current) playWiggle()
     resumedRef.current = musicResumed
   }, [musicResumed, playWiggle])
+
+  // setup finished: a wiggle and a meow to say hi
+  const helloRef = useRef(hello)
+  useEffect(() => {
+    if (hello === helloRef.current) return
+    helloRef.current = hello
+    playWiggle()
+    if (!muted) playMeow()
+  }, [hello, muted, playWiggle])
 
   const mood = demoStep?.mood ?? liveMood
   const usage = demoStep ? demoUsage(demoStep) : liveUsage

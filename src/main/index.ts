@@ -1,12 +1,18 @@
 import { BrowserWindow, app } from 'electron'
 import { electronApp, optimizer } from '@electron-toolkit/utils'
 import { lastAgentActivity, startBridge } from './bridge'
-import { disconnectClaude, isConnected, openConnectWindow, registerConnectIpc } from './connect'
+import {
+  disconnectClaude,
+  openWelcomeWindow,
+  registerConnectIpc,
+  shouldShowWelcome,
+  upgradeClaude
+} from './connect'
 import { musicPlaying, registerMusic } from './music'
 import { registerPagesIpc } from './pages'
 import { startPhone } from './phone'
 import { registerProgressIpc } from './progress'
-import { petSettings, registerSettingsIpc, settings } from './settings'
+import { petSettings, registerSettingsIpc } from './settings'
 import { createTray, refreshTray } from './tray'
 import { startUpdater } from './updater'
 import { startWander } from './wander'
@@ -37,7 +43,9 @@ else if (!app.requestSingleInstanceLock()) {
 
     registerSettingsIpc(() => refreshTray())
     startBridge()
-    registerConnectIpc(refreshTray)
+    // an update may change the hooks (0.4.1: Node script -> curl): bring Claude Code along
+    upgradeClaude()
+    registerConnectIpc(refreshTray, () => lastAgentActivity() > 0)
     registerPagesIpc()
     startPhone()
     registerProgressIpc(refreshTray)
@@ -55,11 +63,8 @@ else if (!app.requestSingleInstanceLock()) {
       lastActivity: lastAgentActivity
     })
 
-    // first run: offer to connect Claude Code (once)
-    if (!isConnected() && !settings.get('connectPromptShown')) {
-      settings.set('connectPromptShown', true)
-      openConnectWindow()
-    }
+    // first run of a new install: skin, name, Claude Code, extras (once; tray › Run setup again)
+    if (shouldShowWelcome()) openWelcomeWindow()
 
     app.on('activate', () => {
       if (BrowserWindow.getAllWindows().length === 0) createPetWindow()

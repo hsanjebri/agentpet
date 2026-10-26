@@ -1,12 +1,33 @@
 <p align="center"><img src="docs/icon.png" width="96" alt="AgentPet icon"></p>
 
-# AgentPet
+<h1 align="center">AgentPet</h1>
 
-A desktop pet that babysits your AI coding agent. Noodle sleeps while Claude Code is idle,
-works while it works, **hops and meows when it needs your approval** (approve right from his
-bubble), and farts a rainbow when the task is done. 🌈
+<p align="center">
+  <b>A desktop pet that babysits your AI coding agent.</b><br>
+  Noodle sleeps while Claude Code is idle, works while it works, <b>hops and meows when it needs
+  your approval</b> (approve right from his bubble), and farts a rainbow when the task is done. 🌈
+</p>
+
+<p align="center">
+  <a href="#install">Download</a> ·
+  <a href="#what-noodle-does">Features</a> ·
+  <a href="#how-it-works">How it works</a> ·
+  <a href="#privacy">Privacy</a> ·
+  <a href="#development">Development</a>
+</p>
+
+<p align="center">
+  <img alt="Windows | macOS | Linux" src="https://img.shields.io/badge/platform-Windows%20%7C%20macOS%20%7C%20Linux-5b6b8c">
+  <img alt="License: MIT" src="https://img.shields.io/badge/license-MIT-4c9a2a">
+</p>
 
 <p align="center"><img src="docs/demo.gif" width="380" alt="Noodle going through his moods"></p>
+
+## Why
+
+Your agent runs for minutes at a time, then quietly stops to ask for a permission while you're in
+another window. Noodle floats above everything, so you see at a glance whether Claude is working,
+done, or waiting for you, and you can say yes without going back to the terminal.
 
 ## What Noodle does
 
@@ -20,39 +41,50 @@ bubble), and farts a rainbow when the task is done. 🌈
 | sad       | the agent hit an error                                                       | lies flat, tears                              |
 | hiss      | risky action: `.env`, `rm -rf`, `git push --force`, deleted tests, 25+ files | puffed tail, says why                         |
 
-- **Approve / Deny from the pet**: no need to go back to the terminal for every permission.
-- **Session usage bar** under Noodle: your 5-hour Claude limit (or context window), resets at…
-- **📱 Phone ping** (opt-in): your phone buzzes (free ntfy app) when Claude has waited for you
-  for a few minutes, or when a long task finishes. Tray › Phone ping…
-- **Click Noodle** to jump to the terminal / IDE where Claude is running.
-- **Hover** for what Claude is up to: `my-app · editing App.tsx · 12 tools · 4 min`.
-- **Daily recap card + weekly "Wrapped"**: tray › _profile & recap_ → save, copy or share on X.
-- **He grows up**: kitten → cat → chonky senior cat with glasses as you level up (10 tasks a level).
-- **Unlock accessories**: top hat (100 tasks), sunglasses (7-day streak), crown (1,000 approvals).
-- **Rare moments** (1 task in 50): golden rainbow, double fart, asleep on the keyboard.
-- **Pet him**: click and hold, he purrs. **Feed him**: every finished task is a fish.
-- **Wanders** along the bottom of the screen when idle; good morning / go-to-bed greetings;
-  party hat on Fridays. **Name your cat** when you first start the app.
-- **🎵 Music** (Windows): Noodle puts on headphones and vibes to Spotify, YouTube, Deezer…
-  Hover him for pixel play / pause / next buttons.
-- Skins: Noodle, Mochi (orange tabby), Zitouna (street cat). Tray menu › Skin.
-- Tray menu: Mute, Wander, Focus mode (only shows up when needed), Start on login, Mood demo.
+### Stay in flow
+
+- **✅ Approve / Deny from the pet**: no trip back to the terminal for every permission.
+  Not sure? "Answer in terminal" hands it back to Claude Code.
+- **📊 Session usage bar** under Noodle: your 5-hour Claude limit (or context window), and when
+  it resets.
+- **👆 Click Noodle** to jump to the terminal / IDE where Claude is running.
+- **🔍 Hover** for what Claude is up to: `my-app · editing App.tsx · 12 tools · 4 min`.
+- **📱 Phone ping** (opt-in): your phone buzzes (free ntfy app) when Claude has waited for you for
+  a few minutes, or when a long task finishes. Tray › _Phone ping…_
+- **🤫 Focus mode**: Noodle only shows up when he's needed.
+
+### Just for fun
+
+- **🌈 Daily recap card + weekly "Wrapped"**: tray › _Noodle's profile & recap_ → save, copy or share on X.
+- **🎩 He grows up**: kitten → cat → chonky senior cat with glasses as you level up (10 tasks a
+  level). Unlock a top hat (100 tasks), sunglasses (7-day streak) and a crown (1,000 approvals).
+- **✨ Rare moments** (1 task in 50): golden rainbow, double fart, asleep on the keyboard.
+- **🐟 Pet and feed him**: click and hold, he purrs. Every finished task is a fish.
+- **🚶 Wanders** along the bottom of the screen when idle; good-morning / go-to-bed greetings;
+  party hat on Fridays. Name your cat when you first start the app.
+- **🎵 Music** (Windows): headphones on, he vibes to Spotify, YouTube, Deezer… Hover him for pixel
+  play / pause / next buttons.
+- **🎨 Skins**: Noodle, Mochi (orange tabby), Zitouna (street cat). Tray › _Skin_.
 
 ## Install
 
 1. Download the installer for your system:
-   [Windows](https://github.com/hsanjebri/agentpet/releases/latest/download/AgentPet-Setup.exe) ·
-   [macOS Apple silicon](https://github.com/hsanjebri/agentpet/releases/latest/download/AgentPet-arm64.dmg) ·
-   [macOS Intel](https://github.com/hsanjebri/agentpet/releases/latest/download/AgentPet-x64.dmg) ·
-   [Linux](https://github.com/hsanjebri/agentpet/releases/latest/download/AgentPet.AppImage)
-2. Start AgentPet. Name your cat, then click **Connect** for Claude Code.
-   It shows exactly what it adds to `~/.claude/settings.json` and backs the file up first.
+
+   | Windows                                                                                                 | macOS                                                                                                                                                                                         | Linux                                                                                                 |
+   | ------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------- |
+   | [AgentPet-Setup.exe](https://github.com/hsanjebri/agentpet/releases/latest/download/AgentPet-Setup.exe) | [Apple silicon](https://github.com/hsanjebri/agentpet/releases/latest/download/AgentPet-arm64.dmg) · [Intel](https://github.com/hsanjebri/agentpet/releases/latest/download/AgentPet-x64.dmg) | [AgentPet.AppImage](https://github.com/hsanjebri/agentpet/releases/latest/download/AgentPet.AppImage) |
+
+2. Start AgentPet. A short setup opens: pick your cat, name it, click **Connect** for Claude
+   Code (it shows exactly what it adds to `~/.claude/settings.json` and backs the file up first),
+   and turn on any extras. Tray › _Run setup again…_ brings it back any time.
 3. Start a **new** Claude Code session. That's it.
 
-AgentPet updates itself on Windows and Linux (tray › _Restart to update_ when a new version is
-ready). On macOS, download the new `.dmg` from Releases for now.
+**Requirements:** Windows 10+, macOS or Linux, and [Claude Code](https://claude.com/claude-code).
+Nothing else: the hooks use `curl`, which comes with all three.
 
-Requires [Node.js](https://nodejs.org) on your PATH (the hooks are a tiny Node script).
+**Updates:** AgentPet updates itself on Windows and Linux (tray › _Restart to update_ when a new
+version is ready). On macOS, download the new `.dmg` from
+[Releases](https://github.com/hsanjebri/agentpet/releases) for now.
 
 ### "Windows protected your PC"?
 
@@ -61,23 +93,61 @@ year; one will come as the project grows), and Windows / macOS warn about any un
 code is right here if you want to read it or build it yourself.
 
 - **Windows:** click **More info**, then **Run anyway**.
-- **macOS:** right-click AgentPet › **Open**, or System Settings › Privacy & Security › **Open Anyway**.
+- **macOS:** right-click AgentPet › **Open**, or System Settings › Privacy & Security › **Open
+  Anyway**.
 - **Linux:** `chmod +x AgentPet.AppImage`, then run it.
+
+## How it works
+
+```
+Claude Code ──hooks──▶ curl ──▶ AgentPet (127.0.0.1:7777) ──▶ Noodle's mood, bubbles, usage bar
+            ◀── Approve / Deny ───────────┘
+```
+
+Connecting adds a few [hooks](https://code.claude.com/docs/en/hooks) and a status line to
+Claude Code's settings. Each one is a `curl` call that hands Claude Code's event to the app on
+your machine:
+
+- **Events** (prompt sent, tool used, task done…) run in the background: Claude never waits for
+  them.
+- **Permission requests** wait for your click on the pet. Choose "answer in terminal", or let 2
+  minutes pass, and Claude Code asks in the terminal as usual.
+- **The status line** feeds the usage bar. If you already had a status line, it keeps showing.
+
+**When AgentPet isn't running**, the hooks fail silently in a second and Claude Code works exactly
+as before. AgentPet only adds its own entries (it recognises them by `agentpet-send`) and never
+touches your other hooks.
 
 ## Privacy
 
-Everything stays on your computer (except Phone ping, which is off unless you turn it on and
-only sends the project name to your own ntfy topic). The app only listens on `127.0.0.1`, refuses requests
-from web pages, keeps nothing on disk except its settings, and has no telemetry.
+Everything stays on your computer. The app:
+
+- listens on `127.0.0.1` only, accepts hooks only with a local token (in
+  `~/.agentpet/agentpet-send.curl`, renewed on every start), and refuses requests from web pages;
+- keeps nothing on disk except its settings and your cat's stats (no song history: just a daily
+  count);
+- has no telemetry.
+
+The one exception is **Phone ping**: it's off unless you turn it on, and then only sends the
+project name to your own ntfy topic.
 
 ## Uninstall
 
 Uninstall the app as usual: on Windows the uninstaller also disconnects Claude Code (removes only
-AgentPet's entries and restores your previous status line). Elsewhere, tray menu ›
-**Disconnect Claude Code** first. Or from a clone:
-`npm run hooks:uninstall`.
+AgentPet's entries and restores your previous status line). Elsewhere, tray menu › **Disconnect
+Claude Code** first. From a clone: `npm run hooks:uninstall`.
+
+## Known limitations
+
+- Installers aren't code-signed yet (see above); macOS doesn't auto-update.
+- Music is Windows-only. Two Chrome tabs playing at once look like one app to Windows, so the
+  buttons may control the wrong tab.
+- Claude Code only for now. Codex and Cursor support are on the idea list.
 
 ## Development
+
+Built with Electron, React, TypeScript and Zustand (electron-vite, Vitest). The music helper is a
+small C# (.NET 8) program.
 
 ```bash
 npm install
@@ -88,12 +158,17 @@ npm run build:win         # or build:mac / build:linux -> dist/
 npm run icons             # redraw the icons from Noodle's pixels
 
 npm run hooks:preview     # show what gets added to ~/.claude/settings.json
-npm run hooks:install     # connect this checkout to Claude Code
+npm run hooks:install     # connect Claude Code (the running app answers the hooks)
 npm run hooks:uninstall
 ```
 
-While `npm run dev` runs, open the renderer URL (e.g. `http://localhost:5173`) with
-`#gallery` to see every mood, or `#showcase` for the demo loop on a plain background.
+While `npm run dev` runs, open the renderer URL (e.g. `http://localhost:5173`) with `#gallery` to
+see every mood, or `#showcase` for the demo loop on a plain background.
 `AGENTPET_DEMO=1 npm run dev` starts with the mood demo on.
 
-See [`AGENTPET_PLAN.md`](AGENTPET_PLAN.md) for the full build plan.
+See [`AGENTPET_PLAN.md`](AGENTPET_PLAN.md) for the original build plan. Issues and pull requests
+are welcome.
+
+## License
+
+[MIT](LICENSE)

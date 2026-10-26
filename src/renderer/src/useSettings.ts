@@ -9,7 +9,9 @@ const INITIAL: PetSettings = {
   wander: true,
   music: false,
   musicSupported: false,
-  demo: false
+  demo: false,
+  startOnLogin: false,
+  startOnLoginSupported: false
 }
 
 /** Current settings from the main process, updated live when they change in the tray. */

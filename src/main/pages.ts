@@ -1,10 +1,10 @@
-// Small regular windows (Connect, Profile) that show one renderer page, one window per page.
+// Small regular windows (Welcome, Connect, Profile, Phone) that show one renderer page, one window per page.
 import { BrowserWindow, ipcMain } from 'electron'
 import { join } from 'path'
 import { is } from '@electron-toolkit/utils'
 import { IPC } from '../shared/ipc'
 
-export type Page = 'connect' | 'profile' | 'phone'
+export type Page = 'welcome' | 'connect' | 'profile' | 'phone'
 
 const open = new Map<Page, BrowserWindow>()
 

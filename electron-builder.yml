@@ -6,7 +6,7 @@ directories:
   output: dist
 files:
   - '!**/.vscode/*'
-  - '!{src,tests,scripts,cli,recordings,docs,helper}/**'
+  - '!{src,tests,scripts,recordings,docs,helper,site}/**'
   - '!electron.vite.config.{js,ts,mjs,cjs}'
   - '!vitest.config.*'
   - '!{.eslintcache,eslint.config.mjs,.prettierignore,.prettierrc.yaml,.editorconfig,.gitattributes,dev-app-update.yml,CHANGELOG.md,README.md,AGENTPET_PLAN.md}'
@@ -14,12 +14,6 @@ files:
   - '!{tsconfig.json,tsconfig.node.json,tsconfig.web.json}'
 asarUnpack:
   - resources/**
-# the hook script runs in the user's own Node, outside the app, so it ships as a plain file
-extraResources:
-  - from: cli
-    to: cli
-    filter:
-      - '*.mjs'
 win:
   executableName: AgentPet
   target: nsis

@@ -4,6 +4,8 @@ out
 .DS_Store
 .eslintcache
 *.log*
+.env
+.env.*
 
 # local-only files
 desktop.ini

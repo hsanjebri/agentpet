@@ -42,6 +42,8 @@ interface PetStore {
   grooving: boolean
   /** bumps when playback resumes (for a happy wiggle) */
   musicResumed: number
+  /** bumps when the first-run setup is done (he says hi) */
+  hello: number
   setMusic(music: MusicState): void
   dispatch(input: MoodInput): void
   setUsage(usage: UsageInfo): void
@@ -66,6 +68,7 @@ export const usePetStore = create<PetStore>()((set, get) => ({
   headphones: false,
   grooving: false,
   musicResumed: 0,
+  hello: 0,
   setMusic: (next) => {
     const prev = get().music
     const sameTrack = trackKey(next) !== null && trackKey(next) === trackKey(prev)
@@ -118,6 +121,10 @@ function onMoment(moment: PetMoment): void {
       break
     case 'update':
       showToast(`update ${moment.version} is ready: restart from the tray ✨`)
+      break
+    case 'hello':
+      usePetStore.setState({ hello: usePetStore.getState().hello + 1 })
+      showToast(`hi! I'm ${name} 👋`)
       break
     case 'fed':
       // a quieter thank-you, only when nothing bigger is showing
