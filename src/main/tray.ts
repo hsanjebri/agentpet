@@ -7,6 +7,7 @@ import { openPage } from './pages'
 import { openPhoneWindow } from './phone'
 import { petName } from './progress'
 import { petSettings, updateSettings } from './settings'
+import { restartToUpdate, updateReady } from './updater'
 // tray@2x.png next to it is picked up automatically on high-DPI screens
 import trayIcon from '../../resources/tray.png?asset'
 
@@ -88,6 +89,9 @@ function buildMenu(): Menu {
         }
       : { label: 'Connect Claude Code…', click: openConnectWindow },
     { type: 'separator' },
+    ...(updateReady()
+      ? [{ label: `Restart to update to ${updateReady()} ✨`, click: restartToUpdate }]
+      : []),
     { label: 'Quit AgentPet', role: 'quit' }
   ])
 }

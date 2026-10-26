@@ -65,6 +65,7 @@ export type PetMoment =
   | { kind: 'level_up'; level: number }
   | { kind: 'unlocked'; item: Accessory }
   | { kind: 'fed' }
+  | { kind: 'update'; version: string }
 
 /** The pet strolling along the bottom of the screen. */
 export interface WalkState {

@@ -1,18 +1,29 @@
 import { BrowserWindow, app } from 'electron'
 import { electronApp, optimizer } from '@electron-toolkit/utils'
 import { lastAgentActivity, startBridge } from './bridge'
-import { isConnected, openConnectWindow, registerConnectIpc } from './connect'
+import { disconnectClaude, isConnected, openConnectWindow, registerConnectIpc } from './connect'
 import { musicPlaying, registerMusic } from './music'
 import { registerPagesIpc } from './pages'
 import { startPhone } from './phone'
 import { registerProgressIpc } from './progress'
 import { petSettings, registerSettingsIpc, settings } from './settings'
 import { createTray, refreshTray } from './tray'
+import { startUpdater } from './updater'
 import { startWander } from './wander'
 import { createPetWindow } from './window'
 
+// The uninstaller runs "AgentPet.exe --disconnect-claude" before deleting the app, so Claude Code
+// isn't left with hooks pointing at files that no longer exist.
+if (process.argv.includes('--disconnect-claude')) {
+  try {
+    disconnectClaude()
+  } catch (err) {
+    console.error('[agentpet] could not disconnect Claude Code:', err)
+  }
+  app.exit(0)
+}
 // One pet at a time (the event server will need a single owner of its port).
-if (!app.requestSingleInstanceLock()) {
+else if (!app.requestSingleInstanceLock()) {
   app.quit()
 } else {
   app.whenReady().then(() => {
@@ -34,6 +45,7 @@ if (!app.requestSingleInstanceLock()) {
     registerMusic(petSettings().music)
     const pet = createPetWindow()
     createTray()
+    startUpdater(refreshTray)
     startWander(pet, {
       enabled: () => {
         const s = petSettings()

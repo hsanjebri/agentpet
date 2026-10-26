@@ -116,6 +116,9 @@ function onMoment(moment: PetMoment): void {
     case 'unlocked':
       showToast(`${name} unlocked ${ACCESSORY_NAMES[moment.item]}!`)
       break
+    case 'update':
+      showToast(`update ${moment.version} is ready: restart from the tray ✨`)
+      break
     case 'fed':
       // a quieter thank-you, only when nothing bigger is showing
       if (!usePetStore.getState().toast) showToast('yum, a fish 🐟')

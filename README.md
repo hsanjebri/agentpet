@@ -40,16 +40,29 @@ bubble), and farts a rainbow when the task is done. 🌈
 
 ## Install
 
-1. Download the installer for your system from
-   [Releases](https://github.com/hsanjebri/agentpet/releases) (`AgentPet-0.4.0-setup.exe`,
-   `.dmg` or `.AppImage`).
-   The builds aren't code-signed yet, so Windows SmartScreen / macOS Gatekeeper will warn:
-   choose "More info › Run anyway" (Windows) or right-click › Open (macOS).
-2. Start AgentPet. A **Connect Claude Code** window opens: click **Connect**.
+1. Download the installer for your system:
+   [Windows](https://github.com/hsanjebri/agentpet/releases/latest/download/AgentPet-Setup.exe) ·
+   [macOS Apple silicon](https://github.com/hsanjebri/agentpet/releases/latest/download/AgentPet-arm64.dmg) ·
+   [macOS Intel](https://github.com/hsanjebri/agentpet/releases/latest/download/AgentPet-x64.dmg) ·
+   [Linux](https://github.com/hsanjebri/agentpet/releases/latest/download/AgentPet.AppImage)
+2. Start AgentPet. Name your cat, then click **Connect** for Claude Code.
    It shows exactly what it adds to `~/.claude/settings.json` and backs the file up first.
 3. Start a **new** Claude Code session. That's it.
 
+AgentPet updates itself on Windows and Linux (tray › _Restart to update_ when a new version is
+ready). On macOS, download the new `.dmg` from Releases for now.
+
 Requires [Node.js](https://nodejs.org) on your PATH (the hooks are a tiny Node script).
+
+### "Windows protected your PC"?
+
+That's expected for now: AgentPet isn't **code-signed** yet (signing certificates cost money every
+year; one will come as the project grows), and Windows / macOS warn about any unsigned app. The
+code is right here if you want to read it or build it yourself.
+
+- **Windows:** click **More info**, then **Run anyway**.
+- **macOS:** right-click AgentPet › **Open**, or System Settings › Privacy & Security › **Open Anyway**.
+- **Linux:** `chmod +x AgentPet.AppImage`, then run it.
 
 ## Privacy
 
@@ -59,8 +72,9 @@ from web pages, keeps nothing on disk except its settings, and has no telemetry.
 
 ## Uninstall
 
-Tray menu › **Disconnect Claude Code** (removes only AgentPet's entries and restores your
-previous status line), then uninstall the app as usual. Or from a clone:
+Uninstall the app as usual: on Windows the uninstaller also disconnects Claude Code (removes only
+AgentPet's entries and restores your previous status line). Elsewhere, tray menu ›
+**Disconnect Claude Code** first. Or from a clone:
 `npm run hooks:uninstall`.
 
 ## Development

@@ -1,0 +1,398 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>AgentPet · a desktop pet that babysits your AI coding agent</title>
+    <meta
+      name="description"
+      content="Noodle sleeps while Claude Code is idle, hops when it needs your approval, lets you approve right from his bubble, and farts a rainbow when the task is done."
+    />
+    <meta property="og:title" content="AgentPet" />
+    <meta
+      property="og:description"
+      content="A desktop pet that babysits your AI coding agent. Approve permission requests from the cat. 🌈"
+    />
+    <meta property="og:image" content="poster.png" />
+    <link rel="icon" type="image/png" href="favicon.png" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Inter:wght@400;600;800&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        --ink: #1f1c1a;
+        --paper: #fffdf8;
+        --bg: #232a3a;
+        --bg2: #2e374b;
+        --text: #f6f2ea;
+        --muted: #b9c3d6;
+        --green: #5cc46b;
+        --pink: #f2a0a8;
+        --gold: #f6c744;
+        --red: #e24b4a;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        background: linear-gradient(180deg, #3b4a63 0, var(--bg) 520px);
+        background-color: var(--bg);
+        color: var(--text);
+        font: 17px/1.6 Inter, system-ui, sans-serif;
+      }
+      a {
+        color: var(--gold);
+      }
+      .wrap {
+        max-width: 980px;
+        margin: 0 auto;
+        padding: 0 20px;
+      }
+      .pixel {
+        font-family: 'Press Start 2P', ui-monospace, monospace;
+        letter-spacing: 0.5px;
+      }
+      img.pixelated {
+        image-rendering: pixelated;
+      }
+
+      /* hero */
+      header {
+        padding: 64px 0 24px;
+        text-align: center;
+      }
+      header img {
+        width: 104px;
+        height: 104px;
+      }
+      h1 {
+        margin: 18px 0 10px;
+        font-size: clamp(28px, 6vw, 44px);
+        line-height: 1.3;
+      }
+      .tagline {
+        margin: 0 auto;
+        max-width: 640px;
+        font-size: 20px;
+        color: var(--muted);
+      }
+      .cta {
+        margin: 30px 0 10px;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 14px;
+        justify-content: center;
+      }
+      .btn {
+        display: inline-block;
+        padding: 14px 22px;
+        border: 3px solid var(--ink);
+        box-shadow: 4px 4px 0 var(--ink);
+        background: var(--green);
+        color: var(--ink);
+        font: 12px/1.4 'Press Start 2P', ui-monospace, monospace;
+        text-decoration: none;
+        transition: transform 0.05s;
+      }
+      .btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 4px 6px 0 var(--ink);
+      }
+      .btn:active {
+        transform: translate(3px, 3px);
+        box-shadow: 1px 1px 0 var(--ink);
+      }
+      .btn.secondary {
+        background: var(--paper);
+      }
+      .platforms {
+        font-size: 14px;
+        color: var(--muted);
+      }
+      .platforms a {
+        margin: 0 6px;
+      }
+      .fineprint {
+        margin-top: 6px;
+        font-size: 14px;
+        color: var(--muted);
+      }
+
+      /* demo */
+      .demo {
+        margin: 34px auto 0;
+        max-width: 520px;
+        border: 4px solid var(--ink);
+        box-shadow: 8px 8px 0 var(--ink);
+        background: #1b1f2a;
+      }
+      .demo video {
+        display: block;
+        width: 100%;
+        height: auto;
+      }
+
+      /* sections */
+      section {
+        padding: 56px 0 8px;
+      }
+      h2 {
+        margin: 0 0 24px;
+        font-size: 18px;
+        line-height: 1.5;
+        text-align: center;
+      }
+      .grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+        gap: 18px;
+      }
+      .card {
+        padding: 18px 18px 14px;
+        background: var(--paper);
+        color: var(--ink);
+        border: 3px solid var(--ink);
+        box-shadow: 4px 4px 0 var(--ink);
+      }
+      .card h3 {
+        margin: 0 0 6px;
+        font-size: 17px;
+      }
+      .card p {
+        margin: 0;
+        font-size: 15px;
+        line-height: 1.5;
+      }
+      .steps {
+        counter-reset: step;
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+        gap: 18px;
+      }
+      .steps .card::before {
+        counter-increment: step;
+        content: counter(step);
+        display: inline-grid;
+        place-items: center;
+        width: 30px;
+        height: 30px;
+        margin-bottom: 8px;
+        background: var(--gold);
+        border: 3px solid var(--ink);
+        font: 12px 'Press Start 2P', monospace;
+      }
+      .note {
+        padding: 20px 22px;
+        background: var(--bg2);
+        border: 3px solid var(--ink);
+        box-shadow: 4px 4px 0 var(--ink);
+      }
+      .note h3 {
+        margin: 0 0 8px;
+      }
+      .note ul {
+        margin: 8px 0 0;
+        padding-left: 20px;
+      }
+      kbd {
+        padding: 1px 6px;
+        background: var(--paper);
+        color: var(--ink);
+        border: 2px solid var(--ink);
+        font: 13px ui-monospace, monospace;
+      }
+      footer {
+        padding: 56px 0 40px;
+        text-align: center;
+        color: var(--muted);
+        font-size: 14px;
+      }
+      @media (prefers-reduced-motion: reduce) {
+        .btn {
+          transition: none;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <header class="wrap">
+      <img class="pixelated" src="icon.png" alt="Noodle the cat" width="104" height="104" />
+      <h1 class="pixel">AgentPet</h1>
+      <p class="tagline">
+        A desktop pet that babysits your AI coding agent. Noodle sleeps while Claude Code is idle,
+        <b>hops when it needs your approval</b> (approve right from his bubble), and farts a
+        rainbow when the task is done. 🌈
+      </p>
+
+      <div class="cta">
+        <a id="download" class="btn" href="https://github.com/hsanjebri/agentpet/releases/latest"
+          >Download</a
+        >
+        <a class="btn secondary" href="https://github.com/hsanjebri/agentpet">View on GitHub</a>
+      </div>
+      <div class="platforms">
+        <a href="https://github.com/hsanjebri/agentpet/releases/latest/download/AgentPet-Setup.exe"
+          >Windows</a
+        >
+        ·
+        <a href="https://github.com/hsanjebri/agentpet/releases/latest/download/AgentPet-arm64.dmg"
+          >macOS (Apple silicon)</a
+        >
+        ·
+        <a href="https://github.com/hsanjebri/agentpet/releases/latest/download/AgentPet-x64.dmg"
+          >macOS (Intel)</a
+        >
+        ·
+        <a href="https://github.com/hsanjebri/agentpet/releases/latest/download/AgentPet.AppImage"
+          >Linux</a
+        >
+      </div>
+      <p class="fineprint">Free · updates itself · everything stays on your computer</p>
+
+      <div class="demo">
+        <video src="demo.mp4" poster="poster.png" autoplay loop muted playsinline></video>
+      </div>
+    </header>
+
+    <main class="wrap">
+      <section>
+        <h2 class="pixel">What Noodle does</h2>
+        <div class="grid">
+          <div class="card">
+            <h3>✅ Approve from the cat</h3>
+            <p>
+              When Claude asks for permission, Noodle hops toward you and shows what it wants to
+              run. Approve or deny right there.
+            </p>
+          </div>
+          <div class="card">
+            <h3>🐱 His tail tells you</h3>
+            <p>
+              Sleeping, working (coffee mug), needs you (red antenna), done (rainbow), sweating,
+              sad, hissing. One glance and you know.
+            </p>
+          </div>
+          <div class="card">
+            <h3>📱 Phone ping</h3>
+            <p>
+              Walked away? If Claude waits for you a few minutes, your phone buzzes. Free, no
+              account.
+            </p>
+          </div>
+          <div class="card">
+            <h3>📊 Session usage bar</h3>
+            <p>Your 5-hour Claude limit under his paws, green → yellow → red. He sweats at 80%.</p>
+          </div>
+          <div class="card">
+            <h3>😾 Risk alerts</h3>
+            <p>
+              He hisses at <code>.env</code>, <code>rm -rf</code>,
+              <code>git push --force</code>, deleted tests, and says why.
+            </p>
+          </div>
+          <div class="card">
+            <h3>🎵 Vibes to your music</h3>
+            <p>
+              Headphones on, head bobbing to Spotify or YouTube, with pixel play/pause buttons.
+              (Windows)
+            </p>
+          </div>
+          <div class="card">
+            <h3>🌈 Recap & Wrapped</h3>
+            <p>
+              A daily card and a weekly “Wrapped”: tasks, approvals, your favorite file, the
+              scariest moment. Share it.
+            </p>
+          </div>
+          <div class="card">
+            <h3>🎩 He grows up</h3>
+            <p>
+              Kitten → cat → chonky senior with glasses. Unlock a top hat, sunglasses and a crown.
+              Pet him, feed him, name him.
+            </p>
+          </div>
+          <div class="card">
+            <h3>🔒 Private by design</h3>
+            <p>
+              Runs on your computer only. No account, no telemetry. Your Claude settings are backed
+              up before any change.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="pixel">Up and running in 2 minutes</h2>
+        <div class="steps">
+          <div class="card">
+            <h3>Download & install</h3>
+            <p>Pick your system above. AgentPet updates itself from then on.</p>
+          </div>
+          <div class="card">
+            <h3>Name your cat, connect Claude Code</h3>
+            <p>One click. It shows exactly what it adds to Claude Code’s settings, backup first.</p>
+          </div>
+          <div class="card">
+            <h3>Start a Claude Code session</h3>
+            <p>Noodle wakes up and follows along. Needs <a href="https://nodejs.org">Node.js</a>.</p>
+          </div>
+        </div>
+      </section>
+
+      <section id="security-warning">
+        <div class="note">
+          <h3>🛡️ “Windows protected your PC”? That’s expected (for now)</h3>
+          <p>
+            AgentPet isn’t <b>code-signed</b> yet. Signing certificates cost money every year, and
+            we’ll add one as the project grows. Until then Windows and macOS warn about any unsigned
+            app. The code is open, so you can read it or build it yourself.
+          </p>
+          <ul>
+            <li>
+              <b>Windows:</b> click <kbd>More info</kbd>, then <kbd>Run anyway</kbd>.
+            </li>
+            <li>
+              <b>macOS:</b> right-click AgentPet › <kbd>Open</kbd>, or System Settings › Privacy &amp;
+              Security › <kbd>Open Anyway</kbd>.
+            </li>
+            <li>
+              <b>Linux:</b> make the AppImage executable (<code>chmod +x AgentPet.AppImage</code>) and
+              run it.
+            </li>
+          </ul>
+        </div>
+      </section>
+    </main>
+
+    <footer class="wrap">
+      <p>
+        AgentPet · made with 🐱 and 🌈 ·
+        <a href="https://github.com/hsanjebri/agentpet">GitHub</a> ·
+        <a href="https://github.com/hsanjebri/agentpet/releases">all releases</a>
+      </p>
+    </footer>
+
+    <script>
+      // the big button downloads the right installer for this computer
+      ;(function () {
+        var base = 'https://github.com/hsanjebri/agentpet/releases/latest/download/'
+        var ua = navigator.userAgent
+        var button = document.getElementById('download')
+        if (/Windows/i.test(ua)) {
+          button.href = base + 'AgentPet-Setup.exe'
+          button.textContent = 'Download for Windows'
+        } else if (/Mac/i.test(ua)) {
+          button.href = base + 'AgentPet-arm64.dmg'
+          button.textContent = 'Download for Mac'
+        } else if (/Linux/i.test(ua) && !/Android/i.test(ua)) {
+          button.href = base + 'AgentPet.AppImage'
+          button.textContent = 'Download for Linux'
+        }
+      })()
+    </script>
+  </body>
+</html>

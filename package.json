@@ -15,10 +15,10 @@
     "dev": "electron-vite dev",
     "build": "npm run typecheck && electron-vite build",
     "postinstall": "install-electron && electron-builder install-app-deps",
-    "build:unpack": "npm run build && electron-builder --dir",
-    "build:win": "npm run helper:build && npm run build && electron-builder --win",
-    "build:mac": "electron-vite build && electron-builder --mac",
-    "build:linux": "electron-vite build && electron-builder --linux",
+    "build:unpack": "npm run build && electron-builder --dir --publish never",
+    "build:win": "npm run helper:build && npm run build && electron-builder --win --publish never",
+    "build:mac": "electron-vite build && electron-builder --mac --publish never",
+    "build:linux": "electron-vite build && electron-builder --linux --publish never",
     "test": "vitest run",
     "test:watch": "vitest",
     "hooks:install": "node scripts/install-hooks.mjs",
@@ -30,6 +30,7 @@
   "dependencies": {
     "@electron-toolkit/utils": "^4.0.0",
     "electron-store": "^12.0.0",
+    "electron-updater": "^6.8.11",
     "zustand": "^5.0.16"
   },
   "devDependencies": {

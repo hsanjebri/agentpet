@@ -30,7 +30,8 @@ win:
       filter:
         - nowplaying.exe
 nsis:
-  artifactName: ${productName}-${version}-setup.${ext}
+  # no version in the names: the website can always link to releases/latest/download/…
+  artifactName: ${productName}-Setup.${ext}
   shortcutName: ${productName}
   uninstallDisplayName: ${productName}
   createDesktopShortcut: false
@@ -45,11 +46,17 @@ mac:
     LSUIElement: true # tray app: no Dock icon
   notarize: false
 dmg:
-  artifactName: ${productName}-${version}-${arch}.${ext}
+  artifactName: ${productName}-${arch}.${ext}
 linux:
   target: AppImage
   maintainer: AgentPet contributors
   category: Development
 appImage:
-  artifactName: ${productName}-${version}.${ext}
+  artifactName: ${productName}.${ext}
 npmRebuild: false
+# auto-update: electron-updater reads latest.yml from the GitHub release
+publish:
+  provider: github
+  owner: hsanjebri
+  repo: agentpet
+  releaseType: release

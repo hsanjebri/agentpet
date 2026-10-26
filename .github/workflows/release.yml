@@ -19,13 +19,18 @@ jobs:
         include:
           - os: windows-latest
             build: build:win
-            files: dist/*-setup.exe
+            files: |
+              dist/*-Setup.exe
+              dist/*-Setup.exe.blockmap
+              dist/latest.yml
           - os: macos-latest
             build: build:mac
             files: dist/*.dmg
           - os: ubuntu-latest
             build: build:linux
-            files: dist/*.AppImage
+            files: |
+              dist/*.AppImage
+              dist/latest-linux.yml
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v4
@@ -39,7 +44,7 @@ jobs:
           dotnet-version: 8.0.x
       - run: npm ci
       - run: npm test
-      - run: npm run ${{ matrix.build }} -- --publish never
+      - run: npm run ${{ matrix.build }}
       - uses: actions/upload-artifact@v4
         with:
           name: installer-${{ matrix.os }}
