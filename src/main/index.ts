@@ -1,6 +1,7 @@
 import { BrowserWindow, app } from 'electron'
 import { electronApp, optimizer } from '@electron-toolkit/utils'
 import { registerActionsIpc } from './actions'
+import { startAutoHide } from './autoHide'
 import { lastAgentActivity, startBridge } from './bridge'
 import {
   disconnectClaude,
@@ -56,6 +57,7 @@ else if (!app.requestSingleInstanceLock()) {
     // before the pet window exists, so it gets the current song once it has loaded
     registerMusic(petSettings().music)
     const pet = createPetWindow()
+    startAutoHide()
     createTray()
     onPomodoroChange(refreshTray)
     startUpdater(refreshTray)

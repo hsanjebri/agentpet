@@ -98,7 +98,8 @@ export function createPetWindow(): BrowserWindow {
     // Windows can create a transparent frameless window a few px too big at fractional
     // scaling; re-applying the bounds fixes it before the pet appears.
     moveWindow(win, { x, y })
-    win.showInactive()
+    shown = true
+    if (!autoHidden) win.showInactive()
   })
 
   win.webContents.setWindowOpenHandler((details) => {
@@ -118,6 +119,17 @@ export function createPetWindow(): BrowserWindow {
 }
 
 let pet: BrowserWindow | null = null
+let shown = false // first shown (ready-to-show)
+let autoHidden = false
+
+/** Auto-hide: out of sight during a fullscreen app, a meeting or Do not disturb. */
+export function setAutoHidden(hidden: boolean): void {
+  if (hidden === autoHidden) return
+  autoHidden = hidden
+  if (!pet || pet.isDestroyed() || !shown) return
+  if (hidden) pet.hide()
+  else pet.showInactive()
+}
 
 // size S/M/L changed: resize, keeping his feet where they were (bottom center)
 onSettingsChange((now, before) => {
