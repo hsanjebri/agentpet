@@ -8,8 +8,8 @@
 
 create table if not exists public.pets (
   user_id     uuid primary key references auth.users (id) on delete cascade,
-  -- readable like NOODLE-4821; no 0/O/1/I so it can be read out loud
-  friend_code text not null unique check (friend_code ~ '^[A-HJ-NP-Z]{2,6}-[A-HJ-NP-Z2-9]{4}$'),
+  -- the pet's name + 4 random characters without look-alikes (0/O/1/I), e.g. NOODLE-48K2
+  friend_code text not null unique check (friend_code ~ '^[A-Z]{2,6}-[A-HJ-NP-Z2-9]{4}$'),
   pet_name    text not null check (char_length(pet_name) between 1 and 24),
   skin        text not null check (skin in ('noodle', 'mochi', 'zitouna')),
   level       int  not null default 1 check (level between 1 and 100000),
@@ -141,8 +141,8 @@ begin
   if me is null then raise exception 'not signed in'; end if;
   select friend_code into code from public.pets where user_id = me;
   if code is null then
-    -- the pet's name in capitals (only letters that can't be confused), e.g. NOODLE
-    prefix := left(regexp_replace(upper(coalesce(p_name, '')), '[^A-HJ-NP-Z]', '', 'g'), 6);
+    -- the pet's name in capitals, letters only, e.g. NOODLE
+    prefix := left(regexp_replace(upper(coalesce(p_name, '')), '[^A-Z]', '', 'g'), 6);
     if char_length(prefix) < 2 then prefix := 'PET'; end if;
     loop
       code := prefix || '-' || (

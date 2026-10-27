@@ -63,10 +63,11 @@ export interface FriendsResult {
   message?: string
 }
 
-// no 0/O/1/I: codes are read out loud and typed by hand
-const CODE = /^[A-HJ-NP-Z]{2,6}-[A-HJ-NP-Z2-9]{4}$/
+// the pet's name + 4 random characters without look-alikes (no 0/O/1/I): read out loud and
+// typed by hand
+const CODE = /^[A-Z]{2,6}-[A-HJ-NP-Z2-9]{4}$/
 
-/** "noodle 4821", "Noodle-4821 " -> "NOODLE-4821"; null if it can't be a friend code. */
+/** "noodle 48k2", "Noodle-48K2 " -> "NOODLE-48K2"; null if it can't be a friend code. */
 export function normalizeCode(input: string): string | null {
   const compact = input.toUpperCase().replace(/[^A-Z0-9]/g, '')
   const match = /^([A-Z]{2,6})([A-Z0-9]{4})$/.exec(compact)

@@ -237,7 +237,7 @@ export class FriendsService {
     try {
       if (cmd.type === 'add') {
         const code = normalizeCode(cmd.code)
-        if (!code) return { ok: false, message: 'Codes look like NOODLE-4821.' }
+        if (!code) return { ok: false, message: 'Codes look like NOODLE-48K2.' }
         const { data, error } = await this.client.rpc('send_friend_request', { p_code: code })
         if (error) throw error
         await this.refresh()

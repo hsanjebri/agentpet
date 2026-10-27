@@ -50,12 +50,15 @@ done, or waiting for you, and you can say yes without going back to the terminal
 - **👆 Click Noodle** to jump to the terminal / IDE where Claude is running.
 - **🔍 Hover** for what Claude is up to: `my-app · editing App.tsx · 12 tools · 4 min`.
 - **📱 Phone ping** (opt-in): your phone buzzes (free ntfy app) when Claude has waited for you for
-  a few minutes, or when a long task finishes. Tray › _Phone ping…_
+  a few minutes, or when a long task finishes. Settings › _Phone ping_
 - **🤫 Focus mode**: Noodle only shows up when he's needed.
+- **🍅 Pomodoro**: right-click him › _Start Pomodoro_. He naps on a tiny tomato timer while you
+  focus, wakes up and stretches at the break, and earns a fish every round.
+- **🙈 Auto-hide** (Windows): out of the way during fullscreen apps, meetings and Do not disturb.
 
 ### Just for fun
 
-- **🌈 Daily recap card + weekly "Wrapped"**: tray › _Noodle's profile & recap_ → save, copy or share on X.
+- **🌈 Daily recap card + weekly "Wrapped"**: right-click › _Profile & recap_ → save, copy or share on X.
 - **🎩 He grows up**: kitten → cat → chonky senior cat with glasses as you level up (10 tasks a
   level). Unlock a top hat (100 tasks), sunglasses (7-day streak) and a crown (1,000 approvals).
 - **✨ Rare moments** (1 task in 50): golden rainbow, double fart, asleep on the keyboard.
@@ -64,7 +67,19 @@ done, or waiting for you, and you can say yes without going back to the terminal
   party hat on Fridays. Name your cat when you first start the app.
 - **🎵 Music** (Windows): headphones on, he vibes to Spotify, YouTube, Deezer… Hover him for pixel
   play / pause / next buttons.
-- **🎨 Skins**: Noodle, Mochi (orange tabby), Zitouna (street cat). Tray › _Skin_.
+- **🎨 Skins and sizes**: Noodle, Mochi (orange tabby), Zitouna (street cat), in S / M / L.
+- **👥 Friends** (opt-in): add friends by code and see when their pets are online.
+
+### Not a developer?
+
+Pick **Just for fun & focus** at setup: no Claude, no terminal, just a cat that vibes to your
+music, keeps you company through Pomodoros and grows up with you. Every accessory can be earned
+with focus sessions.
+
+### Settings
+
+Right-click Noodle (or the tray icon) › **Settings**: every feature can be switched on or off,
+and changes apply right away.
 
 ## Install
 
@@ -74,10 +89,11 @@ done, or waiting for you, and you can say yes without going back to the terminal
    | ------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------- |
    | [AgentPet-Setup.exe](https://github.com/hsanjebri/agentpet/releases/latest/download/AgentPet-Setup.exe) | [Apple silicon](https://github.com/hsanjebri/agentpet/releases/latest/download/AgentPet-arm64.dmg) · [Intel](https://github.com/hsanjebri/agentpet/releases/latest/download/AgentPet-x64.dmg) | [AgentPet.AppImage](https://github.com/hsanjebri/agentpet/releases/latest/download/AgentPet.AppImage) |
 
-2. Start AgentPet. A short setup opens: pick your cat, name it, click **Connect** for Claude
-   Code (it shows exactly what it adds to `~/.claude/settings.json` and backs the file up first),
-   and turn on any extras. Tray › _Run setup again…_ brings it back any time.
-3. Start a **new** Claude Code session. That's it.
+2. Start AgentPet. A short setup opens: pick your cat, name it, choose **developer** or **just for
+   fun & focus**, and pick your features. Developers click **Connect** for Claude Code (it shows
+   exactly what it adds to `~/.claude/settings.json` and backs the file up first).
+   Settings › General › _Replay onboarding_ brings it back any time.
+3. Developers: start a **new** Claude Code session. That's it.
 
 **Requirements:** Windows 10+, macOS or Linux, and [Claude Code](https://claude.com/claude-code).
 Nothing else: the hooks use `curl`, which comes with all three.
@@ -128,19 +144,22 @@ Everything stays on your computer. The app:
   count);
 - has no telemetry.
 
-The one exception is **Phone ping**: it's off unless you turn it on, and then only sends the
-project name to your own ntfy topic.
+Two exceptions, both off unless you turn them on:
+
+- **Phone ping** sends the project name to your own ntfy topic.
+- **Friends** shares your pet's name, skin, level and online status with the friends you accept
+  (anonymous account, no email). Nothing else.
 
 ## Uninstall
 
 Uninstall the app as usual: on Windows the uninstaller also disconnects Claude Code (removes only
 AgentPet's entries and restores your previous status line). Elsewhere, tray menu › **Disconnect
-Claude Code** first. From a clone: `npm run hooks:uninstall`.
+Claude Code** first (Settings › Claude Code › Disconnect). From a clone: `npm run hooks:uninstall`.
 
 ## Known limitations
 
 - Installers aren't code-signed yet (see above); macOS doesn't auto-update.
-- Music is Windows-only. Two Chrome tabs playing at once look like one app to Windows, so the
+- Music and auto-hide are Windows-only for now. Two Chrome tabs playing at once look like one app to Windows, so the
   buttons may control the wrong tab.
 - Claude Code only for now. Codex and Cursor support are on the idea list.
 

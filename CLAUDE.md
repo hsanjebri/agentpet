@@ -3,12 +3,14 @@
 A desktop pet (Noodle, a white pixel-art cat) that babysits your AI coding agent (Claude Code).
 It floats above all windows, shows the agent's state with its mood/tail, lets you **approve
 permission requests from its bubble**, shows session usage, pings your phone, and vibes to music.
+Two modes: **developer** (follows Claude Code) and **Fun & focus** (no Claude anywhere: music, Pomodoro, company).
 `AGENTPET_PLAN.md` is the original build plan (status note at its top); `README.md` is user-facing.
-Repo: github.com/hsanjebri/agentpet (**private** for now). Current version: **0.4.1**.
+Repo: github.com/hsanjebri/agentpet (**private** for now). Current version: **0.5.0**.
 
 ## Stack
 Electron 44 + electron-vite, React 19 + TypeScript, Zustand, electron-store, electron-updater,
-Vitest, ESLint + Prettier, electron-builder. Hook CLI: plain Node (zero deps). Music helper: C# (.NET 8).
+Vitest, ESLint + Prettier, electron-builder, qrcode-generator, @supabase/supabase-js (Friends only, lazy-loaded).
+Hooks: curl. Music helper: C# (.NET 8). Auto-hide watcher: inline PowerShell.
 
 ## Layout
 - `src/main/` (Electron main)
@@ -19,21 +21,25 @@ Vitest, ESLint + Prettier, electron-builder. Hook CLI: plain Node (zero deps). M
   - `permissions.ts` pending Approve/Deny queue · `risk.ts` hiss rules · `sessions.ts` hover info
   - `progress.ts` stats/XP/unlocks store · `music.ts` runs nowplaying helper · `phone.ts` + `phonePing.ts` ntfy pings
   - `wander.ts` idle strolls · `focus.ts` bring terminal/IDE to front · `updater.ts` auto-update
-  - `connect.ts` Claude Code connect/disconnect · `pages.ts` small windows (connect/profile/phone) · `tray.ts` · `settings.ts`
+  - `connect.ts` Claude Code connect/disconnect + Welcome · `pages.ts` small windows (welcome/settings/connect/profile) · `tray.ts` (tray + pet right-click menu)
+  - `settings.ts` the one settings store: `updateSettings()` validates, saves, broadcasts; modules react via `onSettingsChange()`
+  - `actions.ts` Settings buttons (restore backup, check updates, resets…) · `pomodoro.ts` timer owner · `autoHide.ts` OS watcher (Windows)
+  - `friends.ts` + `friendsService.ts` Friends over Supabase (only loaded when on) · `config/supabase.json` URL + anon key · `supabase/` SQL + setup guide
 - `src/preload/index.ts` the only renderer API (`window.api`, typed by `PetApi` in `src/shared/ipc.ts`)
-- `src/shared/` types + pure logic shared by both sides: `events.ts` (protocol), `ipc.ts` (channels), `progress.ts`, `music.ts`, `skins.ts`
+- `src/shared/` types + pure logic shared by both sides: `events.ts` (protocol), `ipc.ts` (channels), `settings.ts` (model, defaults, validation, migration), `progress.ts`, `pomodoro.ts`, `autoHide.ts`, `friends.ts`, `music.ts`, `skins.ts`
 - `src/renderer/src/` (pet window, React)
   - `App.tsx` decides what shows (mood, bubbles, music, focus mode) · `store.ts` Zustand state + IPC wiring
   - `moodMachine.ts` pure mood logic · `usePetPointer.ts` hover/click/drag/hold-to-pet
   - Bubbles: `ApprovalBubble.tsx`, `MusicBubble.tsx`, `InfoBubble.tsx` · `UsageBar.tsx` · `sounds.ts` (Web Audio synth)
-  - Pages by URL hash: `Welcome.tsx` (#welcome, first-run wizard: cat, name, Claude Code, extras; tray › Run setup again), `Connect.tsx` (#connect, `ConnectPanel` reused by Welcome; shows connected / needs fixing / heard from agent), `Profile.tsx` + `RecapCard.tsx` (#profile), `Phone.tsx` (#phone); dev only: `Gallery.tsx` (#gallery, #gallery-extras, #gallery-cards), `Showcase.tsx` (#showcase)
+  - `settings/` the Settings window (#settings or #settings:<section>): sidebar + one file per section, `controls.tsx` shared rows/toggles
+  - Pages by URL hash: `Welcome.tsx` (#welcome, first-run wizard: cat, name, mode, [Claude Code], features; Settings › General › Replay), `Connect.tsx` (#connect, `ConnectPanel` reused by Welcome; shows connected / needs fixing / heard from agent), `Profile.tsx` + `RecapCard.tsx` (#profile), `Phone.tsx` (#phone); dev only: `Gallery.tsx` (#gallery, #gallery-extras, #gallery-cards), `Showcase.tsx` (#showcase)
   - `pets/pixel/` generic pixel toolkit (`canvas.ts`, `PixelSprite.tsx`) · `pets/noodle/` the cat (body.ts face+accessories, tail.ts, effects.ts, layers.ts, palette.ts skins, noodle.css)
 - Hooks = `curl` (exec form) POSTing Claude Code's raw JSON to `/hook` with `X-AgentPet-Hook: event|permission|statusline`;
   `~/.agentpet/agentpet-send.curl` (url + bearer token, rewritten each start) · `hookInput.ts` translates · `peerPid.ts` finds the agent PID for click-to-focus
 - `scripts/claude-hooks.mjs` (pure merge/remove of our entries), `claude-settings.mjs` (file I/O + backups), `install-hooks.mjs` / `uninstall-hooks.mjs`, `icons/` (icon generator)
 - `helper/nowplaying/` C# helper: Windows media session → JSON lines on stdout, `toggle/next/prev` on stdin
 - `build/installer.nsh` NSIS uninstall step · `electron-builder.yml` · `site/` landing page · `.github/workflows/` release (3 OS) + pages
-- `tests/` Vitest (178 tests)
+- `tests/` Vitest (206 tests)
 
 ## How moods work
 - Agent events (from hooks → server → bridge → renderer) feed `moodMachine.ts`: base `sleeping|working`,
@@ -51,6 +57,8 @@ Vitest, ESLint + Prettier, electron-builder. Hook CLI: plain Node (zero deps). M
 - v0.3.0: **Music** (Windows): nowplaying helper, headphones/vibing, pixel ⏮⏯⏭ in bubble, songs in recaps
 - v0.4.0: **Phone ping** via ntfy (opt-in): ping after N min waiting, optional long-task-done ping
 - v0.4.1: curl hooks (no Node.js needed), first-run Welcome window, uninstaller disconnects Claude, auto-update, landing page
+- v0.5.0: **Settings window** (every feature on/off, instant), developer / **Fun & focus** modes, **Pomodoro**,
+  **auto-hide** (Windows), per-type risk warnings + allow-list, size S/M/L, sound volume, **Friends** (Supabase, opt-in)
 
 ## Commands
 - `npm run dev` · `AGENTPET_DEMO=1 npm run dev` (mood demo) · `npm test` · `npm run lint` · `npm run typecheck`
@@ -68,7 +76,8 @@ Vitest, ESLint + Prettier, electron-builder. Hook CLI: plain Node (zero deps). M
 - Pure logic in testable modules (`shared/*`, `moodMachine.ts`, `phonePing.ts`, `risk.ts`); Electron glue stays thin.
 - Hooks: curl only (no Node needed), quiet on failure (`silent`+`fail`), print only a permission decision or the status line. On start the app upgrades older installs (`upgrade()` in claude-settings.mjs).
 - Privacy: everything local (server on 127.0.0.1, rejects requests with an Origin header). Only Phone ping
-  sends data out, opt-in, project name only by default. No song history (daily count only). No telemetry.
+  (project name) and Friends (pet name, skin, level, online) send data out, both opt-in. No song history. No telemetry.
+- Fun & focus mode: never show Claude / terminal / hooks / code wording (bridge ignores agent events in that mode).
 - Always back up `~/.claude/settings.json` before changing it; only touch entries containing `agentpet-send`.
 - Ask before adding dependencies. Commit only when asked; commit messages end with the Co-Authored-By line.
 
@@ -76,7 +85,8 @@ Vitest, ESLint + Prettier, electron-builder. Hook CLI: plain Node (zero deps). M
 - Pre-launch (built, need the repo **public**): auto-update untested end-to-end; landing page not deployed
   (GitHub Pages workflow skips private repos). Then publish v0.4.1 and test an update v0.4.1 → test release.
 - Clean-PC test was done on the dev PC (Windows Sandbox not enabled); a truly fresh machine is still untested.
-- TODO: auto-hide during meetings / screen sharing (not built).
+- Friends: SQL syntax-checked only; not yet run against a real Supabase project; two-install test pending.
+- Auto-hide: Windows only; DND detection reads the notification toggle (best effort); meetings = microphone in use.
 - Music: two Chrome tabs both playing look like one app to Windows (controls may hit the wrong tab);
   `prev` on Spotify not verified; "no music app" case only unit-tested. Helper is 93 MB self-contained (trimming untested).
 - macOS: unsigned → no auto-update, Gatekeeper warning; Music is Windows-only. Installers not code-signed (SmartScreen).
