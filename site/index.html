@@ -3,395 +3,832 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>AgentPet · a desktop pet that babysits your AI coding agent</title>
+    <title>Noodle · your desk buddy</title>
     <meta
       name="description"
-      content="Noodle sleeps while Claude Code is idle, hops when it needs your approval, lets you approve right from his bubble, and farts a rainbow when the task is done."
+      content="Noodle is a tiny pixel cat that lives on your desktop: Pomodoro focus, vibes to your music, healthy habits, and for developers, approve Claude Code from his bubble. Free for Windows, Mac and Linux."
     />
-    <meta property="og:title" content="AgentPet" />
-    <meta
-      property="og:description"
-      content="A desktop pet that babysits your AI coding agent. Approve permission requests from the cat. 🌈"
-    />
-    <meta property="og:image" content="poster.png" />
-    <link rel="icon" type="image/png" href="favicon.png" />
+    <meta property="og:title" content="Noodle · your desk buddy" />
+    <meta property="og:description" content="A tiny pixel cat that keeps you company while you work. Free." />
+    <meta property="og:image" content="img/happy.png" />
+    <link rel="icon" href="favicon.png" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
-      href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Inter:wght@400;600;800&display=swap"
       rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700;800&family=Geist+Mono:wght@500;700&display=swap"
     />
     <style>
+      /* Apple / Cluely-style product page: white and soft pastels, one dark "night" section,
+         big tight headlines, real HTML UI mocks around the pixel cat. */
       :root {
-        --ink: #1f1c1a;
-        --paper: #fffdf8;
-        --bg: #232a3a;
-        --bg2: #2e374b;
-        --text: #f6f2ea;
-        --muted: #b9c3d6;
-        --green: #5cc46b;
-        --pink: #f2a0a8;
-        --gold: #f6c744;
+        --bg: #ffffff;
+        --soft: #f6f4f1;
+        --ink: #1d1d1f;
+        --muted: #6e6e73;
+        --line: #e8e6e3;
+        --peach: #ffe9dc;
+        --mint: #dff6ea;
+        --lilac: #eee8ff;
+        --sky: #e3efff;
+        --butter: #fff4cc;
         --red: #e24b4a;
+        --green: #34c759;
+        --night: #12141f;
+        --night-2: #1c2033;
+        --night-ink: #f5f5f7;
+        --night-muted: #a1a6bd;
+        --sans: 'Geist', -apple-system, 'Segoe UI', system-ui, sans-serif;
+        --mono: 'Geist Mono', 'Cascadia Mono', Consolas, ui-monospace, monospace;
+        --radius: 28px;
+        --shadow: 0 1px 2px rgba(0, 0, 0, 0.04), 0 18px 50px rgba(0, 0, 0, 0.08);
       }
-      * {
-        box-sizing: border-box;
-      }
+      * { box-sizing: border-box; }
+      html { scroll-behavior: smooth; }
       body {
         margin: 0;
-        background: linear-gradient(180deg, #3b4a63 0, var(--bg) 520px);
-        background-color: var(--bg);
-        color: var(--text);
-        font: 17px/1.6 Inter, system-ui, sans-serif;
+        background: var(--bg);
+        color: var(--ink);
+        font: 17px/1.55 var(--sans);
+        -webkit-font-smoothing: antialiased;
       }
-      a {
-        color: var(--gold);
-      }
+      img.px { image-rendering: pixelated; image-rendering: crisp-edges; display: block; }
+      a { color: inherit; }
       .wrap {
-        max-width: 980px;
+        max-width: 1120px;
         margin: 0 auto;
-        padding: 0 20px;
-      }
-      .pixel {
-        font-family: 'Press Start 2P', ui-monospace, monospace;
-        letter-spacing: 0.5px;
-      }
-      img.pixelated {
-        image-rendering: pixelated;
+        padding-left: max(20px, env(safe-area-inset-left, 0px));
+        padding-right: max(20px, env(safe-area-inset-right, 0px));
       }
 
-      /* hero */
-      header {
-        padding: 64px 0 24px;
-        text-align: center;
+      /* ---------- nav ---------- */
+      nav.top {
+        position: sticky;
+        top: 0;
+        z-index: 20;
+        background: rgba(255, 255, 255, 0.78);
+        backdrop-filter: saturate(180%) blur(18px);
+        -webkit-backdrop-filter: saturate(180%) blur(18px);
+        border-bottom: 1px solid rgba(0, 0, 0, 0.06);
       }
-      header img {
-        width: 104px;
-        height: 104px;
-      }
-      h1 {
-        margin: 18px 0 10px;
-        font-size: clamp(28px, 6vw, 44px);
-        line-height: 1.3;
-      }
-      .tagline {
-        margin: 0 auto;
-        max-width: 640px;
-        font-size: 20px;
-        color: var(--muted);
-      }
-      .cta {
-        margin: 30px 0 10px;
-        display: flex;
-        flex-wrap: wrap;
-        gap: 14px;
-        justify-content: center;
-      }
+      nav.top .wrap { display: flex; align-items: center; gap: 28px; height: 60px; }
+      .brand { display: flex; align-items: center; gap: 10px; font-weight: 700; font-size: 19px; text-decoration: none; }
+      .brand img { width: 30px; height: 30px; border-radius: 8px; image-rendering: pixelated; }
+      nav.top .links { display: flex; gap: 26px; margin-left: auto; font-size: 14.5px; }
+      nav.top .links a { text-decoration: none; color: var(--muted); }
+      nav.top .links a:hover { color: var(--ink); }
       .btn {
-        display: inline-block;
-        padding: 14px 22px;
-        border: 3px solid var(--ink);
-        box-shadow: 4px 4px 0 var(--ink);
-        background: var(--green);
-        color: var(--ink);
-        font: 12px/1.4 'Press Start 2P', ui-monospace, monospace;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 13px 24px;
+        border-radius: 999px;
+        font: 600 16px/1 var(--sans);
         text-decoration: none;
-        transition: transform 0.05s;
+        border: 0;
+        cursor: pointer;
+        transition: transform 0.15s ease, background 0.15s ease;
       }
-      .btn:hover {
-        transform: translateY(-2px);
-        box-shadow: 4px 6px 0 var(--ink);
-      }
-      .btn:active {
-        transform: translate(3px, 3px);
-        box-shadow: 1px 1px 0 var(--ink);
-      }
-      .btn.secondary {
-        background: var(--paper);
-      }
-      .platforms {
+      .btn:active { transform: scale(0.97); }
+      .btn-primary { background: var(--ink); color: #fff; }
+      .btn-primary:hover { background: #000; }
+      .btn-ghost { color: var(--ink); background: transparent; box-shadow: inset 0 0 0 1.5px var(--line); }
+      .btn-ghost:hover { box-shadow: inset 0 0 0 1.5px var(--ink); }
+      .btn-small { padding: 9px 16px; font-size: 14px; }
+      .btn:focus-visible, a:focus-visible, summary:focus-visible { outline: 3px solid #4a9fe0; outline-offset: 3px; }
+
+      /* ---------- hero ---------- */
+      .hero { padding-block: 88px 40px; text-align: center; }
+      .eyebrow {
+        display: inline-flex;
+        gap: 8px;
+        align-items: center;
+        padding: 7px 14px;
+        border-radius: 999px;
+        background: var(--soft);
         font-size: 14px;
         color: var(--muted);
       }
-      .platforms a {
-        margin: 0 6px;
+      .eyebrow b { color: var(--ink); font-weight: 600; }
+      h1 {
+        font-size: clamp(46px, 8vw, 92px);
+        line-height: 0.98;
+        letter-spacing: -0.045em;
+        font-weight: 800;
+        margin: 22px auto 0;
+        max-width: 13ch;
+        text-wrap: balance;
       }
-      .fineprint {
-        margin-top: 6px;
-        font-size: 14px;
+      .sub {
+        font-size: clamp(18px, 2.2vw, 22px);
         color: var(--muted);
+        max-width: 40ch;
+        margin: 22px auto 0;
+        text-wrap: balance;
       }
+      .ctas { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; margin-top: 32px; }
+      .fine { font-size: 13.5px; color: var(--muted); margin-top: 14px; }
 
-      /* demo */
-      .demo {
-        margin: 34px auto 0;
-        max-width: 520px;
-        border: 4px solid var(--ink);
-        box-shadow: 8px 8px 0 var(--ink);
-        background: #1b1f2a;
+      /* the desktop mock */
+      .desk {
+        position: relative;
+        margin: 56px auto 0;
+        max-width: 1040px;
+        aspect-ratio: 16 / 9.6;
+        border-radius: 22px;
+        overflow: hidden;
+        box-shadow: var(--shadow), 0 0 0 1px rgba(0, 0, 0, 0.06);
+        background:
+          radial-gradient(70% 90% at 15% 10%, #ffd9c2 0%, transparent 60%),
+          radial-gradient(60% 80% at 90% 20%, #e6dcff 0%, transparent 60%),
+          radial-gradient(70% 80% at 60% 100%, #cff3e1 0%, transparent 60%),
+          #fff6e9;
+        text-align: left;
       }
-      .demo video {
-        display: block;
-        width: 100%;
-        height: auto;
+      .win {
+        position: absolute;
+        background: rgba(255, 255, 255, 0.92);
+        border-radius: 14px;
+        box-shadow: 0 14px 40px rgba(0, 0, 0, 0.1), 0 0 0 1px rgba(0, 0, 0, 0.05);
+        overflow: hidden;
       }
+      .win .bar { height: 30px; display: flex; gap: 7px; align-items: center; padding: 0 12px; background: #f4f1ec; font: 500 11.5px var(--mono); color: var(--muted); }
+      .win .bar i { width: 10px; height: 10px; border-radius: 50%; display: block; }
+      .win .bar span { margin-left: 8px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
+      .lines { padding: 14px 16px; display: grid; gap: 9px; }
+      .lines i { display: block; height: 9px; border-radius: 5px; background: #ece6dd; }
+      .dock {
+        position: absolute;
+        left: 50%;
+        bottom: 12px;
+        transform: translateX(-50%);
+        display: flex;
+        gap: 10px;
+        padding: 9px 12px;
+        border-radius: 18px;
+        background: rgba(255, 255, 255, 0.55);
+        backdrop-filter: blur(12px);
+        box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.6), 0 10px 30px rgba(0, 0, 0, 0.08);
+      }
+      .dock i { width: 38px; height: 38px; border-radius: 10px; display: block; }
+      .dock .app-noodle { background: #fff url(icon.png) center / 100% no-repeat; image-rendering: pixelated; }
+      .pet { position: absolute; }
+      .pet img { width: 100%; }
 
-      /* sections */
-      section {
-        padding: 56px 0 8px;
+      /* pixel-style bubbles (same look as the app) */
+      .bubble {
+        position: absolute;
+        background: #fffdf8;
+        border: 3px solid #1f1c1a;
+        box-shadow: 4px 4px 0 #1f1c1a;
+        border-radius: 14px;
+        padding: 12px 14px;
+        font: 600 13.5px/1.35 var(--mono);
+        color: #1f1c1a;
       }
+      .bubble small { display: block; font-weight: 500; color: #6b6259; margin-top: 2px; }
+      .pxbtns { display: flex; gap: 8px; margin-top: 10px; }
+      .pxbtn {
+        padding: 6px 12px;
+        border: 2.5px solid #1f1c1a;
+        box-shadow: 2.5px 2.5px 0 #1f1c1a;
+        border-radius: 8px;
+        background: #fffdf8;
+        font: 700 12.5px var(--mono);
+      }
+      .pxbtn.ok { background: #5cc46b; }
+      .pxbtn.no { background: #f2a0a8; }
+      .timer {
+        position: absolute;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 8px 14px;
+        background: #fffdf8;
+        border: 3px solid #1f1c1a;
+        box-shadow: 4px 4px 0 #1f1c1a;
+        border-radius: 12px;
+        font: 700 22px var(--mono);
+        font-variant-numeric: tabular-nums;
+      }
+      .timer img { width: 28px; }
+
+      /* gentle life on the hero: he bobs, the bubble floats */
+      @keyframes bob { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-6px); } }
+      @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-4px); } }
+      .bob { animation: bob 1s steps(2) infinite; }
+      .float { animation: float 3s ease-in-out infinite; }
+
+      /* ---------- sections ---------- */
+      section { padding-block: 110px 0; }
+      .head { text-align: center; max-width: 760px; margin: 0 auto; }
+      .kicker { font: 600 14px var(--sans); color: var(--red); letter-spacing: 0.01em; }
       h2 {
-        margin: 0 0 24px;
-        font-size: 18px;
-        line-height: 1.5;
-        text-align: center;
+        font-size: clamp(36px, 5.4vw, 60px);
+        line-height: 1.02;
+        letter-spacing: -0.04em;
+        font-weight: 800;
+        margin: 10px 0 0;
+        text-wrap: balance;
       }
-      .grid {
+      .head p { color: var(--muted); font-size: 19px; margin: 18px auto 0; max-width: 46ch; text-wrap: balance; }
+
+      .grid3 { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 18px; margin-top: 56px; }
+      .grid2 { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px; margin-top: 56px; }
+      .tile {
+        border-radius: var(--radius);
+        padding: 30px;
         display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-        gap: 18px;
+        gap: 8px;
+        align-content: start;
+        min-width: 0;
       }
-      .card {
-        padding: 18px 18px 14px;
-        background: var(--paper);
-        color: var(--ink);
-        border: 3px solid var(--ink);
-        box-shadow: 4px 4px 0 var(--ink);
+      .tile h3 { margin: 0; font-size: 23px; letter-spacing: -0.02em; font-weight: 700; }
+      .tile p { margin: 0; color: var(--muted); font-size: 16px; }
+      .stage {
+        position: relative;
+        height: 230px;
+        border-radius: 20px;
+        background: rgba(255, 255, 255, 0.65);
+        margin-bottom: 18px;
+        overflow: hidden;
       }
-      .card h3 {
-        margin: 0 0 6px;
-        font-size: 17px;
+      .stage .bubble, .stage .timer { position: absolute; }
+      .t-peach { background: var(--peach); }
+      .t-mint { background: var(--mint); }
+      .t-lilac { background: var(--lilac); }
+      .t-sky { background: var(--sky); }
+      .t-butter { background: var(--butter); }
+      .t-soft { background: var(--soft); }
+
+      /* ---------- night: for developers ---------- */
+      .night {
+        margin-top: 110px;
+        background: radial-gradient(80% 60% at 70% 0%, #2a3160 0%, transparent 60%), var(--night);
+        color: var(--night-ink);
+        padding-block: 110px;
       }
-      .card p {
-        margin: 0;
-        font-size: 15px;
-        line-height: 1.5;
+      .night section { padding: 0; }
+      .night .head p { color: var(--night-muted); }
+      .night .kicker { color: #f6c744; }
+      .devgrid { display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr); gap: 22px; margin-top: 56px; }
+      .term {
+        position: relative;
+        border-radius: 20px;
+        background: var(--night-2);
+        box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.06), 0 30px 80px rgba(0, 0, 0, 0.45);
+        overflow: hidden;
+        min-height: 500px;
       }
-      .steps {
-        counter-reset: step;
+      .term .bar { background: #232842; color: var(--night-muted); }
+      .term pre { margin: 0; padding: 20px 22px; font: 500 15px/1.75 var(--mono); color: #d9def5; white-space: pre-wrap; }
+      .term pre b { color: #f6c744; font-weight: 500; }
+      .term pre em { color: #7ee0a1; font-style: normal; }
+      .devlist { display: grid; gap: 14px; }
+      .devitem {
+        border-radius: 20px;
+        padding: 22px 24px;
+        background: var(--night-2);
+        box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.06);
+      }
+      .devitem h3 { margin: 0 0 4px; font-size: 19px; letter-spacing: -0.01em; }
+      .devitem p { margin: 0; color: var(--night-muted); font-size: 15.5px; }
+      .usage { display: flex; align-items: center; gap: 8px; font: 700 11px var(--mono); color: #1f1c1a; background: #fffdf8; border: 2.5px solid #1f1c1a; border-radius: 8px; padding: 4px 8px; position: absolute; }
+      .usage i { display: block; width: 70px; height: 9px; border: 2px solid #1f1c1a; background: linear-gradient(90deg, #5cc46b 62%, transparent 62%); }
+
+      /* ---------- grows / cats ---------- */
+      .levels { display: flex; justify-content: center; align-items: flex-end; gap: clamp(10px, 4vw, 48px); margin-top: 56px; flex-wrap: wrap; }
+      .level { text-align: center; }
+      .level img { margin: 0 auto; }
+      .level b { display: block; font-size: 15px; margin-top: 10px; }
+      .level span { font-size: 14px; color: var(--muted); }
+      .recap {
+        max-width: 560px;
+        margin: 48px auto 0;
+        border-radius: 24px;
+        background: #2e3558;
+        color: #fff;
+        padding: 30px 34px;
+        box-shadow: var(--shadow);
         display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-        gap: 18px;
+        grid-template-columns: auto minmax(0, 1fr);
+        gap: 6px 22px;
+        align-items: center;
       }
-      .steps .card::before {
-        counter-increment: step;
-        content: counter(step);
-        display: inline-grid;
-        place-items: center;
-        width: 30px;
-        height: 30px;
-        margin-bottom: 8px;
-        background: var(--gold);
-        border: 3px solid var(--ink);
-        font: 12px 'Press Start 2P', monospace;
+      .recap img { grid-row: span 4; width: 92px; border-radius: 18px; background: #fff; image-rendering: pixelated; }
+      .recap h3 { margin: 0; font-size: 26px; letter-spacing: -0.02em; }
+      .recap p { margin: 0; color: #c8cfea; font-size: 16px; }
+
+      .cats { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 18px; margin-top: 56px; }
+      .cat { border-radius: var(--radius); padding: 34px 20px 26px; text-align: center; }
+      .cat img { width: 88%; margin: 0 auto; }
+      .cat h3 { margin: 14px 0 2px; font-size: 22px; letter-spacing: -0.02em; }
+      .cat p { margin: 0; color: var(--muted); font-size: 15px; }
+
+      /* ---------- accessories + sizes ---------- */
+      .extras { display: grid; grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr); gap: 18px; margin-top: 18px; }
+      .acc { display: flex; justify-content: space-around; align-items: flex-end; gap: 10px; flex-wrap: wrap; }
+      .acc figure { margin: 0; text-align: center; }
+      .acc img { width: min(150px, 26vw); margin: 0 auto; }
+      .acc figcaption { font-size: 14px; color: var(--muted); margin-top: 6px; }
+      .acc figcaption b { color: var(--ink); display: block; font-size: 15px; }
+      .sizes { display: flex; align-items: flex-end; justify-content: center; gap: clamp(8px, 2vw, 16px); }
+      .sizes figure { margin: 0; text-align: center; }
+      .sizes figcaption { font: 700 14px var(--mono); margin-top: 6px; }
+
+      /* ---------- friends ---------- */
+      .split { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr); gap: 56px; align-items: center; margin-top: 10px; }
+      .split .head { text-align: left; margin: 0; }
+      .split .head p { margin-left: 0; }
+      .checks { list-style: none; padding: 0; margin: 26px 0 0; display: grid; gap: 12px; }
+      .checks li { display: flex; gap: 12px; align-items: baseline; font-size: 16.5px; }
+      .checks li::before { content: '✓'; font-weight: 800; color: var(--green); }
+      .panel {
+        border-radius: 24px;
+        background: linear-gradient(160deg, #4a5a78, #2a3142);
+        color: #f6f2ea;
+        padding: 26px;
+        box-shadow: var(--shadow);
+        display: grid;
+        gap: 6px;
+        min-width: 0;
       }
-      .note {
-        padding: 20px 22px;
-        background: var(--bg2);
-        border: 3px solid var(--ink);
-        box-shadow: 4px 4px 0 var(--ink);
+      .panel h3 { margin: 0 0 6px; font: 700 18px var(--mono); }
+      .prow { display: flex; align-items: center; gap: 12px; padding: 10px 0; border-top: 1px solid rgba(255, 255, 255, 0.08); font-size: 15px; min-width: 0; }
+      .prow .who { flex: 1; min-width: 0; }
+      .prow .who b { display: block; }
+      .prow .who span { font: 500 12.5px var(--mono); color: #b9c1dc; }
+      .prow .ava { width: 74px; flex: 0 0 74px; }
+      .codechip { font: 700 17px var(--mono); letter-spacing: 1px; background: rgba(0, 0, 0, 0.3); padding: 7px 12px; border-radius: 8px; }
+      .pinput { flex: 1; min-width: 0; background: #fff; color: #1f1c1a; border: 2.5px solid #1f1c1a; border-radius: 8px; padding: 7px 10px; font: 600 14px var(--mono); }
+      .dot { width: 11px; height: 11px; border: 2px solid #1f1c1a; background: #6b7385; flex: 0 0 11px; }
+      .dot.on { background: #5cc46b; box-shadow: 0 0 0 4px rgba(92, 196, 107, 0.25); }
+      .panel .pxbtn { font-size: 12px; padding: 5px 10px; color: #1f1c1a; }
+      .sect-label { font: 600 12px var(--mono); text-transform: uppercase; letter-spacing: 0.08em; color: #b9c1dc; margin-top: 8px; }
+
+      /* ---------- play ---------- */
+      .grid4 { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 18px; margin-top: 56px; }
+      .stage.dark { background: #171a2b; }
+      .laser { position: absolute; width: 14px; height: 14px; background: #ff2a2a; box-shadow: 0 0 0 5px rgba(255, 42, 42, 0.3), 0 0 18px #ff2a2a; animation: laser 3s ease-in-out infinite; left: 70%; top: 30%; }
+      @keyframes laser { 0%, 100% { left: 70%; top: 30%; } 33% { left: 20%; top: 22%; } 66% { left: 50%; top: 12%; } }
+      .note { position: absolute; background: #fff3a8; border: 2.5px solid #1f1c1a; box-shadow: 3px 3px 0 #1f1c1a; padding: 8px 10px; font: 600 13px var(--sans); transform: rotate(3deg); display: flex; gap: 8px; align-items: center; color: #1f1c1a; }
+      .note .pxbtn { padding: 1px 6px; }
+      .kbd { display: inline-block; font: 700 12px var(--mono); padding: 2px 7px; border: 1.5px solid var(--line); border-bottom-width: 3px; border-radius: 6px; background: #fff; color: var(--ink); }
+
+      /* ---------- settings mock ---------- */
+      .settings-mock {
+        margin-top: 56px;
+        border-radius: 22px;
+        overflow: hidden;
+        display: grid;
+        grid-template-columns: 210px minmax(0, 1fr);
+        background: linear-gradient(160deg, #4a5a78, #2a3142);
+        color: #f6f2ea;
+        box-shadow: var(--shadow);
+        text-align: left;
       }
-      .note h3 {
-        margin: 0 0 8px;
+      .sm-nav { background: rgba(0, 0, 0, 0.25); border-right: 2px solid #1f1c1a; padding: 16px 10px; display: grid; gap: 4px; align-content: start; }
+      .sm-nav span { font: 700 13px var(--mono); padding: 8px 10px; border: 2px solid transparent; }
+      .sm-nav span.on { background: #f6c744; color: #1f1c1a; border-color: #1f1c1a; box-shadow: 2px 2px 0 #1f1c1a; }
+      .sm-body { padding: 22px 26px; min-width: 0; }
+      .sm-body h3 { margin: 0 0 6px; font: 800 20px var(--mono); }
+      .sm-row { display: flex; align-items: center; gap: 14px; padding: 11px 0; border-bottom: 1px solid rgba(255, 255, 255, 0.07); }
+      .sm-row div { flex: 1; min-width: 0; }
+      .sm-row b { display: block; font-size: 15px; }
+      .sm-row span { font-size: 13px; color: #c9d1e6; }
+      .sw { flex: 0 0 auto; width: 40px; height: 22px; border: 2px solid #1f1c1a; background: #6b7385; box-shadow: 2px 2px 0 #1f1c1a; position: relative; }
+      .sw::after { content: ''; position: absolute; top: 2px; left: 2px; width: 14px; height: 14px; background: #f6f2ea; }
+      .sw.on { background: #5cc46b; }
+      .sw.on::after { left: 20px; }
+      .modes { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px; margin-top: 18px; }
+
+      /* ---------- privacy + facts ---------- */
+      .facts { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 18px; margin-top: 56px; }
+      .fact { border-radius: var(--radius); background: var(--soft); padding: 30px; }
+      .fact b { display: block; font-size: 44px; letter-spacing: -0.04em; font-weight: 800; line-height: 1; }
+      .fact span { display: block; margin-top: 10px; color: var(--muted); font-size: 15.5px; }
+
+      /* ---------- FAQ ---------- */
+      .faq { max-width: 760px; margin: 48px auto 0; }
+      details { border-bottom: 1px solid var(--line); }
+      summary { cursor: pointer; list-style: none; padding: 22px 0; font-size: 19px; font-weight: 600; display: flex; justify-content: space-between; gap: 20px; }
+      summary::-webkit-details-marker { display: none; }
+      summary::after { content: '+'; font-weight: 400; font-size: 24px; line-height: 1; color: var(--muted); transition: transform 0.2s; }
+      details[open] summary::after { transform: rotate(45deg); }
+      details p { margin: 0 0 22px; color: var(--muted); max-width: 64ch; }
+
+      /* ---------- final CTA + footer ---------- */
+      .final { text-align: center; padding-block: 120px 100px; }
+      .final img { width: 220px; margin: 0 auto 10px; }
+      footer { border-top: 1px solid var(--line); padding-block: 34px 50px; color: var(--muted); font-size: 14px; }
+      footer .wrap { display: flex; gap: 24px; flex-wrap: wrap; align-items: center; }
+      footer a { text-decoration: none; }
+      footer a:hover { color: var(--ink); }
+      footer .sp { margin-left: auto; }
+
+      /* scroll reveal: content is visible without JS; with JS it rises in once */
+      .js .reveal { opacity: 0; transform: translateY(24px); transition: opacity 0.7s ease, transform 0.7s cubic-bezier(0.2, 0.8, 0.2, 1); }
+      .js .reveal.in { opacity: 1; transform: none; }
+
+      @media (max-width: 900px) {
+        nav.top .links { display: none; }
+        nav.top .btn-small { margin-left: auto; }
+        .grid3, .grid2, .cats, .facts, .devgrid, .extras, .split, .modes { grid-template-columns: minmax(0, 1fr); }
+        .grid4 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+        .settings-mock { grid-template-columns: minmax(0, 1fr); }
+        .sm-nav { display: flex; overflow-x: auto; border-right: 0; border-bottom: 2px solid #1f1c1a; }
+        .sm-nav span { white-space: nowrap; }
+        .split { gap: 32px; }
+        .desk { aspect-ratio: 4 / 5; }
+        .desk .pet { width: 60% !important; bottom: 15% !important; }
+        .desk .bubble { top: 52% !important; right: auto !important; left: 6%; font-size: 12px; }
+        .desk .timer { top: auto !important; bottom: 40%; left: auto !important; right: 6%; font-size: 18px; }
+        .term { min-height: 540px; }
+        .term .bubble { top: 250px !important; right: 16px !important; }
+        .term img.px { width: 58% !important; }
+        .hide-sm { display: none; }
       }
-      .note ul {
-        margin: 8px 0 0;
-        padding-left: 20px;
-      }
-      kbd {
-        padding: 1px 6px;
-        background: var(--paper);
-        color: var(--ink);
-        border: 2px solid var(--ink);
-        font: 13px ui-monospace, monospace;
-      }
-      footer {
-        padding: 56px 0 40px;
-        text-align: center;
-        color: var(--muted);
-        font-size: 14px;
+      @media (max-width: 520px) {
+        .grid4 { grid-template-columns: minmax(0, 1fr); }
+        .panel { padding: 18px; }
+        .prow { flex-wrap: wrap; gap: 8px 10px; }
+        .prow .who { min-width: 120px; }
+        .prow .ava { width: 56px; flex-basis: 56px; }
+        .codechip { font-size: 14px; }
       }
       @media (prefers-reduced-motion: reduce) {
-        .btn {
-          transition: none;
-        }
+        .bob, .float, .laser { animation: none; }
+        .js .reveal { opacity: 1; transform: none; transition: none; }
+        html { scroll-behavior: auto; }
       }
     </style>
   </head>
   <body>
-    <header class="wrap">
-      <img class="pixelated" src="icon.png" alt="Noodle the cat" width="104" height="104" />
-      <h1 class="pixel">AgentPet</h1>
-      <p class="tagline">
-        A desktop pet that babysits your AI coding agent. Noodle sleeps while Claude Code is idle,
-        <b>hops when it needs your approval</b> (approve right from his bubble), and farts a
-        rainbow when the task is done. 🌈
+    <nav class="top">
+      <div class="wrap">
+        <a class="brand" href="#"><img src="icon.png" alt="" />Noodle</a>
+        <div class="links">
+          <a href="#focus">Focus</a>
+          <a href="#developers">For developers</a>
+          <a href="#cats">Cats</a>
+          <a href="#friends">Friends</a>
+          <a href="#privacy">Privacy</a>
+          <a href="#faq">FAQ</a>
+        </div>
+        <a class="btn btn-primary btn-small dl" href="https://github.com/hsanjebri/agentpet/releases/latest">Download</a>
+      </div>
+    </nav>
+
+    <header class="hero wrap">
+      <span class="eyebrow"><b>Free</b> · Windows · Mac · Linux</span>
+      <h1>A tiny cat for your desktop.</h1>
+      <p class="sub">
+        Noodle keeps you company while you work: focus sessions, your music, little healthy
+        habits. And if you code with AI, he tells you when it needs you.
       </p>
-
-      <div class="cta">
-        <a id="download" class="btn" href="https://github.com/hsanjebri/agentpet/releases/latest"
-          >Download</a
-        >
-        <a class="btn secondary" href="https://github.com/hsanjebri/agentpet">View on GitHub</a>
+      <div class="ctas">
+        <a class="btn btn-primary dl" id="download" href="https://github.com/hsanjebri/agentpet/releases/latest">Download Noodle</a>
+        <a class="btn btn-ghost" href="#focus">See what he does</a>
       </div>
-      <div class="platforms">
-        <a href="https://github.com/hsanjebri/agentpet/releases/latest/download/AgentPet-Setup.exe"
-          >Windows</a
-        >
-        ·
-        <a href="https://github.com/hsanjebri/agentpet/releases/latest/download/AgentPet-arm64.dmg"
-          >macOS (Apple silicon)</a
-        >
-        ·
-        <a href="https://github.com/hsanjebri/agentpet/releases/latest/download/AgentPet-x64.dmg"
-          >macOS (Intel)</a
-        >
-        ·
-        <a href="https://github.com/hsanjebri/agentpet/releases/latest/download/AgentPet.AppImage"
-          >Linux</a
-        >
-      </div>
-      <p class="fineprint">Free · updates itself · everything stays on your computer</p>
+      <p class="fine">No account. Everything stays on your computer.</p>
 
-      <div class="demo">
-        <video src="demo.mp4" poster="poster.png" autoplay loop muted playsinline></video>
+      <div class="desk" aria-label="Noodle on a desktop, next to a music bubble and a focus timer">
+        <div class="win" style="left: 6%; top: 9%; width: 42%; height: 46%">
+          <div class="bar"><i style="background:#ff5f57"></i><i style="background:#febc2e"></i><i style="background:#28c840"></i><span>essay-final-v3.docx</span></div>
+          <div class="lines"><i style="width:82%"></i><i style="width:64%"></i><i style="width:74%"></i><i style="width:40%"></i><i style="width:70%"></i><i style="width:58%"></i></div>
+        </div>
+        <div class="win hide-sm" style="left: 40%; top: 18%; width: 34%; height: 38%">
+          <div class="bar"><i style="background:#ff5f57"></i><i style="background:#febc2e"></i><i style="background:#28c840"></i><span>lecture-notes.pdf</span></div>
+          <div class="lines"><i style="width:90%"></i><i style="width:55%"></i><i style="width:77%"></i><i style="width:66%"></i></div>
+        </div>
+        <div class="timer float" style="left: 8%; top: 62%">
+          <img class="px" src="img/tomato.png" alt="" /> 18:42
+        </div>
+        <div class="bubble float" style="right: 6%; top: 26%">
+          ♪ lofi beats to study to
+          <small>Chillhop · Spotify</small>
+          <div class="pxbtns"><span class="pxbtn">⏮</span><span class="pxbtn">⏸</span><span class="pxbtn">⏭</span></div>
+        </div>
+        <div class="pet bob" style="right: 6%; bottom: 13%; width: 34%">
+          <img class="px" src="img/vibing.png" alt="Noodle the pixel cat with headphones on" />
+        </div>
+        <div class="dock" aria-hidden="true">
+          <i style="background:#4a9fe0"></i><i style="background:#f6c744"></i><i class="app-noodle"></i><i style="background:#5cc46b"></i><i style="background:#e24b4a"></i>
+        </div>
       </div>
     </header>
 
-    <main class="wrap">
-      <section>
-        <h2 class="pixel">What Noodle does</h2>
-        <div class="grid">
-          <div class="card">
-            <h3>✅ Approve from the cat</h3>
-            <p>
-              When Claude asks for permission, Noodle hops toward you and shows what it wants to
-              run. Approve or deny right there.
-            </p>
+    <main>
+      <section id="focus" class="wrap">
+        <div class="head reveal">
+          <div class="kicker">Focus &amp; study</div>
+          <h2>Focus, together.</h2>
+          <p>Start a Pomodoro and he naps on a tiny tomato timer. Open TikTok mid-session and he walks over and sits on it.</p>
+        </div>
+        <div class="grid3">
+          <div class="tile t-peach reveal">
+            <div class="stage">
+              <div class="timer" style="left: 50%; top: 24px; transform: translateX(-50%)"><img class="px" src="img/tomato.png" alt="" /> 25:00</div>
+              <img class="px" src="img/sleeping.png" alt="" style="position:absolute; left:8%; bottom:6px; width:84%" />
+            </div>
+            <h3>Pomodoro, with a nap</h3>
+            <p>25 minutes of focus, a stretch at the break, and a fish for every round.</p>
           </div>
-          <div class="card">
-            <h3>🐱 His tail tells you</h3>
-            <p>
-              Sleeping, working (coffee mug), needs you (red antenna), done (rainbow), sweating,
-              sad, hissing. One glance and you know.
-            </p>
+          <div class="tile t-lilac reveal">
+            <div class="stage">
+              <div class="bubble" style="left: 50%; top: 22px; transform: translateX(-50%); white-space: nowrap">Focus first 😾<small>click me to shoo me away</small></div>
+              <img class="px" src="img/needs.png" alt="" style="position:absolute; left:8%; bottom:6px; width:84%" />
+            </div>
+            <h3>Distraction guard</h3>
+            <p>YouTube, Instagram or TikTok during a session? He sits on the window. Funny, and it works.</p>
           </div>
-          <div class="card">
-            <h3>📱 Phone ping</h3>
-            <p>
-              Walked away? If Claude waits for you a few minutes, your phone buzzes. Free, no
-              account.
-            </p>
+          <div class="tile t-butter reveal">
+            <div class="stage">
+              <div class="bubble" style="left: 10px; top: 20px">Bac<small style="font: 800 26px var(--mono); color:#1f1c1a">23 days</small></div>
+              <img class="px" src="img/happy.png" alt="" style="position:absolute; right:-4%; bottom:6px; width:80%" />
+            </div>
+            <h3>Streaks &amp; countdowns</h3>
+            <p>Five days in a row earns him a scarf. Set an exam date and he holds the days left.</p>
           </div>
-          <div class="card">
-            <h3>📊 Session usage bar</h3>
-            <p>Your 5-hour Claude limit under his paws, green → yellow → red. He sweats at 80%.</p>
+        </div>
+
+        <div class="grid2">
+          <div class="tile t-mint reveal">
+            <div class="stage">
+              <div class="bubble" style="left: 18px; top: 20px">💧 time for a glass of water<div class="pxbtns"><span class="pxbtn ok">I drank 💧</span></div></div>
+              <img class="px" src="img/working.png" alt="" style="position:absolute; right:-2%; bottom:6px; width:62%" />
+            </div>
+            <h3>Little healthy habits</h3>
+            <p>A glass of water now and then, a stretch every couple of hours, and at bedtime he lies across your screen.</p>
           </div>
-          <div class="card">
-            <h3>😾 Risk alerts</h3>
-            <p>
-              He hisses at <code>.env</code>, <code>rm -rf</code>,
-              <code>git push --force</code>, deleted tests, and says why.
-            </p>
-          </div>
-          <div class="card">
-            <h3>🎵 Vibes to your music</h3>
-            <p>
-              Headphones on, head bobbing to Spotify or YouTube, with pixel play/pause buttons.
-              (Windows)
-            </p>
-          </div>
-          <div class="card">
-            <h3>🌈 Recap & Wrapped</h3>
-            <p>
-              A daily card and a weekly “Wrapped”: tasks, approvals, your favorite file, the
-              scariest moment. Share it.
-            </p>
-          </div>
-          <div class="card">
-            <h3>🎩 He grows up</h3>
-            <p>
-              Kitten → cat → chonky senior with glasses. Unlock a top hat, sunglasses and a crown.
-              Pet him, feed him, name him.
-            </p>
-          </div>
-          <div class="card">
-            <h3>🔒 Private by design</h3>
-            <p>
-              Runs on your computer only. No account, no telemetry. Your Claude settings are backed
-              up before any change.
-            </p>
+          <div class="tile t-sky reveal">
+            <div class="stage">
+              <div class="bubble" style="left: 18px; top: 20px">🌧️ 14° in Tunis<small>🌙 iftar in 2h 13</small></div>
+              <img class="px" src="img/rain.png" alt="" style="position:absolute; right:-2%; bottom:6px; width:62%" />
+            </div>
+            <h3>Dressed for your day</h3>
+            <p>A rain hood when it rains, a scarf in the cold. Prayer times and Ramadan mode if you want them.</p>
           </div>
         </div>
       </section>
 
-      <section>
-        <h2 class="pixel">Up and running in 2 minutes</h2>
-        <div class="steps">
-          <div class="card">
-            <h3>Download & install</h3>
-            <p>Pick your system above. AgentPet updates itself from then on.</p>
+      <div class="night" id="developers">
+        <section class="wrap">
+          <div class="head reveal">
+            <div class="kicker">For developers</div>
+            <h2>Never miss an approval.</h2>
+            <p>Noodle follows Claude Code. He works while it works, and hops and meows when it needs you. Approve right from his bubble.</p>
           </div>
-          <div class="card">
-            <h3>Name your cat, connect Claude Code</h3>
-            <p>One click. It shows exactly what it adds to Claude Code’s settings, backup first.</p>
+          <div class="devgrid">
+            <div class="term reveal">
+              <div class="win" style="position: static; background: transparent; box-shadow: none; border-radius: 0">
+                <div class="bar"><i style="background:#ff5f57"></i><i style="background:#febc2e"></i><i style="background:#28c840"></i><span>claude — my-app</span></div>
+              </div>
+<pre><b>&gt; fix the login bug</b>
+● Read auth.ts
+● Edit session.ts  <em>+12 −4</em>
+● Bash npm test
+
+  Waiting for permission…</pre>
+              <div class="bubble" style="right: 24px; top: 190px">
+                🐱 Claude wants to run
+                <small>$ npm test</small>
+                <div class="pxbtns"><span class="pxbtn ok">Approve</span><span class="pxbtn no">Deny</span></div>
+              </div>
+              <img class="px" src="img/needs.png" alt="Noodle alerting: Claude needs you" style="position:absolute; right: 14px; bottom: 40px; width: 40%; max-width: 260px" />
+              <div class="usage" style="right: 34px; bottom: 14px">SESSION <i></i> 62%</div>
+            </div>
+            <div class="devlist">
+              <div class="devitem reveal"><h3>Approve / Deny from the bubble</h3><p>No more switching back to the terminal for every permission.</p></div>
+              <div class="devitem reveal"><h3>He hisses at risky moves</h3><p>.env files, rm -rf, force pushes, deleted tests. You choose which.</p></div>
+              <div class="devitem reveal"><h3>Session usage under his paws</h3><p>Your 5-hour Claude limit, and when it resets.</p></div>
+              <div class="devitem reveal"><h3>Your phone buzzes</h3><p>Away from the desk? Get a ping when Claude has waited too long.</p></div>
+            </div>
           </div>
-          <div class="card">
-            <h3>Start a Claude Code session</h3>
-            <p>Noodle wakes up and follows along.</p>
+        </section>
+      </div>
+
+      <section class="wrap">
+        <div class="head reveal">
+          <div class="kicker">Grows with you</div>
+          <h2>From kitten to legend.</h2>
+          <p>Every focus session, song and finished task is XP. He grows up and unlocks a top hat, sunglasses and a crown.</p>
+        </div>
+        <div class="levels">
+          <div class="level reveal"><img class="px" src="img/working.png" alt="" style="width: 150px" /><b>Kitten</b><span>level 1</span></div>
+          <div class="level reveal"><img class="px" src="img/happy.png" alt="" style="width: 210px" /><b>Cat</b><span>level 5</span></div>
+          <div class="level reveal"><img class="px" src="img/tophat.png" alt="" style="width: 250px" /><b>🎩 Top hat</b><span>100 focus sessions</span></div>
+        </div>
+        <div class="recap reveal">
+          <img src="icon.png" alt="" />
+          <h3>Your week with Noodle</h3>
+          <p>🍅 12 focus sessions</p>
+          <p>🎵 48 songs vibed · 🐟 15 fish</p>
+          <p>🔥 6 days in a row</p>
+        </div>
+      </section>
+
+      <section id="cats" class="wrap">
+        <div class="head reveal">
+          <div class="kicker">Make him yours</div>
+          <h2>Pick your cat.</h2>
+          <p>Name him, pick a size, and switch any time.</p>
+        </div>
+        <div class="cats">
+          <div class="cat t-soft reveal"><img class="px" src="img/happy.png" alt="Noodle" /><h3>Noodle</h3><p>White with black patches. The original.</p></div>
+          <div class="cat t-peach reveal"><img class="px" src="img/mochi.png" alt="Mochi" /><h3>Mochi</h3><p>Orange tabby. Very round.</p></div>
+          <div class="cat t-soft reveal"><img class="px" src="img/zitouna.png" alt="Zitouna" /><h3>Zitouna</h3><p>Tunisian street cat. Seen it all.</p></div>
+        </div>
+        <div class="extras">
+          <div class="tile t-lilac reveal">
+            <div class="acc">
+              <figure><img class="px" src="img/tophat.png" alt="" /><figcaption><b>🎩 Top hat</b>100 focus sessions</figcaption></figure>
+              <figure><img class="px" src="img/shades.png" alt="" /><figcaption><b>😎 Sunglasses</b>7-day streak</figcaption></figure>
+              <figure><img class="px" src="img/crown.png" alt="" /><figcaption><b>👑 Crown</b>300 focus sessions</figcaption></figure>
+            </div>
+            <h3 style="margin-top: 14px">Accessories to unlock</h3>
+            <p>Earned by spending time together. Wear them, or don't.</p>
+          </div>
+          <div class="tile t-mint reveal">
+            <div class="sizes">
+              <figure><img class="px" src="img/working.png" alt="" style="width: min(90px, 16vw)" /><figcaption>S</figcaption></figure>
+              <figure><img class="px" src="img/working.png" alt="" style="width: min(120px, 21vw)" /><figcaption>M</figcaption></figure>
+              <figure><img class="px" src="img/working.png" alt="" style="width: min(150px, 26vw)" /><figcaption>L</figcaption></figure>
+            </div>
+            <h3 style="margin-top: 14px">Three sizes</h3>
+            <p>Small in a corner, or large and proud. Drag him anywhere.</p>
           </div>
         </div>
       </section>
 
-      <section id="security-warning">
-        <div class="note">
-          <h3>🛡️ “Windows protected your PC”? That’s expected (for now)</h3>
-          <p>
-            AgentPet isn’t <b>code-signed</b> yet. Signing certificates cost money every year, and
-            we’ll add one as the project grows. Until then Windows and macOS warn about any unsigned
-            app. The code is open, so you can read it or build it yourself.
-          </p>
-          <ul>
-            <li>
-              <b>Windows:</b> click <kbd>More info</kbd>, then <kbd>Run anyway</kbd>.
-            </li>
-            <li>
-              <b>macOS:</b> right-click AgentPet › <kbd>Open</kbd>, or System Settings › Privacy &amp;
-              Security › <kbd>Open Anyway</kbd>.
-            </li>
-            <li>
-              <b>Linux:</b> make the AppImage executable (<code>chmod +x AgentPet.AppImage</code>) and
-              run it.
-            </li>
-          </ul>
+      <section id="friends" class="wrap">
+        <div class="split">
+          <div class="head reveal">
+            <div class="kicker">Friends</div>
+            <h2>Better with friends.</h2>
+            <p>Swap codes with a friend and your cats know each other. See when their cat is around, and how far they've grown.</p>
+            <ul class="checks">
+              <li>Add a friend with a code like MOCHI-7K2P</li>
+              <li>A green dot when their cat is online</li>
+              <li>Accept, remove or block, any time</li>
+              <li>Shares only the name, skin, level and online status. Off until you turn it on.</li>
+            </ul>
+          </div>
+          <div class="panel reveal" aria-label="The Friends screen in Noodle's settings">
+            <h3>👥 Friends</h3>
+            <div class="prow"><div class="who"><b>My code</b><span>give it to a friend</span></div><span class="codechip">NOODLE-48K2</span><span class="pxbtn">Copy</span></div>
+            <div class="prow"><span class="pinput">MOCHI-7K2P</span><span class="pxbtn ok">Add</span></div>
+            <div class="sect-label">Requests</div>
+            <div class="prow"><img class="px ava" src="img/zitouna-sleep.png" alt="" /><div class="who"><b>Zitouna · lv 5</b><span>ZITOUN-93HD</span></div><span class="pxbtn ok">Accept</span><span class="pxbtn">Decline</span></div>
+            <div class="sect-label">Friends (2)</div>
+            <div class="prow"><span class="dot on" title="online"></span><img class="px ava" src="img/mochi-work.png" alt="" /><div class="who"><b>Mochi · lv 12</b><span>online now</span></div></div>
+            <div class="prow"><span class="dot"></span><img class="px ava" src="img/tophat.png" alt="" /><div class="who"><b>Biscuit · lv 21</b><span>away</span></div></div>
+          </div>
         </div>
+      </section>
+
+      <section id="play" class="wrap">
+        <div class="head reveal">
+          <div class="kicker">Play &amp; little moments</div>
+          <h2>He has a life of his own.</h2>
+          <p>Small things that make you smile, and a few that actually help.</p>
+        </div>
+        <div class="grid4">
+          <div class="tile t-soft reveal">
+            <div class="stage dark"><span class="laser"></span><img class="px" src="img/needs.png" alt="" style="position:absolute; left:6%; bottom:6px; width:88%" /></div>
+            <h3>Laser game</h3>
+            <p>Press <span class="kbd">Ctrl</span> <span class="kbd">Alt</span> <span class="kbd">L</span>: a red dot, and he chases it.</p>
+          </div>
+          <div class="tile t-butter reveal">
+            <div class="stage"><div class="note" style="left: 12px; top: 22px">buy bread 🥖 <span class="pxbtn ok">✓</span></div><img class="px" src="img/working.png" alt="" style="position:absolute; left:6%; bottom:6px; width:88%" /></div>
+            <h3>Sticky notes</h3>
+            <p>"Remind me: buy bread." He holds it until you tick it.</p>
+          </div>
+          <div class="tile t-lilac reveal">
+            <div class="stage dark"><div class="bubble" style="left: 12px; top: 18px">go to bed 😴<small>click for 30 more min</small></div><img class="px" src="img/sleeping.png" alt="" style="position:absolute; left:6%; bottom:6px; width:88%" /></div>
+            <h3>Bedtime mode</h3>
+            <p>Past your bedtime he yawns, then lies across your screen.</p>
+          </div>
+          <div class="tile t-sky reveal">
+            <div class="stage"><div class="bubble" style="left: 12px; top: 18px">🙈 in a meeting<small>back when you're done</small></div><img class="px" src="img/zitouna-sleep.png" alt="" style="position:absolute; left:6%; bottom:6px; width:88%; opacity:.35" /></div>
+            <h3>Auto-hide</h3>
+            <p>Gone during fullscreen videos, meetings and screen shares.</p>
+          </div>
+        </div>
+      </section>
+
+      <section id="settings" class="wrap">
+        <div class="head reveal">
+          <div class="kicker">Your rules</div>
+          <h2>Every feature is a switch.</h2>
+          <p>Right-click him for Settings. Turn anything on or off, and it applies right away. He wiggles to say "got it".</p>
+        </div>
+        <div class="settings-mock reveal" aria-label="Noodle's Settings window">
+          <div class="sm-nav"><span>🐱 My pet</span><span class="on">✨ Features</span><span>🌍 Daily life</span><span>👥 Friends</span><span>⚙️ General</span><span>🔒 Privacy</span></div>
+          <div class="sm-body">
+            <h3>✨ Features</h3>
+            <div class="sm-row"><div><b>🎵 Vibe to my music</b><span>Headphones on when Spotify, YouTube, Deezer… play.</span></div><span class="sw on"></span></div>
+            <div class="sm-row"><div><b>🛡️ Distraction guard</b><span>Sits on YouTube, Instagram or TikTok during a focus round.</span></div><span class="sw on"></span></div>
+            <div class="sm-row"><div><b>💧 Drink water</b><span>A glass now and then. Tap "I drank".</span></div><span class="sw on"></span></div>
+            <div class="sm-row"><div><b>🚶 Wander when idle</b><span>Strolls along the bottom of the screen.</span></div><span class="sw on"></span></div>
+            <div class="sm-row"><div><b>😴 Bedtime mode</b><span>Lies across your screen after 23:30.</span></div><span class="sw"></span></div>
+          </div>
+        </div>
+        <div class="modes">
+          <div class="tile t-peach reveal"><h3>🎵 Just for fun &amp; focus</h3><p>Music, Pomodoro, habits and a cat that grows with you. No code anywhere.</p></div>
+          <div class="tile t-sky reveal"><h3>🧑‍💻 Developer</h3><p>Everything above, plus Claude Code: moods, approvals, usage, risk warnings and phone pings.</p></div>
+        </div>
+      </section>
+
+      <section id="privacy" class="wrap">
+        <div class="head reveal">
+          <div class="kicker">Private by design</div>
+          <h2>Lives on your computer.</h2>
+          <p>No account, no telemetry. The few features that use the internet are off until you turn them on.</p>
+        </div>
+        <div class="facts">
+          <div class="fact reveal"><b>0</b><span>accounts, emails or passwords to make</span></div>
+          <div class="fact reveal"><b>100%</b><span>local by default: your stats and settings never leave your PC</span></div>
+          <div class="fact reveal"><b>MIT</b><span>open source: read every line on GitHub</span></div>
+        </div>
+      </section>
+
+      <section id="faq" class="wrap">
+        <div class="head reveal"><h2>Questions</h2></div>
+        <div class="faq">
+          <details>
+            <summary>Is Noodle really free?</summary>
+            <p>Yes. Free and open source (MIT), on Windows, Mac and Linux. No ads, no account.</p>
+          </details>
+          <details>
+            <summary>Do I need to be a developer?</summary>
+            <p>No. At setup pick "Just for fun &amp; focus": music, Pomodoro, habits and a cat that grows with you. The Claude Code features only appear if you pick "developer".</p>
+          </details>
+          <details>
+            <summary>Windows says "Windows protected your PC". Is that safe?</summary>
+            <p>That's expected for now: Noodle isn't code-signed yet (certificates cost money every year). Click More info, then Run anyway. On Mac: right-click › Open. The source code is public if you want to check it.</p>
+          </details>
+          <details>
+            <summary>What does he send over the internet?</summary>
+            <p>Nothing, unless you turn a feature on. Weather sends your city's coordinates, Friends shares your pet's name, skin and level with friends you accept, and phone ping sends a project name to your own ntfy topic. That's the full list.</p>
+          </details>
+          <details>
+            <summary>How do friends work?</summary>
+            <p>Turn Friends on in Settings and you get a code like NOODLE-48K2. Give it to a friend, they add it, you accept, and you see each other's cat with a green dot when they're online. No email, no password: an anonymous account is made for you. Only the pet's name, skin, level and online status are shared.</p>
+          </details>
+          <details>
+            <summary>Does he slow my computer down?</summary>
+            <p>No. He's a tiny window that sleeps most of the time. You can also make him smaller, or hide him automatically during fullscreen apps and meetings.</p>
+          </details>
+        </div>
+      </section>
+
+      <section class="final wrap">
+        <img class="px reveal" src="img/happy.png" alt="" />
+        <h2 class="reveal">Meet Noodle.</h2>
+        <div class="ctas reveal">
+          <a class="btn btn-primary dl" href="https://github.com/hsanjebri/agentpet/releases/latest">Download Noodle</a>
+          <a class="btn btn-ghost" href="https://github.com/hsanjebri/agentpet/releases/latest">All platforms</a>
+        </div>
+        <p class="fine">Free for Windows · Mac · Linux</p>
       </section>
     </main>
 
-    <footer class="wrap">
-      <p>
-        AgentPet · made with 🐱 and 🌈 ·
-        <a href="https://github.com/hsanjebri/agentpet">GitHub</a> ·
-        <a href="https://github.com/hsanjebri/agentpet/releases">all releases</a>
-      </p>
+    <footer>
+      <div class="wrap">
+        <a class="brand" href="#"><img src="icon.png" alt="" />Noodle</a>
+        <a href="https://github.com/hsanjebri/agentpet">GitHub</a>
+        <a href="https://github.com/hsanjebri/agentpet/releases">Releases</a>
+        <a href="https://github.com/hsanjebri/agentpet/blob/main/LICENSE">MIT license</a>
+        <span class="sp">Made with 🐱 and 🌈</span>
+      </div>
     </footer>
 
     <script>
-      // the big button downloads the right installer for this computer
+      document.documentElement.classList.add('js')
+      // the download buttons get the right installer for this computer
       ;(function () {
         var base = 'https://github.com/hsanjebri/agentpet/releases/latest/download/'
         var ua = navigator.userAgent
-        var button = document.getElementById('download')
-        if (/Windows/i.test(ua)) {
-          button.href = base + 'AgentPet-Setup.exe'
-          button.textContent = 'Download for Windows'
-        } else if (/Mac/i.test(ua)) {
-          button.href = base + 'AgentPet-arm64.dmg'
-          button.textContent = 'Download for Mac'
-        } else if (/Linux/i.test(ua) && !/Android/i.test(ua)) {
-          button.href = base + 'AgentPet.AppImage'
-          button.textContent = 'Download for Linux'
-        }
+        var file = null
+        var label = 'Download Noodle'
+        if (/Windows/i.test(ua)) { file = 'AgentPet-Setup.exe'; label = 'Download for Windows' }
+        else if (/Mac/i.test(ua)) { file = 'AgentPet-arm64.dmg'; label = 'Download for Mac' }
+        else if (/Linux/i.test(ua) && !/Android/i.test(ua)) { file = 'AgentPet.AppImage'; label = 'Download for Linux' }
+        if (!file) return
+        document.querySelectorAll('.dl').forEach(function (a) {
+          a.href = base + file
+          if (!a.classList.contains('btn-small')) a.textContent = label
+        })
+      })()
+      // sections rise in once as they scroll into view (visible without JS)
+      ;(function () {
+        var items = document.querySelectorAll('.reveal')
+        if (!('IntersectionObserver' in window)) { items.forEach(function (el) { el.classList.add('in') }); return }
+        var io = new IntersectionObserver(function (entries) {
+          entries.forEach(function (e) { if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target) } })
+        }, { rootMargin: '0px 0px -8% 0px' })
+        items.forEach(function (el) { io.observe(el) })
       })()
     </script>
   </body>

@@ -1,0 +1,24 @@
+{
+  "name": "noodle-brand-film",
+  "private": true,
+  "description": "Noodle launch film (Remotion). Separate from the app: nothing here ships in the installers.",
+  "scripts": {
+    "studio": "remotion studio src/index.ts",
+    "storyboard": "node scripts/storyboard.mjs",
+    "render": "remotion render src/index.ts BrandFilm out/noodle-16x9.mp4",
+    "render:vertical": "remotion render src/index.ts BrandFilmVertical out/noodle-9x16.mp4",
+    "render:15": "remotion render src/index.ts Cut15 out/noodle-15s-16x9.mp4",
+    "render:15:vertical": "remotion render src/index.ts Cut15Vertical out/noodle-15s-9x16.mp4",
+    "preview": "remotion render src/index.ts BrandFilm out/preview.mp4 --scale=0.33 --every-nth-frame=2"
+  },
+  "dependencies": {
+    "@remotion/cli": "4.0.539",
+    "react": "19.2.0",
+    "react-dom": "19.2.0",
+    "remotion": "4.0.539"
+  },
+  "devDependencies": {
+    "@types/react": "19.2.2",
+    "typescript": "5.9.3"
+  }
+}
