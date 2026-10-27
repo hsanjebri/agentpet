@@ -62,8 +62,9 @@ export function petSettings(): PetSettings {
     musicSupported: MUSIC_SUPPORTED,
     autoHideSupported: AUTO_HIDE_SUPPORTED,
     demo,
-    startOnLogin: app.isPackaged && app.getLoginItemSettings().openAtLogin,
-    startOnLoginSupported: app.isPackaged
+    // Store apps can't register themselves at login this way (Windows Settings › Startup can)
+    startOnLogin: app.isPackaged && !process.windowsStore && app.getLoginItemSettings().openAtLogin,
+    startOnLoginSupported: app.isPackaged && !process.windowsStore
   }
 }
 
@@ -73,7 +74,7 @@ export function updateSettings(input: SettingsChange & { demo?: boolean }): void
   const change = cleanChange(input)
   settings.set(applyChange(storedSettings(), change))
   if (typeof input.demo === 'boolean') demo = input.demo
-  if (change.startOnLogin !== undefined && app.isPackaged)
+  if (change.startOnLogin !== undefined && app.isPackaged && !process.windowsStore)
     app.setLoginItemSettings({ openAtLogin: change.startOnLogin })
   const now = petSettings()
   for (const win of BrowserWindow.getAllWindows()) win.webContents.send(IPC.settings, now)

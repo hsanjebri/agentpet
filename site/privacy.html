@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Privacy · Noodle</title>
+    <link rel="icon" href="favicon.png" />
+    <style>
+      body {
+        margin: 0;
+        background: #ffffff;
+        color: #1d1d1f;
+        font: 17px/1.6 -apple-system, 'Segoe UI', system-ui, sans-serif;
+      }
+      main {
+        max-width: 720px;
+        margin: 0 auto;
+        padding: 56px max(20px, env(safe-area-inset-left, 0px)) 80px;
+      }
+      a { color: #1d1d1f; }
+      h1 { font-size: 44px; letter-spacing: -0.03em; line-height: 1.05; margin: 0 0 8px; }
+      h2 { font-size: 22px; letter-spacing: -0.01em; margin: 36px 0 8px; }
+      .muted { color: #6e6e73; }
+      li { margin: 6px 0; }
+    </style>
+  </head>
+  <body>
+    <main>
+      <p><a href="./">← Noodle</a></p>
+      <h1>Privacy</h1>
+      <p class="muted">Last updated: October 27, 2026. Applies to the Noodle desktop app (published as AgentPet).</p>
+
+      <p>Noodle runs on your computer. It has no account, no ads, no analytics and no telemetry. By default it sends nothing over the internet.</p>
+
+      <h2>What stays on your computer</h2>
+      <ul>
+        <li>Your pet, its name, level and stats, and your settings.</li>
+        <li>Pomodoro, music, water and other daily counts. For music only a daily song count is kept, never which songs.</li>
+        <li>Sticky notes.</li>
+        <li>For developers: what Claude Code does. Noodle listens only on this computer (127.0.0.1) and only to its own hooks, which carry a local token.</li>
+        <li>Distraction guard: window titles are checked on your computer during a focus session and never stored or sent.</li>
+      </ul>
+
+      <h2>What leaves your computer, only if you turn it on</h2>
+      <ul>
+        <li><b>Friends</b> creates an anonymous account (no email, no password) on our Friends server (Supabase) and shares your pet's name, skin, level and online status with the friends you accept, plus the friend list itself. Visits send the same name, skin and level to the friend you visit.</li>
+        <li><b>Weather outfits</b> send your city's coordinates to Open-Meteo every 30 minutes. The city search sends what you type, once.</li>
+        <li><b>Phone ping</b> sends the project name (and, if you choose, the command Claude wants to run) to the ntfy topic you set up.</li>
+        <li><b>Updates</b> (installer version) check GitHub for new versions. The Microsoft Store version is updated by the Store.</li>
+      </ul>
+      <p>Prayer times are calculated on your computer.</p>
+
+      <h2>Deleting your data</h2>
+      <ul>
+        <li>Everything local: Settings › Privacy &amp; data (reset stats, reset progress, open the data folder), or uninstall the app.</li>
+        <li>Friends: remove your friends and turn Friends off. To delete your Friends account entirely, open an issue on GitHub with your friend code and it will be removed.</li>
+      </ul>
+
+      <h2>Children</h2>
+      <p>Noodle doesn't ask for or collect personal information. Friends only ever shares a pet's name, chosen by the user.</p>
+
+      <h2>Contact</h2>
+      <p>Questions: open an issue at <a href="https://github.com/hsanjebri/agentpet/issues">github.com/hsanjebri/agentpet/issues</a>.</p>
+    </main>
+  </body>
+</html>

@@ -72,7 +72,11 @@ export function GeneralSection({ settings: s }: { settings: PetSettings }): Reac
       <ModeRow settings={s} />
       <Toggle
         label="🚀 Start on login"
-        description={s.startOnLoginSupported ? 'Starts with your computer.' : 'Installed app only.'}
+        description={
+          s.startOnLoginSupported
+            ? 'Starts with your computer.'
+            : 'Installer version only (not in the Store or dev builds yet).'
+        }
         checked={s.startOnLogin}
         disabled={!s.startOnLoginSupported}
         onChange={(startOnLogin) => change({ startOnLogin })}

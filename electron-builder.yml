@@ -6,7 +6,7 @@ directories:
   output: dist
 files:
   - '!**/.vscode/*'
-  - '!{src,tests,scripts,recordings,docs,helper,site}/**'
+  - '!{src,tests,scripts,recordings,docs,helper,site,promo,supabase}/**'
   - '!electron.vite.config.{js,ts,mjs,cjs}'
   - '!vitest.config.*'
   - '!{.eslintcache,eslint.config.mjs,.prettierignore,.prettierrc.yaml,.editorconfig,.gitattributes,dev-app-update.yml,CHANGELOG.md,README.md,AGENTPET_PLAN.md}'
@@ -23,6 +23,14 @@ win:
       to: nowplaying
       filter:
         - nowplaying.exe
+# Microsoft Store package: built by scripts/build-store.mjs (npm run build:store or the
+# "Store package" workflow), which adds the identity from Partner Center (environment variables).
+appx:
+  applicationId: AgentPet
+  backgroundColor: '#FFF6E9'
+  languages:
+    - en-US
+  artifactName: ${productName}-Store.${ext}
 nsis:
   # no version in the names: the website can always link to releases/latest/download/…
   artifactName: ${productName}-Setup.${ext}

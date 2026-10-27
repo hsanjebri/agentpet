@@ -23,12 +23,14 @@ export function restartToUpdate(): void {
 }
 
 function supported(): boolean {
-  return app.isPackaged && process.platform !== 'darwin'
+  // the Microsoft Store updates Store installs itself
+  return app.isPackaged && process.platform !== 'darwin' && !process.windowsStore
 }
 
 /** Settings › General › Check for updates now: resolves with a short message for the user. */
 export async function checkForUpdatesNow(): Promise<string> {
   if (!app.isPackaged) return 'Updates only work in the installed app.'
+  if (process.windowsStore) return 'The Microsoft Store keeps Noodle up to date.'
   if (process.platform === 'darwin')
     return 'On macOS, download the new version from the Releases page for now.'
   if (ready) return `Version ${ready} is ready: restart to update.`

@@ -19,6 +19,7 @@
     "build:win": "npm run helper:build && npm run build && electron-builder --win --publish never",
     "build:mac": "electron-vite build && electron-builder --mac --publish never",
     "build:linux": "electron-vite build && electron-builder --linux --publish never",
+    "build:store": "npm run helper:build && npm run build && node scripts/build-store.mjs",
     "test": "vitest run",
     "test:watch": "vitest",
     "hooks:install": "node scripts/install-hooks.mjs",

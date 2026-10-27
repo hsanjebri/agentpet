@@ -1,0 +1,42 @@
+# Builds the Microsoft Store package (.appx) on demand: Actions › Store package › Run workflow.
+# Needs the repository variables STORE_IDENTITY_NAME, STORE_PUBLISHER,
+# STORE_PUBLISHER_DISPLAY_NAME and STORE_DISPLAY_NAME (from Partner Center › Product identity).
+# The Store signs the package itself when you submit it, so no certificate is needed here.
+name: Store package
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  appx:
+    runs-on: windows-latest
+    env:
+      STORE_IDENTITY_NAME: ${{ vars.STORE_IDENTITY_NAME }}
+      STORE_PUBLISHER: ${{ vars.STORE_PUBLISHER }}
+      STORE_PUBLISHER_DISPLAY_NAME: ${{ vars.STORE_PUBLISHER_DISPLAY_NAME }}
+      STORE_DISPLAY_NAME: ${{ vars.STORE_DISPLAY_NAME }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 8.0.x
+      - name: Check the Store identity is set
+        shell: bash
+        run: |
+          for v in STORE_IDENTITY_NAME STORE_PUBLISHER STORE_PUBLISHER_DISPLAY_NAME STORE_DISPLAY_NAME; do
+            if [ -z "${!v}" ]; then echo "::error::Repository variable $v is missing (Settings › Secrets and variables › Actions › Variables)"; exit 1; fi
+          done
+      - run: npm ci
+      - run: npm test
+      - run: npm run build:store
+      - uses: actions/upload-artifact@v4
+        with:
+          name: store-package
+          path: dist/*.appx
