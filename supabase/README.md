@@ -60,3 +60,4 @@ level and friend code, and who is friends with whom. Nothing else.
 - People who blocked you look like "no pet with that code": nothing is revealed.
 - A user can only change their own pet row, and see their friends' name, skin and level.
 - Free plan: 50,000 monthly active users and 200 concurrent Realtime connections; plenty to start.
+

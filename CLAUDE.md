@@ -85,7 +85,7 @@ Hooks: curl. Music helper: C# (.NET 8). Auto-hide watcher: inline PowerShell.
 - Pre-launch (built, need the repo **public**): auto-update untested end-to-end; landing page not deployed
   (GitHub Pages workflow skips private repos). Then publish v0.4.1 and test an update v0.4.1 → test release.
 - Clean-PC test was done on the dev PC (Windows Sandbox not enabled); a truly fresh machine is still untested.
-- Friends: SQL syntax-checked only; not yet run against a real Supabase project; two-install test pending.
+- Friends: live project bksantonbevmojtdcxrq; `AGENTPET_LIVE=1 npx vitest run tests/friends.live.test.ts` runs the full flow (2 anon users). Two-machine test pending.
 - Auto-hide: Windows only; DND detection reads the notification toggle (best effort); meetings = microphone in use.
 - Music: two Chrome tabs both playing look like one app to Windows (controls may hit the wrong tab);
   `prev` on Spotify not verified; "no music app" case only unit-tested. Helper is 93 MB self-contained (trimming untested).
