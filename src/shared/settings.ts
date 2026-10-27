@@ -52,6 +52,59 @@ export interface AutoHideSettings {
   dnd: boolean
 }
 
+/** Where you are: for the weather and prayer times. Typed by you, never detected. */
+export interface Place {
+  city: string
+  lat: number
+  lon: number
+}
+
+export const PRAYER_METHODS = [
+  'MuslimWorldLeague',
+  'Egyptian',
+  'Karachi',
+  'UmmAlQura',
+  'Dubai',
+  'Qatar',
+  'Kuwait',
+  'Turkey',
+  'Tehran',
+  'Singapore',
+  'NorthAmerica',
+  'MoonsightingCommittee'
+] as const
+export type PrayerMethod = (typeof PRAYER_METHODS)[number]
+
+export interface WaterSettings {
+  enabled: boolean
+  everyMin: number
+}
+
+export interface GuardSettings {
+  /** during a Pomodoro focus round, sit on distracting windows */
+  enabled: boolean
+  /** words in a window title that count as a distraction */
+  sites: string[]
+}
+
+export interface PrayerSettings {
+  enabled: boolean
+  method: PrayerMethod
+  /** iftar countdown and a lantern during Ramadan */
+  ramadan: boolean
+}
+
+export const DEFAULT_GUARD_SITES = [
+  'YouTube',
+  'Instagram',
+  'TikTok',
+  'Facebook',
+  'Netflix',
+  'Reddit',
+  'Twitch',
+  'Snapchat'
+]
+
 export interface PomodoroSettings {
   focusMin: number
   breakMin: number
@@ -84,6 +137,14 @@ export interface StoredSettings {
   autoUpdate: boolean
   friends: boolean
   visits: Visits
+  water: WaterSettings
+  guard: GuardSettings
+  /** weather outfits (sends only the place's coordinates to Open-Meteo) */
+  weather: boolean
+  prayer: PrayerSettings
+  place: Place | null
+  /** Ctrl+Alt+L: a red dot he chases */
+  laser: boolean
 }
 
 /** The settings the renderer sees: the stored ones plus a few facts about this computer. */
@@ -126,7 +187,13 @@ export function defaultSettings(): StoredSettings {
     pomodoro: { focusMin: 25, breakMin: 5, longBreakMin: 15, rounds: 4 },
     autoUpdate: true,
     friends: false,
-    visits: 'friends'
+    visits: 'friends',
+    water: { enabled: true, everyMin: 60 },
+    guard: { enabled: true, sites: [...DEFAULT_GUARD_SITES] },
+    weather: false,
+    prayer: { enabled: false, method: 'MuslimWorldLeague', ramadan: true },
+    place: null,
+    laser: true
   }
 }
 
@@ -141,7 +208,9 @@ const BOOLEAN_KEYS = [
   'usageBar',
   'approvalBubble',
   'autoUpdate',
-  'friends'
+  'friends',
+  'weather',
+  'laser'
 ] as const
 
 const POMODORO_LIMITS: Record<keyof PomodoroSettings, [number, number]> = {
@@ -205,12 +274,51 @@ export function cleanChange(input: unknown): SettingsChange {
     }
     out.pomodoro = pomodoro
   }
+  if (isObject(input.water)) {
+    const water: Partial<WaterSettings> = {}
+    if (typeof input.water.enabled === 'boolean') water.enabled = input.water.enabled
+    const n = input.water.everyMin
+    if (typeof n === 'number' && Number.isFinite(n))
+      water.everyMin = Math.min(240, Math.max(15, Math.round(n)))
+    out.water = water
+  }
+  if (isObject(input.guard)) {
+    const guard: Partial<GuardSettings> = {}
+    if (typeof input.guard.enabled === 'boolean') guard.enabled = input.guard.enabled
+    if (Array.isArray(input.guard.sites))
+      guard.sites = input.guard.sites
+        .filter((s): s is string => typeof s === 'string')
+        .map((s) => s.trim().slice(0, 40))
+        .filter(Boolean)
+        .slice(0, 30)
+    out.guard = guard
+  }
+  if (isObject(input.prayer)) {
+    const prayer: Partial<PrayerSettings> = {}
+    if (typeof input.prayer.enabled === 'boolean') prayer.enabled = input.prayer.enabled
+    if (typeof input.prayer.ramadan === 'boolean') prayer.ramadan = input.prayer.ramadan
+    if (PRAYER_METHODS.includes(input.prayer.method as PrayerMethod))
+      prayer.method = input.prayer.method as PrayerMethod
+    out.prayer = prayer
+  }
+  if (input.place === null) out.place = null
+  else if (isObject(input.place)) {
+    const { city, lat, lon } = input.place
+    if (
+      typeof city === 'string' &&
+      typeof lat === 'number' &&
+      typeof lon === 'number' &&
+      Math.abs(lat) <= 90 &&
+      Math.abs(lon) <= 180
+    )
+      out.place = { city: city.trim().slice(0, 80), lat, lon }
+  }
   return out
 }
 
 /** The stored settings after a (clean) change; nested settings are merged, not replaced. */
 export function applyChange(current: StoredSettings, change: SettingsChange): StoredSettings {
-  const { sounds, autoHide, risks, pomodoro, ...flat } = change
+  const { sounds, autoHide, risks, pomodoro, water, guard, prayer, ...flat } = change
   delete flat.startOnLogin // not stored: the OS keeps it
   return {
     ...current,
@@ -218,7 +326,10 @@ export function applyChange(current: StoredSettings, change: SettingsChange): St
     sounds: { ...current.sounds, ...sounds },
     autoHide: { ...current.autoHide, ...autoHide },
     risks: { ...current.risks, ...risks },
-    pomodoro: { ...current.pomodoro, ...pomodoro }
+    pomodoro: { ...current.pomodoro, ...pomodoro },
+    water: { ...current.water, ...water },
+    guard: { ...current.guard, ...guard },
+    prayer: { ...current.prayer, ...prayer }
   } as StoredSettings
 }
 

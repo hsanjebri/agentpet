@@ -11,6 +11,7 @@ import type { Accessory, PetLook, RareMoment, Recap } from './progress'
 import type { FriendsCommand, FriendsResult, FriendsView } from './friends'
 import type { PomodoroCommand, PomodoroEvent, PomodoroState } from './pomodoro'
 import type { PetSettings, SettingsChange } from './settings'
+import type { Outfit } from './weather'
 
 export const IPC = {
   setInteractive: 'pet:set-interactive',
@@ -59,7 +60,13 @@ export const IPC = {
   petted: 'pet:petted',
   friends: 'pet:friends',
   getFriends: 'pet:get-friends',
-  friendsCmd: 'pet:friends-cmd'
+  friendsCmd: 'pet:friends-cmd',
+  daily: 'pet:daily',
+  getDaily: 'pet:get-daily',
+  drank: 'pet:drank',
+  searchPlace: 'pet:search-place',
+  shoo: 'pet:shoo',
+  laser: 'pet:laser'
 } as const
 
 /** Phone ping settings (ntfy). */
@@ -88,6 +95,14 @@ export type PetMoment =
   | { kind: 'pomodoro'; event: PomodoroEvent; fish: boolean }
   /** once, after the first-run setup */
   | { kind: 'settings_hint' }
+  /** time for a glass of water */
+  | { kind: 'water' }
+  /** a prayer time just started */
+  | { kind: 'prayer'; label: string }
+  /** a distracting window during a focus round */
+  | { kind: 'distraction'; site: string }
+  /** he caught the laser dot */
+  | { kind: 'caught' }
   /** first-run setup finished: say hi */
   | { kind: 'hello' }
 
@@ -95,6 +110,28 @@ export type PetMoment =
 export interface WalkState {
   walking: boolean
   facing: 'left' | 'right'
+}
+
+/** Daily-life things drawn on the pet (weather outfit, prayer mat, Ramadan lantern, water). */
+export interface DailyState {
+  outfit: Outfit | null
+  /** the prayer mat is out (for a few minutes after a prayer time) */
+  praying: boolean
+  /** during Ramadan (if enabled): when iftar is today, else null */
+  ramadan: { iftarAt: number | null } | null
+  /** a glass of water waits for you */
+  waterDue: boolean
+  /** sitting on a distracting window */
+  guarding: string | null
+  /** chasing the laser dot */
+  laser: boolean
+}
+
+export interface PlaceResult {
+  city: string
+  country: string
+  lat: number
+  lon: number
 }
 
 export interface ProfileData {
@@ -236,4 +273,12 @@ export interface PetApi {
   getFriends(): Promise<FriendsView>
   onFriends(listener: (view: FriendsView) => void): () => void
   friends(command: FriendsCommand): Promise<FriendsResult>
+  getDaily(): Promise<DailyState>
+  onDaily(listener: (state: DailyState) => void): () => void
+  /** "I drank 💧" */
+  drank(): void
+  /** City search for weather / prayer times (sends the typed name to Open-Meteo). */
+  searchPlace(query: string): Promise<PlaceResult[]>
+  /** Shoo him off a distracting window. */
+  shoo(): void
 }

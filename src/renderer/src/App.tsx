@@ -9,11 +9,13 @@ import { InfoBubble } from './InfoBubble'
 import type { Mood } from './moods'
 import { MusicBubble } from './MusicBubble'
 import { Pet } from './pets/Pet'
+import { Prop } from './pets/Props'
 import { Tomato } from './pets/Tomato'
 import { PomodoroBubble } from './PomodoroBubble'
 import { sessionLine } from './sessionLine'
 import { playMeow, playTick, playToot, setVolume, startPurr, stopPurr } from './sounds'
 import { useAgentBridge, useMood, usePetStore } from './store'
+import { useDaily } from './useDaily'
 import { UsageBar } from './UsageBar'
 import { usePetPointer } from './usePetPointer'
 import { usePomodoro } from './usePomodoro'
@@ -111,6 +113,7 @@ function App(): React.JSX.Element {
   const { step: demoStep, next: nextDemoStep } = useDemo(demo)
   useAgentBridge()
   const pomodoro = usePomodoro()
+  const daily = useDaily()
   const liveMood = useMood()
   const liveUsage = usePetStore((s) => s.usage)
   const prompts = usePetStore((s) => s.prompts)
@@ -135,11 +138,17 @@ function App(): React.JSX.Element {
   const [wiggle, playWiggle] = useOneShot(620)
   const [stretch, playStretch] = useOneShot(STRETCH_MS)
   const purrOn = soundOn(settings, 'purr')
+  const dailyRef = useRef(daily)
+  useEffect(() => {
+    dailyRef.current = daily
+  })
 
   useEffect(() => setVolume(settings.sounds.volume), [settings.sounds.volume])
 
   usePetPointer({
     onClick: () => {
+      // sitting on a distracting window: a click shoos him off
+      if (dailyRef.current.guarding) return window.api.shoo()
       dispatch({ type: 'pet_clicked' })
       window.api.petClicked()
     },
@@ -191,8 +200,13 @@ function App(): React.JSX.Element {
   }, [focusRunning, tickOn])
 
   const agentMood = demoStep?.mood ?? liveMood
-  // during focus only "needs you" breaks the calm; the rest waits for the break
-  const mood: Mood = focusRound && agentMood !== 'needs' ? 'sleeping' : agentMood
+  // during focus only "needs you" breaks the calm; the rest waits for the break.
+  // Chasing the laser: big eyes. Guarding a distraction: cross.
+  let mood: Mood = focusRound && agentMood !== 'needs' ? 'sleeping' : agentMood
+  if (!demoStep && mood !== 'needs') {
+    if (daily.laser) mood = 'needs'
+    else if (daily.guarding) mood = 'hiss'
+  }
   const usage = demoStep ? demoUsage(demoStep) : liveUsage
   const prompt = demoStep ? demoStep.prompt : prompts[0]
   const walking = !demoStep && !focusRound && walk.walking
@@ -228,11 +242,21 @@ function App(): React.JSX.Element {
     !FOCUS_MOODS.has(mood) &&
     !vibe &&
     !pomodoroOn &&
-    !toast
+    !toast &&
+    !daily.guarding &&
+    !daily.waterDue &&
+    !daily.laser &&
+    !daily.praying
   ) {
     return <main className="stage" />
   }
 
+  const extraInfo: string[] = []
+  if (daily.outfit) extraInfo.push(daily.outfit.label)
+  if (daily.ramadan?.iftarAt && hoveredAt) {
+    const mins = Math.max(0, Math.round((daily.ramadan.iftarAt - hoveredAt) / 60_000))
+    extraInfo.push(`🌙 iftar in ${Math.floor(mins / 60)}h ${String(mins % 60).padStart(2, '0')}`)
+  }
   const showMusicBubble = musicOn && !demoStep && (music.hasSession || headphones)
   const hovered = hoveredAt !== null && !demoStep
   let bubble: React.JSX.Element | null = null
@@ -246,8 +270,26 @@ function App(): React.JSX.Element {
         }
       />
     )
+  } else if (!demoStep && daily.guarding) {
+    bubble = (
+      <div className="bubble bubble-warning">
+        Focus first 😾
+        <div className="bubble-sub">click me to shoo me away</div>
+      </div>
+    )
   } else if (!demoStep && mood === 'hiss' && warning) {
     bubble = <div className="bubble bubble-warning">⚠ {warning}</div>
+  } else if (!demoStep && daily.waterDue) {
+    bubble = (
+      <div className="bubble bubble-water" data-ui="">
+        💧 time for a glass of water
+        <div className="bubble-actions">
+          <button className="btn btn-approve" data-ui="" onClick={() => window.api.drank()}>
+            I drank 💧
+          </button>
+        </div>
+      </div>
+    )
   } else if (hovered && pomodoroOn && pomodoro) {
     bubble = <PomodoroBubble state={pomodoro} />
   } else if (hovered && showMusicBubble) {
@@ -271,17 +313,20 @@ function App(): React.JSX.Element {
       </div>
     )
   } else if (hovered) {
-    bubble = <InfoBubble session={session} look={look} now={hoveredAt} />
+    bubble = <InfoBubble session={session} look={look} now={hoveredAt} extra={extraInfo} />
   }
 
   const focusLength = (settings.pomodoro.focusMin || 25) * 60_000
+  const extraWear = daily.outfit?.wear ?? []
   const showUsage = usage && (demoStep || (settings.usageBar && settings.mode === 'developer'))
 
   return (
     <main className="stage">
       {demoStep && <div className="demo-label">{demoStep.label}</div>}
       {bubble}
-      <div className={`pet-spot${stretch ? ' stretching' : ''}`}>
+      <div
+        className={`pet-spot${stretch ? ' stretching' : ''}${daily.praying && !demoStep ? ' praying' : ''}`}
+      >
         {focusRound && pomodoro && (
           <div className="pomodoro-tomato" aria-hidden>
             <Tomato
@@ -290,7 +335,23 @@ function App(): React.JSX.Element {
             />
           </div>
         )}
+        {daily.praying && !demoStep && (
+          <div className="pet-prop prop-under" aria-hidden>
+            <Prop name="mat" scale={size === 's' ? 2 : 3} />
+          </div>
+        )}
+        {daily.ramadan && !demoStep && (
+          <div className="pet-prop prop-left" aria-hidden>
+            <Prop name="lantern" scale={size === 's' ? 2 : 3} />
+          </div>
+        )}
+        {daily.waterDue && !demoStep && (
+          <div className="pet-prop prop-right" aria-hidden>
+            <Prop name="water" scale={size === 's' ? 2 : 3} />
+          </div>
+        )}
         <Pet
+          extraWear={extraWear}
           skin={skin}
           size={size}
           mood={walking ? 'working' : mood}

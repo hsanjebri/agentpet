@@ -40,8 +40,11 @@ const BODY: Record<Pose, { cx: number; cy: number; rx: number; ry: number }> = {
   lying: { cx: 47, cy: 36, rx: 21, ry: 7.5 }
 }
 
-/** Things the pet can wear: unlocked accessories, plus the Friday party hat and senior glasses. */
-export type Wearable = Accessory | 'partyhat' | 'glasses' | 'headphones'
+/**
+ * Things the pet can wear: unlocked accessories, the Friday party hat, senior glasses, and
+ * weather / streak outfits (rain hood, scarf).
+ */
+export type Wearable = Accessory | 'partyhat' | 'glasses' | 'headphones' | 'rainhood' | 'scarf'
 
 export interface BodyLook {
   /** the senior stage: a rounder, chonkier body */
@@ -215,6 +218,25 @@ const PARTY_HAT = ['...r...', '...P...', '..PyP..', '..PPP..', '.PyPPP.', '.PPPP
 const SUNGLASSES_LENS = ['kkkkkk', 'kWkkkk', 'kkkkkk', 'kkkkkk', '.kkkk.']
 const GLASSES_RING = ['.kkkk.', 'k....k', 'k....k', 'k....k', 'k....k', '.kkkk.']
 
+// a yellow sou'wester for the rain
+const RAIN_HOOD = [
+  '.....yyyyy.....',
+  '...yyyyyyyyy...',
+  '..yyyyyyyyyyy..',
+  '.yyyyyyyyyyyyy.',
+  'YYYYYYYYYYYYYYY'
+]
+// a striped scarf around the neck, one end hanging down
+const SCARF = [
+  'rrrrrrrrrrrrrrrrrr',
+  'rWrrWrrWrrWrrWrrWr',
+  'rrrrrrrrrrrrrrrrrr',
+  '....rWr...........',
+  '....rrr...........',
+  '....rWr...........',
+  '....r.r...........'
+]
+
 // headphones: a band over the head, ear cups on both sides of it
 const EAR_CUP = ['kk', 'rr', 'rr', 'rr', 'kk']
 
@@ -239,8 +261,10 @@ function drawWearables(map: PixelMap, [hx, hy]: Point, wear: readonly Wearable[]
     stamp(map, hx + 4, hy - 3, lens)
     for (let x = hx - 3; x <= hx + 3; x++) setCell(map, x, hy - 2, 'k') // bridge
   }
-  // headwear: one at a time (crown > top hat > party hat)
-  if (wear.includes('crown')) stamp(map, hx - 4, hy - 14, CROWN)
+  if (wear.includes('scarf')) stamp(map, hx - 10, hy + 8, SCARF)
+  // headwear: one at a time (rain hood when it rains > crown > top hat > party hat)
+  if (wear.includes('rainhood')) stamp(map, hx - 7, hy - 16, RAIN_HOOD)
+  else if (wear.includes('crown')) stamp(map, hx - 4, hy - 14, CROWN)
   else if (wear.includes('tophat')) stamp(map, hx - 5, hy - 15, TOP_HAT)
   else if (wear.includes('partyhat')) stamp(map, hx - 3, hy - 16, PARTY_HAT)
 }

@@ -21,6 +21,8 @@ interface Props {
   walking?: boolean
   facing?: 'left' | 'right'
   rare?: RareMoment | null
+  /** weather outfit, streak scarf… */
+  extraWear?: readonly Wearable[]
 }
 
 const CATS: ReadonlySet<SkinId> = new Set<CatSkin>(['noodle', 'mochi', 'zitouna'])
@@ -38,12 +40,14 @@ export function Pet({
   headphones,
   vibe,
   flick,
-  wiggle
+  wiggle,
+  extraWear = []
 }: Props): React.JSX.Element {
   const wear: Wearable[] = [...(look?.wearing ?? [])]
   if (look?.stage === 'senior') wear.push('glasses')
   if (partyHat) wear.push('partyhat')
   if (headphones) wear.push('headphones')
+  wear.push(...extraWear)
 
   return (
     <Noodle

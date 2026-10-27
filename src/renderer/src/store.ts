@@ -137,6 +137,16 @@ function onMoment(moment: PetMoment): void {
         showToast('Back to focus 🍅')
       }
       break
+    case 'prayer':
+      showToast(`🕌 ${moment.label} time`)
+      break
+    case 'caught':
+      showToast('got it! 🐾')
+      break
+    case 'water':
+    case 'distraction':
+      // shown as their own bubbles while they last (useDaily)
+      break
     case 'settings_hint':
       showToast('You can change anything later in Settings ⚙️')
       break

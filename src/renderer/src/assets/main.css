@@ -1045,3 +1045,46 @@ body,
   letter-spacing: 1px;
   padding: 3px 8px !important;
 }
+
+/* ---------- props next to the pet (water, prayer mat, lantern) ---------- */
+
+.pet-prop {
+  position: absolute;
+  pointer-events: none;
+}
+
+.prop-under {
+  left: 50%;
+  bottom: 0;
+  transform: translateX(-50%);
+  z-index: -1;
+}
+
+/* praying: he sits up on the mat, so it shows */
+.pet-spot.praying {
+  padding-bottom: 14px;
+}
+
+.prop-left {
+  left: 6%;
+  bottom: 22%;
+}
+
+.prop-right {
+  right: 3%;
+  bottom: 0;
+}
+
+/* water reminder: clickable, unlike the info bubbles */
+.bubble-water {
+  white-space: nowrap;
+}
+
+.bubble-water .bubble-actions {
+  margin-top: 6px;
+}
+
+.place-result {
+  display: block;
+  margin: 4px 0 0 auto;
+}

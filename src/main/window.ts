@@ -180,6 +180,55 @@ export function glideTo(win: BrowserWindow, target: Position): void {
   }, 16)
 }
 
+// ---------- distraction guard: sit on a window, then go back ----------
+
+let guardRest: Position | null = null
+
+/** Plops him in the middle of a window (DIP bounds). Remembers where he was. */
+export function sitOnWindow(b: { x: number; y: number; width: number; height: number }): void {
+  if (!pet || pet.isDestroyed()) return
+  cancelWalk()
+  if (!guardRest) {
+    const [x, y] = pet.getPosition()
+    guardRest = { x, y }
+  }
+  const { width, height } = windowSize()
+  glideTo(pet, clampToDisplay({ x: b.x + (b.width - width) / 2, y: b.y + (b.height - height) / 2 }))
+}
+
+export function leaveWindow(): void {
+  if (pet && !pet.isDestroyed() && guardRest) glideTo(pet, guardRest)
+  guardRest = null
+}
+
+// ---------- laser: chase a point on screen ----------
+
+let chaseRest: Position | null = null
+
+/** One step toward `target` (the dot); returns true when he's right on it. */
+export function chaseStep(target: Position, speed = 14): boolean {
+  if (!pet || pet.isDestroyed()) return false
+  const [x, y] = pet.getPosition()
+  if (!chaseRest) chaseRest = { x, y }
+  const { width, height } = windowSize()
+  // aim his face (right side, lower half of the window) at the dot
+  const goal = clampToDisplay({ x: target.x - width * 0.8, y: target.y - height * 0.72 })
+  const dx = goal.x - x
+  const dy = goal.y - y
+  const dist = Math.hypot(dx, dy)
+  if (dist < speed) {
+    moveWindow(pet, goal)
+    return true
+  }
+  moveWindow(pet, { x: x + (dx / dist) * speed, y: y + (dy / dist) * speed })
+  return false
+}
+
+export function endChase(): void {
+  if (pet && !pet.isDestroyed() && chaseRest) glideTo(pet, chaseRest)
+  chaseRest = null
+}
+
 // ---------- walking (wander.ts decides when) ----------
 
 let walkTimer: NodeJS.Timeout | undefined

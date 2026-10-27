@@ -66,6 +66,63 @@ export function FeaturesSection({ settings: s }: { settings: PetSettings }): Rea
 
       <PomodoroGroup settings={s} />
 
+      <Group title="🛡️ Distraction guard">
+        <Toggle
+          label="Sit on distracting windows"
+          description={
+            s.autoHideSupported
+              ? 'During a Pomodoro focus round, if one of these is in front, he walks over and sits on it. Click him to shoo him away. Titles are only checked on this PC.'
+              : 'Windows only for now: coming soon here.'
+          }
+          checked={s.guard.enabled}
+          disabled={!s.autoHideSupported}
+          onChange={(enabled) => change({ guard: { enabled } })}
+        />
+        <label className="settings-textarea">
+          <span className="connect-small">
+            Sites and apps (one per line, matched in the window title):
+          </span>
+          <textarea
+            rows={3}
+            defaultValue={s.guard.sites.join('\n')}
+            spellCheck={false}
+            disabled={!s.guard.enabled}
+            onBlur={(e) => change({ guard: { sites: e.target.value.split('\n') } })}
+          />
+        </label>
+      </Group>
+
+      <Group title="💧 Healthy habits">
+        <Toggle
+          label="Drink water"
+          description="Now and then he pushes a glass of water toward you. Tap “I drank” and he's happy."
+          checked={s.water.enabled}
+          onChange={(enabled) => change({ water: { enabled } })}
+        />
+        <Row label="Every">
+          <select
+            value={s.water.everyMin}
+            disabled={!s.water.enabled}
+            onChange={(e) => change({ water: { everyMin: Number(e.target.value) } })}
+          >
+            {[30, 45, 60, 90, 120].map((m) => (
+              <option key={m} value={m}>
+                {m < 60 ? `${m} min` : `${m / 60} h`.replace('1.5 h', '1 h 30')}
+              </option>
+            ))}
+          </select>
+        </Row>
+      </Group>
+
+      <Group title="🎮 Play">
+        <Toggle
+          label="🔴 Laser game"
+          description="Press Ctrl+Alt+L: a red dot follows your mouse and he chases it. Esc to stop."
+          checked={s.laser}
+          onChange={(laser) => change({ laser })}
+        />
+      </Group>
+
       <Group title="🔊 Sounds">
         <Toggle
           label="Sounds on"

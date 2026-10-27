@@ -6,6 +6,7 @@ import { useEffect, useState } from 'react'
 import { useSettings } from '../useSettings'
 import { AboutSection } from './AboutSection'
 import { ClaudeSection } from './ClaudeSection'
+import { DailySection } from './DailySection'
 import { FeaturesSection } from './FeaturesSection'
 import { FriendsSection } from './FriendsSection'
 import { GeneralSection } from './GeneralSection'
@@ -14,11 +15,12 @@ import { PhoneSection } from './PhoneSection'
 import { PrivacySection } from './PrivacySection'
 
 export type SectionId =
-  'pet' | 'features' | 'claude' | 'phone' | 'friends' | 'general' | 'privacy' | 'about'
+  'pet' | 'features' | 'daily' | 'claude' | 'phone' | 'friends' | 'general' | 'privacy' | 'about'
 
 const SECTIONS: ReadonlyArray<{ id: SectionId; icon: string; label: string; devOnly?: boolean }> = [
   { id: 'pet', icon: '🐱', label: 'My pet' },
   { id: 'features', icon: '✨', label: 'Features' },
+  { id: 'daily', icon: '🌍', label: 'Daily life' },
   { id: 'claude', icon: '🤖', label: 'Claude Code', devOnly: true },
   { id: 'phone', icon: '📱', label: 'Phone ping', devOnly: true },
   { id: 'friends', icon: '👥', label: 'Friends' },
@@ -64,6 +66,9 @@ export default function Settings(): React.JSX.Element {
       break
     case 'features':
       body = <FeaturesSection settings={settings} />
+      break
+    case 'daily':
+      body = <DailySection settings={settings} />
       break
     case 'claude':
       body = <ClaudeSection settings={settings} name={name} />

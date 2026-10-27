@@ -27,6 +27,8 @@ export interface DayStats {
   pets: number
   /** fish eaten (finished tasks and Pomodoro rounds) */
   fish: number
+  /** glasses of water (tapped "I drank") */
+  water: number
   /** tool calls per hour of the day, for "busiest hour" */
   hours: number[]
 }
@@ -54,6 +56,7 @@ export type Activity =
   | { type: 'song' }
   | { type: 'pomodoro' }
   | { type: 'petted' }
+  | { type: 'water' }
 
 /** Things worth celebrating, produced by recording an activity. */
 export type Milestone = { type: 'level_up'; level: number } | { type: 'unlocked'; item: Accessory }
@@ -67,10 +70,15 @@ export const XP: Record<Activity['type'], number> = {
   risky: 0,
   song: 1,
   pomodoro: 10,
-  petted: 1
+  petted: 1,
+  water: 2
 }
 /** XP for these stops after this many a day (so nobody levels up by clicking all day). */
-export const DAILY_XP_CAP: Partial<Record<Activity['type'], number>> = { song: 10, petted: 10 }
+export const DAILY_XP_CAP: Partial<Record<Activity['type'], number>> = {
+  song: 10,
+  petted: 10,
+  water: 12
+}
 /** First activity of a day that keeps a streak going. */
 export const STREAK_XP = 5
 export const HUNGRY_AFTER_MS = 3 * 24 * 60 * 60_000
@@ -131,6 +139,7 @@ export function emptyDay(): DayStats {
     pomodoros: 0,
     pets: 0,
     fish: 0,
+    water: 0,
     hours: Array(24).fill(0)
   }
 }
@@ -224,6 +233,9 @@ export function record(
     case 'petted':
       day.pets++
       break
+    case 'water':
+      day.water++
+      break
     case 'approved':
       day.approvals++
       next.totalApprovals++
@@ -247,7 +259,12 @@ export function record(
   const milestones: Milestone[] = []
   const before = levelOf(next.xp)
   const cap = DAILY_XP_CAP[activity.type]
-  const count = activity.type === 'song' ? day.songs : activity.type === 'petted' ? day.pets : 0
+  const counts: Partial<Record<Activity['type'], number>> = {
+    song: day.songs,
+    petted: day.pets,
+    water: day.water
+  }
+  const count = counts[activity.type] ?? 0
   if (cap === undefined || count <= cap) next.xp += XP[activity.type]
   const yesterday = next.days[dayKey(now - 24 * 60 * 60_000)]
   if (!wasActiveToday && isActive(day) && isActive(yesterday)) next.xp += STREAK_XP
