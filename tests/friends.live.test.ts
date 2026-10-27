@@ -2,7 +2,7 @@
 // the app's own FriendsService end to end, plus direct checks of the security rules.
 // Skipped unless AGENTPET_LIVE=1 (it creates two anonymous test users and their rows).
 //   AGENTPET_LIVE=1 npx vitest run tests/friends.live.test.ts
-import { createClient } from '@supabase/supabase-js'
+import { type SupabaseClient, createClient } from '@supabase/supabase-js'
 import type { FriendsView } from '@shared/friends'
 import { describe, expect, it } from 'vitest'
 import config from '../config/supabase.json'
@@ -104,7 +104,7 @@ describe.skipIf(!live)('Friends against the live Supabase project', () => {
   }, 90_000)
 
   it('the rules: strangers see nothing, nobody writes another pet, no service tricks', async () => {
-    const mk = (): ReturnType<typeof createClient> =>
+    const mk = (): SupabaseClient =>
       createClient(config.url, config.anonKey, {
         auth: { storage: memoryStorage(), persistSession: false, autoRefreshToken: false }
       })
