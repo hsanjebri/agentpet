@@ -13,6 +13,7 @@ import {
 import { musicPlaying, registerMusic } from './music'
 import { startDaily } from './daily'
 import { startFriends } from './friends'
+import { startVisits } from './visits'
 import { startGuard } from './guard'
 import { startLaser } from './laser'
 import { startNotes } from './notes'
@@ -59,6 +60,7 @@ else if (!app.requestSingleInstanceLock()) {
     registerPomodoro()
     startPhone()
     startFriends()
+    startVisits()
     startDaily()
     startGuard()
     startLaser()

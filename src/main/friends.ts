@@ -54,6 +54,10 @@ const service = new FriendsService({
   }
 })
 
+export function friendsService(): FriendsService {
+  return service
+}
+
 export function startFriends(): void {
   ipcMain.handle(IPC.getFriends, () => service.current())
   ipcMain.handle(IPC.friendsCmd, (_, command: FriendsCommand) => {

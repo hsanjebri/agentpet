@@ -29,6 +29,8 @@ export interface DayStats {
   fish: number
   /** glasses of water (tapped "I drank") */
   water: number
+  /** visits made or hosted (Friends) */
+  visits: number
   /** tool calls per hour of the day, for "busiest hour" */
   hours: number[]
 }
@@ -57,6 +59,7 @@ export type Activity =
   | { type: 'pomodoro' }
   | { type: 'petted' }
   | { type: 'water' }
+  | { type: 'visit' }
 
 /** Things worth celebrating, produced by recording an activity. */
 export type Milestone =
@@ -78,13 +81,15 @@ export const XP: Record<Activity['type'], number> = {
   song: 1,
   pomodoro: 10,
   petted: 1,
-  water: 2
+  water: 2,
+  visit: 5
 }
 /** XP for these stops after this many a day (so nobody levels up by clicking all day). */
 export const DAILY_XP_CAP: Partial<Record<Activity['type'], number>> = {
   song: 10,
   petted: 10,
-  water: 12
+  water: 12,
+  visit: 3
 }
 /** First activity of a day that keeps a streak going. */
 export const STREAK_XP = 5
@@ -147,6 +152,7 @@ export function emptyDay(): DayStats {
     pets: 0,
     fish: 0,
     water: 0,
+    visits: 0,
     hours: Array(24).fill(0)
   }
 }
@@ -259,6 +265,9 @@ export function record(
     case 'water':
       day.water++
       break
+    case 'visit':
+      day.visits++
+      break
     case 'approved':
       day.approvals++
       next.totalApprovals++
@@ -285,7 +294,8 @@ export function record(
   const counts: Partial<Record<Activity['type'], number>> = {
     song: day.songs,
     petted: day.pets,
-    water: day.water
+    water: day.water,
+    visit: day.visits
   }
   const count = counts[activity.type] ?? 0
   if (cap === undefined || count <= cap) next.xp += XP[activity.type]

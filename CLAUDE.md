@@ -5,7 +5,7 @@ It floats above all windows, shows the agent's state with its mood/tail, lets yo
 permission requests from its bubble**, shows session usage, pings your phone, and vibes to music.
 Two modes: **developer** (follows Claude Code) and **Fun & focus** (no Claude anywhere: music, Pomodoro, company).
 `AGENTPET_PLAN.md` is the original build plan (status note at its top); `README.md` is user-facing.
-Repo: github.com/hsanjebri/agentpet (**private** for now). Current version: **0.6.0**.
+Repo: github.com/hsanjebri/agentpet (**private** for now). Current version: **0.7.0**.
 
 ## Stack
 Electron 44 + electron-vite, React 19 + TypeScript, Zustand, electron-store, electron-updater,
@@ -26,6 +26,7 @@ Hooks: curl. Music helper: C# (.NET 8). Auto-hide watcher: inline PowerShell.
   - `actions.ts` Settings buttons (restore backup, check updates, resets…) · `pomodoro.ts` timer owner · `autoHide.ts` OS watcher (Windows)
   - `daily.ts` water / stretch / bedtime / weather (Open-Meteo) / prayer + Ramadan → `DailyState` · `prayerTimes.ts` (adhan, offline)
   - `guard.ts` distraction guard (Windows, focus rounds only) · `laser.ts` Ctrl+Alt+L red dot · `notes.ts` sticky notes
+  - `visits.ts` (+ `shared/visits.ts`, renderer `Guest.tsx` #guest): your cat visits a friend's desktop (Realtime broadcast on the private pet channels; guest window next to the host's cat)
   - `friends.ts` + `friendsService.ts` Friends over Supabase (only loaded when on) · `config/supabase.json` URL + anon key · `supabase/` SQL + setup guide
 - `src/preload/index.ts` the only renderer API (`window.api`, typed by `PetApi` in `src/shared/ipc.ts`)
 - `src/shared/` types + pure logic shared by both sides: `events.ts` (protocol), `ipc.ts` (channels), `settings.ts` (model, defaults, validation, migration), `progress.ts`, `pomodoro.ts`, `autoHide.ts`, `friends.ts`, `weather.ts`, `guard.ts`, `habits.ts`, `music.ts`, `skins.ts`
@@ -41,7 +42,7 @@ Hooks: curl. Music helper: C# (.NET 8). Auto-hide watcher: inline PowerShell.
 - `scripts/claude-hooks.mjs` (pure merge/remove of our entries), `claude-settings.mjs` (file I/O + backups), `install-hooks.mjs` / `uninstall-hooks.mjs`, `icons/` (icon generator)
 - `helper/nowplaying/` C# helper: Windows media session → JSON lines on stdout, `toggle/next/prev` on stdin
 - `build/installer.nsh` NSIS uninstall step · `electron-builder.yml` · `site/` landing page · `.github/workflows/` release (3 OS) + pages
-- `tests/` Vitest (220 tests + 2 live Friends tests)
+- `tests/` Vitest (226 tests + 3 live Friends tests)
 
 ## How moods work
 - Agent events (from hooks → server → bridge → renderer) feed `moodMachine.ts`: base `sleeping|working`,
@@ -63,6 +64,7 @@ Hooks: curl. Music helper: C# (.NET 8). Auto-hide watcher: inline PowerShell.
   **auto-hide** (Windows), per-type risk warnings + allow-list, size S/M/L, sound volume, **Friends** (Supabase, opt-in)
 - v0.6.0: **distraction guard**, **drink water**, **stretch with me**, **bedtime mode**, **weather outfits** (opt-in),
   **prayer times + Ramadan** (opt-in, offline), **laser game**, study streak scarf, exam countdown sign, sticky notes
+- v0.7.0: **visits** (Friends: send your cat to a friend's desktop for 2.5 min; accept visits from friends / nobody)
 - Dropped for now (decided): ambient sounds, toss a fish, birthday/holiday outfits, photo mode, second pet
 
 ## Commands

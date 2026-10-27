@@ -11,6 +11,8 @@ const Showcase = lazy(() => import('./Showcase'))
 // eslint-disable-next-line react-refresh/only-export-components -- entry file, never hot-swapped
 const Welcome = lazy(() => import('./Welcome'))
 // eslint-disable-next-line react-refresh/only-export-components -- entry file, never hot-swapped
+const Guest = lazy(() => import('./Guest'))
+// eslint-disable-next-line react-refresh/only-export-components -- entry file, never hot-swapped
 const Settings = lazy(() => import('./settings/Settings'))
 // eslint-disable-next-line react-refresh/only-export-components -- entry file, never hot-swapped
 const Connect = lazy(() => import('./Connect'))
@@ -22,6 +24,7 @@ const devPage = import.meta.env.DEV ? location.hash : ''
 
 function page(): React.JSX.Element {
   if (location.hash === '#welcome') return <Welcome />
+  if (location.hash === '#guest') return <Guest />
   if (location.hash.startsWith('#settings')) return <Settings />
   if (location.hash === '#connect') return <Connect />
   if (location.hash === '#profile') return <Profile />

@@ -140,6 +140,9 @@ function onMoment(moment: PetMoment): void {
     case 'prayer':
       showToast(`🕌 ${moment.label} time`)
       break
+    case 'visit':
+      showToast(moment.text)
+      break
     case 'streak':
       showToast(`${moment.days} days in a row 🔥`)
       break

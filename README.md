@@ -82,7 +82,8 @@ done, or waiting for you, and you can say yes without going back to the terminal
 - **🎵 Music** (Windows): headphones on, he vibes to Spotify, YouTube, Deezer… Hover him for pixel
   play / pause / next buttons.
 - **🎨 Skins and sizes**: Noodle, Mochi (orange tabby), Zitouna (street cat), in S / M / L.
-- **👥 Friends** (opt-in): add friends by code and see when their pets are online.
+- **👥 Friends** (opt-in): add friends by code, see when their pets are online, and send your cat
+  to **visit**: he walks off your screen and plays next to their cat for a few minutes.
 
 ### Not a developer?
 

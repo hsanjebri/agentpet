@@ -65,7 +65,11 @@ const api: PetApi = {
   getNotes: () => ipcRenderer.invoke(IPC.getNotes),
   onNotes: (listener) => listen(IPC.notes, listener),
   addNote: (text) => ipcRenderer.send(IPC.addNote, text),
-  doneNote: (id) => ipcRenderer.send(IPC.doneNote, id)
+  doneNote: (id) => ipcRenderer.send(IPC.doneNote, id),
+  visitFriend: (userId) => ipcRenderer.invoke(IPC.visitFriend, userId),
+  getGuest: () => ipcRenderer.invoke(IPC.getGuest),
+  guestBye: () => ipcRenderer.send(IPC.guestBye),
+  guestInteractive: (on) => ipcRenderer.send(IPC.guestInteractive, on)
 }
 
 contextBridge.exposeInMainWorld('api', api)

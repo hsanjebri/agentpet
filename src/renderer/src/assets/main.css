@@ -1151,3 +1151,19 @@ body,
   font-size: 10px;
   opacity: 0.7;
 }
+
+/* ---------- a friend's cat visiting ---------- */
+
+.guest-tag {
+  white-space: nowrap;
+}
+
+.guest-pet.hop {
+  animation: guest-hop 0.5s steps(3) 1;
+}
+
+@keyframes guest-hop {
+  50% {
+    transform: translateY(-18px);
+  }
+}

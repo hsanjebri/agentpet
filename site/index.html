@@ -366,6 +366,12 @@
       .panel .pxbtn { font-size: 12px; padding: 5px 10px; color: #1f1c1a; }
       .sect-label { font: 600 12px var(--mono); text-transform: uppercase; letter-spacing: 0.08em; color: #b9c1dc; margin-top: 8px; }
 
+      /* ---------- visits ---------- */
+      .visit { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.4fr); gap: 32px; align-items: center; border-radius: var(--radius); background: linear-gradient(120deg, var(--peach), var(--lilac)); padding: 34px; }
+      .visit-copy h3 { margin: 8px 0 0; font-size: clamp(28px, 3.6vw, 40px); letter-spacing: -0.03em; line-height: 1.05; }
+      .visit-copy p { color: var(--muted); margin: 14px 0 0; }
+      .visit-stage { position: relative; aspect-ratio: 16 / 8; border-radius: 20px; background: rgba(255, 255, 255, 0.6); min-width: 0; }
+
       /* ---------- play ---------- */
       .grid4 { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 18px; margin-top: 56px; }
       .stage.dark { background: #171a2b; }
@@ -433,7 +439,9 @@
       @media (max-width: 900px) {
         nav.top .links { display: none; }
         nav.top .btn-small { margin-left: auto; }
-        .grid3, .grid2, .cats, .facts, .devgrid, .extras, .split, .modes { grid-template-columns: minmax(0, 1fr); }
+        .grid3, .grid2, .cats, .facts, .devgrid, .extras, .split, .modes, .visit { grid-template-columns: minmax(0, 1fr); }
+        .visit { padding: 22px; }
+        .visit-stage { aspect-ratio: 4 / 3; }
         .grid4 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
         .settings-mock { grid-template-columns: minmax(0, 1fr); }
         .sm-nav { display: flex; overflow-x: auto; border-right: 0; border-bottom: 2px solid #1f1c1a; }
@@ -666,10 +674,11 @@
           <div class="head reveal">
             <div class="kicker">Friends</div>
             <h2>Better with friends.</h2>
-            <p>Swap codes with a friend and your cats know each other. See when their cat is around, and how far they've grown.</p>
+            <p>Swap codes with a friend and your cats know each other. Send yours over for a visit: he walks off your screen and turns up on their desktop, next to their cat.</p>
             <ul class="checks">
               <li>Add a friend with a code like MOCHI-7K2P</li>
               <li>A green dot when their cat is online</li>
+              <li>Visits: your cat plays on their screen for a few minutes, then comes home</li>
               <li>Accept, remove or block, any time</li>
               <li>Shares only the name, skin, level and online status. Off until you turn it on.</li>
             </ul>
@@ -681,8 +690,23 @@
             <div class="sect-label">Requests</div>
             <div class="prow"><img class="px ava" src="img/zitouna-sleep.png" alt="" /><div class="who"><b>Zitouna · lv 5</b><span>ZITOUN-93HD</span></div><span class="pxbtn ok">Accept</span><span class="pxbtn">Decline</span></div>
             <div class="sect-label">Friends (2)</div>
-            <div class="prow"><span class="dot on" title="online"></span><img class="px ava" src="img/mochi-work.png" alt="" /><div class="who"><b>Mochi · lv 12</b><span>online now</span></div></div>
+            <div class="prow"><span class="dot on" title="online"></span><img class="px ava" src="img/mochi-work.png" alt="" /><div class="who"><b>Mochi · lv 12</b><span>online now</span></div><span class="pxbtn ok">Visit 🧳</span></div>
             <div class="prow"><span class="dot"></span><img class="px ava" src="img/tophat.png" alt="" /><div class="who"><b>Biscuit · lv 21</b><span>away</span></div></div>
+          </div>
+        </div>
+      </section>
+
+      <section class="wrap" style="padding-top: 28px">
+        <div class="visit reveal">
+          <div class="visit-copy">
+            <div class="kicker">New · Visits</div>
+            <h3>Send him over to play.</h3>
+            <p>Right-click your cat › Visit a friend. He walks off your screen, turns up on theirs, plays next to their cat for a few minutes, then comes home with a fish.</p>
+          </div>
+          <div class="visit-stage">
+            <div class="bubble" style="left: 6%; top: 8%">Mochi is visiting 👋<small>lv 12 · a friend's cat</small><div class="pxbtns"><span class="pxbtn">Bye 👋</span></div></div>
+            <img class="px" src="img/mochi.png" alt="Mochi, a friend's cat, visiting" style="position:absolute; left:2%; bottom:6%; width:48%" />
+            <img class="px" src="img/happy.png" alt="Noodle at home" style="position:absolute; right:2%; bottom:6%; width:48%" />
           </div>
         </div>
       </section>
@@ -774,7 +798,7 @@
           </details>
           <details>
             <summary>How do friends work?</summary>
-            <p>Turn Friends on in Settings and you get a code like NOODLE-48K2. Give it to a friend, they add it, you accept, and you see each other's cat with a green dot when they're online. No email, no password: an anonymous account is made for you. Only the pet's name, skin, level and online status are shared.</p>
+            <p>Turn Friends on in Settings and you get a code like NOODLE-48K2. Give it to a friend, they add it, you accept, and you see each other's cat with a green dot when they're online. Click Visit and your cat walks off your screen and spends a few minutes playing next to theirs (only if they accept visits, and never during a focus session or bedtime). No email, no password: an anonymous account is made for you. Only the pet's name, skin, level and online status are shared.</p>
           </details>
           <details>
             <summary>Does he slow my computer down?</summary>

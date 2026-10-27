@@ -11,6 +11,7 @@ import type { Accessory, PetLook, RareMoment, Recap } from './progress'
 import type { FriendsCommand, FriendsResult, FriendsView } from './friends'
 import type { PomodoroCommand, PomodoroEvent, PomodoroState } from './pomodoro'
 import type { PetSettings, SettingsChange } from './settings'
+import type { Guest } from './visits'
 import type { Outfit } from './weather'
 
 export const IPC = {
@@ -71,7 +72,11 @@ export const IPC = {
   getNotes: 'pet:get-notes',
   addNote: 'pet:add-note',
   doneNote: 'pet:done-note',
-  stretched: 'pet:stretched'
+  stretched: 'pet:stretched',
+  visitFriend: 'pet:visit-friend',
+  getGuest: 'pet:get-guest',
+  guestBye: 'pet:guest-bye',
+  guestInteractive: 'pet:guest-interactive'
 } as const
 
 /** Phone ping settings (ntfy). */
@@ -114,6 +119,8 @@ export type PetMoment =
   | { kind: 'streak'; days: number }
   /** past bedtime: a yawn */
   | { kind: 'bedtime' }
+  /** visits: off to a friend, a guest arrived, back home… */
+  | { kind: 'visit'; text: string }
   /** first-run setup finished: say hi */
   | { kind: 'hello' }
 
@@ -308,4 +315,11 @@ export interface PetApi {
   onNotes(listener: (notes: StickyNote[]) => void): () => void
   addNote(text: string): void
   doneNote(id: string): void
+  /** Sends your cat to visit an online friend; resolves with what to tell the user. */
+  visitFriend(userId: string): Promise<string>
+  /** The guest window: who is visiting. */
+  getGuest(): Promise<Guest | null>
+  /** The host taps "Bye": the guest goes home. */
+  guestBye(): void
+  guestInteractive(on: boolean): void
 }

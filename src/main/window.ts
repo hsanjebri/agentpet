@@ -122,6 +122,42 @@ let pet: BrowserWindow | null = null
 let shown = false // first shown (ready-to-show)
 let autoHidden = false
 
+export function isAutoHidden(): boolean {
+  return autoHidden
+}
+
+/** Where the pet window is (visits place the guest next to it). */
+export function petBounds(): Electron.Rectangle {
+  if (pet && !pet.isDestroyed()) return pet.getBounds()
+  const { x, y } = homePosition()
+  return { x, y, ...windowSize() }
+}
+
+// ---------- visits: he walks off the screen, and later comes back ----------
+
+let visitRest: Position | null = null
+
+export function leaveForVisit(): void {
+  if (!pet || pet.isDestroyed()) return
+  cancelWalk()
+  const [x, y] = pet.getPosition()
+  visitRest = { x, y }
+  const { workArea } = screen.getDisplayMatching(pet.getBounds())
+  const off = { x: workArea.x + workArea.width + 10, y }
+  glideTo(pet, off)
+  setTimeout(() => pet && !pet.isDestroyed() && pet.hide(), 600)
+}
+
+export function comeBackFromVisit(): void {
+  if (!pet || pet.isDestroyed() || !visitRest) return
+  const home = visitRest
+  visitRest = null
+  const { workArea } = screen.getDisplayMatching({ ...home, ...windowSize() })
+  moveWindow(pet, { x: workArea.x + workArea.width + 10, y: home.y })
+  if (!autoHidden) pet.showInactive()
+  glideTo(pet, home)
+}
+
 /** Auto-hide: out of sight during a fullscreen app, a meeting or Do not disturb. */
 export function setAutoHidden(hidden: boolean): void {
   if (hidden === autoHidden) return

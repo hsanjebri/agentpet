@@ -44,6 +44,8 @@ export interface FriendsDeps {
   storage: SessionStorage
   pet(): PetCard
   onView(view: FriendsView): void
+  /** a broadcast from a friend arrived on our channel (visits) */
+  onMessage?(event: string, payload: unknown): void
   /** how often to refresh the lists while online */
   pollMs?: number
   retryMs?: number
@@ -184,6 +186,7 @@ export class FriendsService {
     const me = this.me
     this.own = this.client
       .channel(`pet:${me}`, { config: { private: true, presence: { key: me } } })
+      .on('broadcast', { event: '*' }, (msg) => this.deps.onMessage?.(msg.event, msg.payload))
       .subscribe((status) => {
         if (status === 'SUBSCRIBED') void this.own?.track({ at: Date.now() })
       })
@@ -213,6 +216,31 @@ export class FriendsService {
         })
         .subscribe()
       this.watching.set(id, channel)
+    }
+  }
+
+  /** Who handles broadcasts from friends (visits). */
+  setMessageHandler(handler: (event: string, payload: unknown) => void): void {
+    this.deps.onMessage = handler
+  }
+
+  /** Our user id once signed in (for visits). */
+  myId(): string | null {
+    return this.me
+  }
+
+  isFriend(userId: string): boolean {
+    return this.view.friends.some((f) => f.userId === userId)
+  }
+
+  /** A broadcast to a friend's channel (only friends may send there). False if it didn't go. */
+  async sendTo(userId: string, event: string, payload: Record<string, unknown>): Promise<boolean> {
+    const channel = this.watching.get(userId)
+    if (!channel || this.view.status !== 'online') return false
+    try {
+      return (await channel.send({ type: 'broadcast', event, payload })) === 'ok'
+    } catch {
+      return false
     }
   }
 

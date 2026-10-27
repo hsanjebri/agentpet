@@ -2,6 +2,8 @@
 // Settings.
 import { Menu, type MenuItemConstructorOptions, Tray, app, ipcMain, nativeImage } from 'electron'
 import { IPC } from '../shared/ipc'
+import { friendsService } from './friends'
+import { visitFriend } from './visits'
 import { openProfileWindow, openSettingsWindow } from './pages'
 import { pomodoroMenuItems } from './pomodoro'
 import { petName } from './progress'
@@ -48,11 +50,27 @@ function buildMenu(): Menu {
   ])
 }
 
+/** Online friends you can send him to (only when Friends is on). */
+function visitMenu(): MenuItemConstructorOptions[] {
+  const view = friendsService().current()
+  if (view.status !== 'online') return []
+  const online = view.friends.filter((f) => f.online)
+  return [
+    {
+      label: 'Visit a friend',
+      submenu: online.length
+        ? online.map((f) => ({ label: `${f.name} 🟢`, click: () => void visitFriend(f.userId) }))
+        : [{ label: 'No friends online right now', enabled: false }]
+    }
+  ]
+}
+
 /** Right-click on the pet. */
 function petMenu(): Menu {
   return Menu.buildFromTemplate([
     ...pomodoroMenuItems(),
     { label: 'Sticky note…', click: () => openSettingsWindow('daily') },
+    ...visitMenu(),
     { type: 'separator' },
     settingsItem(),
     profileItem()

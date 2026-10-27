@@ -103,6 +103,69 @@ describe.skipIf(!live)('Friends against the live Supabase project', () => {
     b.service.disable()
   }, 90_000)
 
+  it('visits: friends can knock on each other’s channel, strangers cannot', async () => {
+    const a = user('Visita', 'noodle')
+    const b = user('Visitb', 'mochi')
+    const gotB: Array<[string, unknown]> = []
+    const gotA: Array<[string, unknown]> = []
+    b.service.setMessageHandler((event, payload) => gotB.push([event, payload]))
+    a.service.setMessageHandler((event, payload) => gotA.push([event, payload]))
+    await a.service.enable()
+    await b.service.enable()
+    await a.service.command({ type: 'add', code: b.service.current().myCode! })
+    await b.service.command({ type: 'retry' })
+    const req = b.service.current().incoming[0]
+    await b.service.command({ type: 'respond', id: req.id, action: 'accept' })
+    await a.service.command({ type: 'retry' })
+    const idA = a.service.myId()!
+    const idB = b.service.myId()!
+    await until(() => a.service.current().friends[0]?.online === true)
+    await until(() => b.service.current().friends[0]?.online === true)
+
+    // A knocks, B answers: both messages arrive on the private channels
+    expect(await a.service.sendTo(idB, 'visit', { visitId: 'v1', from: idA, name: 'Visita' })).toBe(
+      true
+    )
+    await until(() => gotB.length > 0)
+    expect(gotB[0]).toEqual(['visit', expect.objectContaining({ visitId: 'v1', name: 'Visita' })])
+    expect(await b.service.sendTo(idA, 'visit_ok', { visitId: 'v1' })).toBe(true)
+    await until(() => gotA.length > 0)
+    expect(gotA[0]).toEqual(['visit_ok', { visitId: 'v1' }])
+
+    // a stranger can't even join B's channel (Realtime Authorization), so nothing arrives
+    const stranger = createClient(config.url, config.anonKey, {
+      auth: { storage: memoryStorage(), persistSession: false, autoRefreshToken: false }
+    })
+    await stranger.auth.signInAnonymously()
+    await stranger.realtime.setAuth()
+    let joined = ''
+    const ch = stranger.channel(`pet:${idB}`, { config: { private: true } })
+    ch.subscribe((status) => (joined = status))
+    await until(
+      () => (joined !== '' && joined !== 'SUBSCRIBED' ? true : joined === 'SUBSCRIBED'),
+      10_000
+    )
+    const before = gotB.length
+    await ch.send({
+      type: 'broadcast',
+      event: 'visit',
+      payload: { visitId: 'evil', from: 'x', name: 'Evil' }
+    })
+    await new Promise((r) => setTimeout(r, 2000))
+    expect(joined).not.toBe('SUBSCRIBED')
+    expect(gotB.length).toBe(before)
+    await stranger.removeAllChannels()
+
+    // tidy up
+    await a.service.command({
+      type: 'respond',
+      id: a.service.current().friends[0].id,
+      action: 'remove'
+    })
+    a.service.disable()
+    b.service.disable()
+  }, 90_000)
+
   it('the rules: strangers see nothing, nobody writes another pet, no service tricks', async () => {
     const mk = (): SupabaseClient =>
       createClient(config.url, config.anonKey, {

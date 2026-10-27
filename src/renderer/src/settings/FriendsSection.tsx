@@ -14,14 +14,33 @@ function useFriends(): FriendsView | null {
   return view
 }
 
+/** Send your cat to an online friend's desktop for a few minutes. */
+function VisitButton({ pet }: { pet: FriendPet }): React.JSX.Element {
+  const [note, setNote] = useState('')
+  return (
+    <>
+      {note && <span className="connect-small">{note}</span>}
+      <button
+        className="btn btn-approve"
+        title={`Send your cat to visit ${pet.name}`}
+        onClick={() => void window.api.visitFriend(pet.userId).then(setNote)}
+      >
+        Visit 🧳
+      </button>
+    </>
+  )
+}
+
 function PetRow({
   pet,
   dot,
-  actions
+  actions,
+  extra
 }: {
   pet: FriendPet
   dot?: boolean
   actions: Array<[RespondAction, string, string?]>
+  extra?: React.ReactNode
 }): React.JSX.Element {
   const [busy, setBusy] = useState(false)
   return (
@@ -41,6 +60,7 @@ function PetRow({
         </span>
       </span>
       <span className="settings-row-control">
+        {extra}
         {actions.map(([action, label, style]) => (
           <button
             key={action}
@@ -182,6 +202,7 @@ export function FriendsSection({ settings: s }: { settings: PetSettings }): Reac
             key={pet.id}
             pet={pet}
             dot
+            extra={pet.online ? <VisitButton pet={pet} /> : undefined}
             actions={[
               ['remove', 'Remove'],
               ['block', 'Block', 'btn-deny']
@@ -207,7 +228,10 @@ export function FriendsSection({ settings: s }: { settings: PetSettings }): Reac
       )}
 
       <Group title="Playdates">
-        <Row label="Accept visits from" description="For pet visits, coming in a later version.">
+        <Row
+          label="Accept visits from"
+          description="Friends' cats can come and play next to yours for a few minutes (never during a focus round or bedtime)."
+        >
           <Choice
             value={s.visits}
             options={[
