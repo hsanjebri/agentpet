@@ -87,6 +87,24 @@ export interface GuardSettings {
   sites: string[]
 }
 
+export interface StretchSettings {
+  enabled: boolean
+  everyMin: number
+}
+
+export interface BedtimeSettings {
+  enabled: boolean
+  /** "23:00", local time */
+  at: string
+}
+
+/** "Bac in 23 days 📚": he holds the number on a sign. */
+export interface Countdown {
+  label: string
+  /** "2027-06-10" */
+  date: string
+}
+
 export interface PrayerSettings {
   enabled: boolean
   method: PrayerMethod
@@ -145,6 +163,9 @@ export interface StoredSettings {
   place: Place | null
   /** Ctrl+Alt+L: a red dot he chases */
   laser: boolean
+  stretch: StretchSettings
+  bedtime: BedtimeSettings
+  countdown: Countdown | null
 }
 
 /** The settings the renderer sees: the stored ones plus a few facts about this computer. */
@@ -193,7 +214,10 @@ export function defaultSettings(): StoredSettings {
     weather: false,
     prayer: { enabled: false, method: 'MuslimWorldLeague', ramadan: true },
     place: null,
-    laser: true
+    laser: true,
+    stretch: { enabled: true, everyMin: 90 },
+    bedtime: { enabled: false, at: '23:30' },
+    countdown: null
   }
 }
 
@@ -301,6 +325,33 @@ export function cleanChange(input: unknown): SettingsChange {
       prayer.method = input.prayer.method as PrayerMethod
     out.prayer = prayer
   }
+  if (isObject(input.stretch)) {
+    const stretch: Partial<StretchSettings> = {}
+    if (typeof input.stretch.enabled === 'boolean') stretch.enabled = input.stretch.enabled
+    const n = input.stretch.everyMin
+    if (typeof n === 'number' && Number.isFinite(n))
+      stretch.everyMin = Math.min(240, Math.max(30, Math.round(n)))
+    out.stretch = stretch
+  }
+  if (isObject(input.bedtime)) {
+    const bedtime: Partial<BedtimeSettings> = {}
+    if (typeof input.bedtime.enabled === 'boolean') bedtime.enabled = input.bedtime.enabled
+    if (typeof input.bedtime.at === 'string' && /^([01]\d|2[0-3]):[0-5]\d$/.test(input.bedtime.at))
+      bedtime.at = input.bedtime.at
+    out.bedtime = bedtime
+  }
+  if (input.countdown === null) out.countdown = null
+  else if (isObject(input.countdown)) {
+    const { label, date } = input.countdown
+    if (
+      typeof label === 'string' &&
+      label.trim() &&
+      typeof date === 'string' &&
+      /^\d{4}-\d{2}-\d{2}$/.test(date) &&
+      !Number.isNaN(Date.parse(date))
+    )
+      out.countdown = { label: label.trim().slice(0, 24), date }
+  }
   if (input.place === null) out.place = null
   else if (isObject(input.place)) {
     const { city, lat, lon } = input.place
@@ -318,7 +369,8 @@ export function cleanChange(input: unknown): SettingsChange {
 
 /** The stored settings after a (clean) change; nested settings are merged, not replaced. */
 export function applyChange(current: StoredSettings, change: SettingsChange): StoredSettings {
-  const { sounds, autoHide, risks, pomodoro, water, guard, prayer, ...flat } = change
+  const { sounds, autoHide, risks, pomodoro, water, guard, prayer, stretch, bedtime, ...flat } =
+    change
   delete flat.startOnLogin // not stored: the OS keeps it
   return {
     ...current,
@@ -329,7 +381,9 @@ export function applyChange(current: StoredSettings, change: SettingsChange): St
     pomodoro: { ...current.pomodoro, ...pomodoro },
     water: { ...current.water, ...water },
     guard: { ...current.guard, ...guard },
-    prayer: { ...current.prayer, ...prayer }
+    prayer: { ...current.prayer, ...prayer },
+    stretch: { ...current.stretch, ...stretch },
+    bedtime: { ...current.bedtime, ...bedtime }
   } as StoredSettings
 }
 

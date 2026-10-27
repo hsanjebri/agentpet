@@ -15,6 +15,7 @@ import { startDaily } from './daily'
 import { startFriends } from './friends'
 import { startGuard } from './guard'
 import { startLaser } from './laser'
+import { startNotes } from './notes'
 import { registerPagesIpc } from './pages'
 import { inFocusRound, onPomodoroChange, registerPomodoro } from './pomodoro'
 import { startPhone } from './phone'
@@ -61,6 +62,7 @@ else if (!app.requestSingleInstanceLock()) {
     startDaily()
     startGuard()
     startLaser()
+    startNotes()
     registerProgressIpc(refreshTray)
     // before the pet window exists, so it gets the current song once it has loaded
     registerMusic(petSettings().music)

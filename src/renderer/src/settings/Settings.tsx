@@ -3,7 +3,7 @@
 // Code and Phone ping sections don't exist.
 import type { PetSettings } from '@shared/ipc'
 import { useEffect, useState } from 'react'
-import { useSettings } from '../useSettings'
+import { useLoadedSettings } from '../useSettings'
 import { AboutSection } from './AboutSection'
 import { ClaudeSection } from './ClaudeSection'
 import { DailySection } from './DailySection'
@@ -40,7 +40,7 @@ function sectionFromHash(): SectionId {
 }
 
 export default function Settings(): React.JSX.Element {
-  const settings = useSettings()
+  const loaded = useLoadedSettings()
   const [section, setSection] = useState<SectionId>(sectionFromHash)
   const [name, setName] = useState('Noodle')
 
@@ -54,6 +54,9 @@ export default function Settings(): React.JSX.Element {
     window.api.getLook().then((look) => setName(look.petName))
     return () => unsubscribe.forEach((off) => off())
   }, [])
+
+  if (!loaded) return <div className="settings" />
+  const settings = loaded
 
   const sections = visibleSections(settings)
   // switched to Fun & focus while on a developer section

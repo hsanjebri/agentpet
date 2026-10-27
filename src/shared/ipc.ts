@@ -66,7 +66,12 @@ export const IPC = {
   drank: 'pet:drank',
   searchPlace: 'pet:search-place',
   shoo: 'pet:shoo',
-  laser: 'pet:laser'
+  laser: 'pet:laser',
+  notes: 'pet:notes',
+  getNotes: 'pet:get-notes',
+  addNote: 'pet:add-note',
+  doneNote: 'pet:done-note',
+  stretched: 'pet:stretched'
 } as const
 
 /** Phone ping settings (ntfy). */
@@ -103,6 +108,12 @@ export type PetMoment =
   | { kind: 'distraction'; site: string }
   /** he caught the laser dot */
   | { kind: 'caught' }
+  /** time to stretch together */
+  | { kind: 'stretch' }
+  /** a focus streak milestone (days in a row with a Pomodoro) */
+  | { kind: 'streak'; days: number }
+  /** past bedtime: a yawn */
+  | { kind: 'bedtime' }
   /** first-run setup finished: say hi */
   | { kind: 'hello' }
 
@@ -121,10 +132,20 @@ export interface DailyState {
   ramadan: { iftarAt: number | null } | null
   /** a glass of water waits for you */
   waterDue: boolean
+  /** "stretch with me" is on */
+  stretchDue: boolean
+  /** past bedtime: yawning first, then lying across the screen */
+  bedtime: 'sleepy' | 'lying' | null
   /** sitting on a distracting window */
   guarding: string | null
   /** chasing the laser dot */
   laser: boolean
+}
+
+export interface StickyNote {
+  id: string
+  text: string
+  at: number
 }
 
 export interface PlaceResult {
@@ -279,6 +300,12 @@ export interface PetApi {
   drank(): void
   /** City search for weather / prayer times (sends the typed name to Open-Meteo). */
   searchPlace(query: string): Promise<PlaceResult[]>
-  /** Shoo him off a distracting window. */
+  /** Shoo him off a distracting window (or off the screen at bedtime: snooze). */
   shoo(): void
+  /** "Done ✓" after stretching together */
+  stretched(): void
+  getNotes(): Promise<StickyNote[]>
+  onNotes(listener: (notes: StickyNote[]) => void): () => void
+  addNote(text: string): void
+  doneNote(id: string): void
 }

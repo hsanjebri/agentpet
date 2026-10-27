@@ -14,6 +14,7 @@ const look = (over: Partial<PetLook>): PetLook => ({
   stage: 'cat',
   wearing: [],
   hungry: false,
+  focusStreak: 0,
   ...over
 })
 

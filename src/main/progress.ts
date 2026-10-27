@@ -71,7 +71,9 @@ export function recordActivity(activity: Activity): void {
     const moment: PetMoment =
       m.type === 'level_up'
         ? { kind: 'level_up', level: m.level }
-        : { kind: 'unlocked', item: m.item }
+        : m.type === 'streak'
+          ? { kind: 'streak', days: m.days }
+          : { kind: 'unlocked', item: m.item }
     broadcast(IPC.moment, moment)
   }
 }

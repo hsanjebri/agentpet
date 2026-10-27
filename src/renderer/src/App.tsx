@@ -1,6 +1,7 @@
 import type { PetSettings } from '@shared/ipc'
 import { leftMs } from '@shared/pomodoro'
-import { timeMood } from '@shared/progress'
+import { daysUntil } from '@shared/habits'
+import { SCARF_STREAK, timeMood } from '@shared/progress'
 import type { SoundName } from '@shared/settings'
 import { useEffect, useRef, useState } from 'react'
 import { ApprovalBubble } from './ApprovalBubble'
@@ -16,6 +17,7 @@ import { sessionLine } from './sessionLine'
 import { playMeow, playTick, playToot, setVolume, startPurr, stopPurr } from './sounds'
 import { useAgentBridge, useMood, usePetStore } from './store'
 import { useDaily } from './useDaily'
+import { useNotes } from './useNotes'
 import { UsageBar } from './UsageBar'
 import { usePetPointer } from './usePetPointer'
 import { usePomodoro } from './usePomodoro'
@@ -114,6 +116,7 @@ function App(): React.JSX.Element {
   useAgentBridge()
   const pomodoro = usePomodoro()
   const daily = useDaily()
+  const notes = useNotes()
   const liveMood = useMood()
   const liveUsage = usePetStore((s) => s.usage)
   const prompts = usePetStore((s) => s.prompts)
@@ -134,6 +137,12 @@ function App(): React.JSX.Element {
   const hoverTimer = useRef<ReturnType<typeof setTimeout>>(undefined)
   const [petting, setPetting] = useState(false)
   const [partyHat] = useState(() => timeMood(Date.now()).partyHat)
+  // the date, for the countdown sign (checked every 10 minutes)
+  const [today, setToday] = useState(() => Date.now())
+  useEffect(() => {
+    const timer = setInterval(() => setToday(Date.now()), 10 * 60_000)
+    return () => clearInterval(timer)
+  }, [])
   const [flick, playFlick] = useOneShot(260)
   const [wiggle, playWiggle] = useOneShot(620)
   const [stretch, playStretch] = useOneShot(STRETCH_MS)
@@ -148,7 +157,8 @@ function App(): React.JSX.Element {
   usePetPointer({
     onClick: () => {
       // sitting on a distracting window: a click shoos him off
-      if (dailyRef.current.guarding) return window.api.shoo()
+      if (dailyRef.current.guarding || dailyRef.current.bedtime === 'lying')
+        return window.api.shoo()
       dispatch({ type: 'pet_clicked' })
       window.api.petClicked()
     },
@@ -199,6 +209,19 @@ function App(): React.JSX.Element {
     return () => clearInterval(timer)
   }, [focusRunning, tickOn])
 
+  // stretch with me: he stretches every few seconds until you're done
+  const stretching = !demoStep && daily.stretchDue
+  const stretchRef = useRef(playStretch)
+  useEffect(() => {
+    stretchRef.current = playStretch
+  })
+  useEffect(() => {
+    if (!stretching) return
+    stretchRef.current()
+    const timer = setInterval(() => stretchRef.current(), 3000)
+    return () => clearInterval(timer)
+  }, [stretching])
+
   const agentMood = demoStep?.mood ?? liveMood
   // during focus only "needs you" breaks the calm; the rest waits for the break.
   // Chasing the laser: big eyes. Guarding a distraction: cross.
@@ -206,6 +229,7 @@ function App(): React.JSX.Element {
   if (!demoStep && mood !== 'needs') {
     if (daily.laser) mood = 'needs'
     else if (daily.guarding) mood = 'hiss'
+    else if (daily.bedtime) mood = 'sleeping'
   }
   const usage = demoStep ? demoUsage(demoStep) : liveUsage
   const prompt = demoStep ? demoStep.prompt : prompts[0]
@@ -246,12 +270,25 @@ function App(): React.JSX.Element {
     !daily.guarding &&
     !daily.waterDue &&
     !daily.laser &&
-    !daily.praying
+    !daily.praying &&
+    !daily.stretchDue &&
+    !daily.bedtime
   ) {
     return <main className="stage" />
   }
 
+  const countdown = settings.countdown
+  const daysLeft = countdown ? daysUntil(countdown.date, today) : -1
+  const showSign = !demoStep && countdown !== null && daysLeft >= 0 && daysLeft <= 999
+  const note = notes[0]
   const extraInfo: string[] = []
+  if (showSign && countdown)
+    extraInfo.push(
+      daysLeft === 0
+        ? `📚 ${countdown.label} is today!`
+        : `📚 ${countdown.label} in ${daysLeft} days`
+    )
+  if ((look?.focusStreak ?? 0) > 1) extraInfo.push(`🔥 ${look?.focusStreak} days in a row`)
   if (daily.outfit) extraInfo.push(daily.outfit.label)
   if (daily.ramadan?.iftarAt && hoveredAt) {
     const mins = Math.max(0, Math.round((daily.ramadan.iftarAt - hoveredAt) / 60_000))
@@ -277,6 +314,13 @@ function App(): React.JSX.Element {
         <div className="bubble-sub">click me to shoo me away</div>
       </div>
     )
+  } else if (!demoStep && daily.bedtime === 'lying') {
+    bubble = (
+      <div className="bubble bubble-info">
+        go to bed 😴
+        <div className="bubble-sub">click me for 30 more minutes</div>
+      </div>
+    )
   } else if (!demoStep && mood === 'hiss' && warning) {
     bubble = <div className="bubble bubble-warning">⚠ {warning}</div>
   } else if (!demoStep && daily.waterDue) {
@@ -286,6 +330,17 @@ function App(): React.JSX.Element {
         <div className="bubble-actions">
           <button className="btn btn-approve" data-ui="" onClick={() => window.api.drank()}>
             I drank 💧
+          </button>
+        </div>
+      </div>
+    )
+  } else if (stretching) {
+    bubble = (
+      <div className="bubble bubble-water" data-ui="">
+        🙆 stretch with me! arms up, hold 10 s
+        <div className="bubble-actions">
+          <button className="btn btn-approve" data-ui="" onClick={() => window.api.stretched()}>
+            Done ✓
           </button>
         </div>
       </div>
@@ -317,7 +372,10 @@ function App(): React.JSX.Element {
   }
 
   const focusLength = (settings.pomodoro.focusMin || 25) * 60_000
-  const extraWear = daily.outfit?.wear ?? []
+  const extraWear = [
+    ...(daily.outfit?.wear ?? []),
+    ...((look?.focusStreak ?? 0) >= SCARF_STREAK ? (['scarf'] as const) : [])
+  ]
   const showUsage = usage && (demoStep || (settings.usageBar && settings.mode === 'developer'))
 
   return (
@@ -333,6 +391,26 @@ function App(): React.JSX.Element {
               progress={now ? 1 - leftMs(pomodoro, now) / focusLength : 0}
               scale={size === 's' ? 2 : 3}
             />
+          </div>
+        )}
+        {showSign && countdown && (
+          <div className="countdown-sign" aria-hidden>
+            <span>{countdown.label}</span>
+            <b>{daysLeft === 0 ? 'today!' : `${daysLeft}d`}</b>
+          </div>
+        )}
+        {note && !demoStep && (
+          <div className="sticky-note" data-ui="">
+            <span>{note.text}</span>
+            <button
+              className="btn btn-approve"
+              data-ui=""
+              title="Done"
+              onClick={() => window.api.doneNote(note.id)}
+            >
+              ✓
+            </button>
+            {notes.length > 1 && <span className="sticky-more">+{notes.length - 1}</span>}
           </div>
         )}
         {daily.praying && !demoStep && (

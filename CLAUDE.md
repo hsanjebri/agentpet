@@ -5,7 +5,7 @@ It floats above all windows, shows the agent's state with its mood/tail, lets yo
 permission requests from its bubble**, shows session usage, pings your phone, and vibes to music.
 Two modes: **developer** (follows Claude Code) and **Fun & focus** (no Claude anywhere: music, Pomodoro, company).
 `AGENTPET_PLAN.md` is the original build plan (status note at its top); `README.md` is user-facing.
-Repo: github.com/hsanjebri/agentpet (**private** for now). Current version: **0.5.0**.
+Repo: github.com/hsanjebri/agentpet (**private** for now). Current version: **0.6.0**.
 
 ## Stack
 Electron 44 + electron-vite, React 19 + TypeScript, Zustand, electron-store, electron-updater,
@@ -24,9 +24,11 @@ Hooks: curl. Music helper: C# (.NET 8). Auto-hide watcher: inline PowerShell.
   - `connect.ts` Claude Code connect/disconnect + Welcome · `pages.ts` small windows (welcome/settings/connect/profile) · `tray.ts` (tray + pet right-click menu)
   - `settings.ts` the one settings store: `updateSettings()` validates, saves, broadcasts; modules react via `onSettingsChange()`
   - `actions.ts` Settings buttons (restore backup, check updates, resets…) · `pomodoro.ts` timer owner · `autoHide.ts` OS watcher (Windows)
+  - `daily.ts` water / stretch / bedtime / weather (Open-Meteo) / prayer + Ramadan → `DailyState` · `prayerTimes.ts` (adhan, offline)
+  - `guard.ts` distraction guard (Windows, focus rounds only) · `laser.ts` Ctrl+Alt+L red dot · `notes.ts` sticky notes
   - `friends.ts` + `friendsService.ts` Friends over Supabase (only loaded when on) · `config/supabase.json` URL + anon key · `supabase/` SQL + setup guide
 - `src/preload/index.ts` the only renderer API (`window.api`, typed by `PetApi` in `src/shared/ipc.ts`)
-- `src/shared/` types + pure logic shared by both sides: `events.ts` (protocol), `ipc.ts` (channels), `settings.ts` (model, defaults, validation, migration), `progress.ts`, `pomodoro.ts`, `autoHide.ts`, `friends.ts`, `music.ts`, `skins.ts`
+- `src/shared/` types + pure logic shared by both sides: `events.ts` (protocol), `ipc.ts` (channels), `settings.ts` (model, defaults, validation, migration), `progress.ts`, `pomodoro.ts`, `autoHide.ts`, `friends.ts`, `weather.ts`, `guard.ts`, `habits.ts`, `music.ts`, `skins.ts`
 - `src/renderer/src/` (pet window, React)
   - `App.tsx` decides what shows (mood, bubbles, music, focus mode) · `store.ts` Zustand state + IPC wiring
   - `moodMachine.ts` pure mood logic · `usePetPointer.ts` hover/click/drag/hold-to-pet
@@ -39,7 +41,7 @@ Hooks: curl. Music helper: C# (.NET 8). Auto-hide watcher: inline PowerShell.
 - `scripts/claude-hooks.mjs` (pure merge/remove of our entries), `claude-settings.mjs` (file I/O + backups), `install-hooks.mjs` / `uninstall-hooks.mjs`, `icons/` (icon generator)
 - `helper/nowplaying/` C# helper: Windows media session → JSON lines on stdout, `toggle/next/prev` on stdin
 - `build/installer.nsh` NSIS uninstall step · `electron-builder.yml` · `site/` landing page · `.github/workflows/` release (3 OS) + pages
-- `tests/` Vitest (206 tests)
+- `tests/` Vitest (220 tests + 2 live Friends tests)
 
 ## How moods work
 - Agent events (from hooks → server → bridge → renderer) feed `moodMachine.ts`: base `sleeping|working`,
@@ -59,6 +61,9 @@ Hooks: curl. Music helper: C# (.NET 8). Auto-hide watcher: inline PowerShell.
 - v0.4.1: curl hooks (no Node.js needed), first-run Welcome window, uninstaller disconnects Claude, auto-update, landing page
 - v0.5.0: **Settings window** (every feature on/off, instant), developer / **Fun & focus** modes, **Pomodoro**,
   **auto-hide** (Windows), per-type risk warnings + allow-list, size S/M/L, sound volume, **Friends** (Supabase, opt-in)
+- v0.6.0: **distraction guard**, **drink water**, **stretch with me**, **bedtime mode**, **weather outfits** (opt-in),
+  **prayer times + Ramadan** (opt-in, offline), **laser game**, study streak scarf, exam countdown sign, sticky notes
+- Dropped for now (decided): ambient sounds, toss a fish, birthday/holiday outfits, photo mode, second pet
 
 ## Commands
 - `npm run dev` · `AGENTPET_DEMO=1 npm run dev` (mood demo) · `npm test` · `npm run lint` · `npm run typecheck`
@@ -76,7 +81,8 @@ Hooks: curl. Music helper: C# (.NET 8). Auto-hide watcher: inline PowerShell.
 - Pure logic in testable modules (`shared/*`, `moodMachine.ts`, `phonePing.ts`, `risk.ts`); Electron glue stays thin.
 - Hooks: curl only (no Node needed), quiet on failure (`silent`+`fail`), print only a permission decision or the status line. On start the app upgrades older installs (`upgrade()` in claude-settings.mjs).
 - Privacy: everything local (server on 127.0.0.1, rejects requests with an Origin header). Only Phone ping
-  (project name) and Friends (pet name, skin, level, online) send data out, both opt-in. No song history. No telemetry.
+  (project name), Friends (pet name, skin, level, online) and weather (city coordinates → Open-Meteo, plus the typed
+  city search) send data out, all opt-in. Window titles (distraction guard) never leave the PC. No telemetry.
 - Fun & focus mode: never show Claude / terminal / hooks / code wording (bridge ignores agent events in that mode).
 - Always back up `~/.claude/settings.json` before changing it; only touch entries containing `agentpet-send`.
 - Ask before adding dependencies. Commit only when asked; commit messages end with the Co-Authored-By line.

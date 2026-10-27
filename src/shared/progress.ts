@@ -59,7 +59,14 @@ export type Activity =
   | { type: 'water' }
 
 /** Things worth celebrating, produced by recording an activity. */
-export type Milestone = { type: 'level_up'; level: number } | { type: 'unlocked'; item: Accessory }
+export type Milestone =
+  | { type: 'level_up'; level: number }
+  | { type: 'unlocked'; item: Accessory }
+  | { type: 'streak'; days: number }
+
+/** Study streak: from this many days in a row with a Pomodoro he wears a scarf. */
+export const SCARF_STREAK = 5
+const STREAK_MILESTONES = new Set([3, 5, 7, 14, 30, 50, 100])
 
 export const DEFAULT_NAME = 'Noodle'
 export const XP_PER_LEVEL = 100
@@ -186,6 +193,19 @@ export function streak(progress: Progress, now: number): number {
   return count
 }
 
+/** Days in a row with at least one Pomodoro, up to today (or yesterday). */
+export function focusStreak(progress: Progress, now: number): number {
+  const did = (t: number): boolean => (progress.days[dayKey(t)]?.pomodoros ?? 0) > 0
+  let count = 0
+  let time = now
+  if (!did(time)) time -= 24 * 60 * 60_000
+  while (did(time)) {
+    count++
+    time -= 24 * 60 * 60_000
+  }
+  return count
+}
+
 export function isHungry(progress: Progress, now: number): boolean {
   return progress.lastFedAt !== null && now - progress.lastFedAt > HUNGRY_AFTER_MS
 }
@@ -213,6 +233,7 @@ export function record(
   const day = (next.days[key] = { ...emptyDay(), ...next.days[key] })
   next.totalPomodoros ??= 0
   const wasActiveToday = isActive(day)
+  let studyDay = false
 
   switch (activity.type) {
     case 'task_done':
@@ -226,6 +247,8 @@ export function record(
       break
     case 'pomodoro':
       day.pomodoros++
+      // the first focus round of the day may reach a streak milestone
+      if (day.pomodoros === 1) studyDay = true
       next.totalPomodoros++
       next.lastFedAt = now // and so does every focus round
       day.fish++
@@ -269,6 +292,11 @@ export function record(
   const yesterday = next.days[dayKey(now - 24 * 60 * 60_000)]
   if (!wasActiveToday && isActive(day) && isActive(yesterday)) next.xp += STREAK_XP
   if (levelOf(next.xp) > before) milestones.push({ type: 'level_up', level: levelOf(next.xp) })
+
+  if (studyDay) {
+    const days = focusStreak(next, now)
+    if (STREAK_MILESTONES.has(days)) milestones.push({ type: 'streak', days })
+  }
 
   for (const { item, done } of UNLOCKS) {
     if (!next.unlocked.includes(item) && done(next, now)) {
@@ -411,6 +439,8 @@ export interface PetLook {
   stage: Stage
   wearing: Accessory[]
   hungry: boolean
+  /** days in a row with a Pomodoro (scarf from SCARF_STREAK) */
+  focusStreak: number
 }
 
 export function lookOf(progress: Progress, now: number): PetLook {
@@ -421,6 +451,7 @@ export function lookOf(progress: Progress, now: number): PetLook {
     levelProgress: levelProgress(progress.xp),
     stage: stageOf(level),
     wearing: progress.wearing.filter((a) => progress.unlocked.includes(a)),
-    hungry: isHungry(progress, now)
+    hungry: isHungry(progress, now),
+    focusStreak: focusStreak(progress, now)
   }
 }

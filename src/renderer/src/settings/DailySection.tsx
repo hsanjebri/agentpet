@@ -3,7 +3,90 @@
 import type { PetSettings, PlaceResult } from '@shared/ipc'
 import { PRAYER_METHODS, type PrayerMethod } from '@shared/settings'
 import { useState } from 'react'
+import { useNotes } from '../useNotes'
 import { Group, Row, Section, Toggle } from './controls'
+
+/** "Bac in 23 days 📚": he holds the number on a sign. */
+function CountdownGroup({ settings: s }: { settings: PetSettings }): React.JSX.Element {
+  const [label, setLabel] = useState(s.countdown?.label ?? '')
+  const [date, setDate] = useState(s.countdown?.date ?? '')
+  const save = (l: string, d: string): void => {
+    if (l.trim() && d) window.api.changeSettings({ countdown: { label: l, date: d } })
+  }
+  return (
+    <Group title="📚 Exam / deadline countdown">
+      <Row label="What" description="He holds the days left on a little sign.">
+        <input
+          className="settings-input"
+          value={label}
+          maxLength={24}
+          placeholder="Bac"
+          onChange={(e) => setLabel(e.target.value)}
+          onBlur={() => save(label, date)}
+        />
+      </Row>
+      <Row label="When">
+        <input
+          type="date"
+          className="settings-input"
+          value={date}
+          onChange={(e) => {
+            setDate(e.target.value)
+            save(label, e.target.value)
+          }}
+        />
+        {s.countdown && (
+          <button
+            className="btn btn-terminal"
+            onClick={() => {
+              setLabel('')
+              setDate('')
+              window.api.changeSettings({ countdown: null })
+            }}
+          >
+            Clear
+          </button>
+        )}
+      </Row>
+    </Group>
+  )
+}
+
+/** "remind me: buy bread": he holds the note until you click ✓. */
+function NotesGroup(): React.JSX.Element {
+  const notes = useNotes()
+  const [text, setText] = useState('')
+  const add = (): void => {
+    if (!text.trim()) return
+    window.api.addNote(text)
+    setText('')
+  }
+  return (
+    <Group title="📝 Sticky notes">
+      <Row label="Remind me">
+        <input
+          className="settings-input"
+          value={text}
+          maxLength={120}
+          placeholder="buy bread"
+          onChange={(e) => setText(e.target.value)}
+          onKeyDown={(e) => e.key === 'Enter' && add()}
+        />
+        <button className="btn btn-approve" disabled={!text.trim()} onClick={add}>
+          Add
+        </button>
+      </Row>
+      {notes.map((n) => (
+        <div key={n.id} className="settings-row">
+          <span className="settings-row-text">{n.text}</span>
+          <button className="btn btn-terminal" onClick={() => window.api.doneNote(n.id)}>
+            Done ✓
+          </button>
+        </div>
+      ))}
+    </Group>
+  )
+}
 
 const METHOD_LABELS: Record<PrayerMethod, string> = {
   MuslimWorldLeague: 'Muslim World League',
@@ -104,6 +187,9 @@ export function DailySection({ settings: s }: { settings: PetSettings }): React.
           onChange={(weather) => change({ weather })}
         />
       </Group>
+
+      <CountdownGroup settings={s} />
+      <NotesGroup />
 
       <Group title="🕌 Prayer times">
         <Toggle

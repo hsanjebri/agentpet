@@ -6,6 +6,8 @@ const NONE: DailyState = {
   praying: false,
   ramadan: null,
   waterDue: false,
+  stretchDue: false,
+  bedtime: null,
   guarding: null,
   laser: false
 }

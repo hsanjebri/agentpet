@@ -114,6 +114,43 @@ export function FeaturesSection({ settings: s }: { settings: PetSettings }): Rea
         </Row>
       </Group>
 
+      <Group title="🙆 Stretch & sleep">
+        <Toggle
+          label="Stretch with me"
+          description="Now and then he stretches and invites you to copy him (never during a focus round)."
+          checked={s.stretch.enabled}
+          onChange={(enabled) => change({ stretch: { enabled } })}
+        />
+        <Row label="Every">
+          <select
+            value={s.stretch.everyMin}
+            disabled={!s.stretch.enabled}
+            onChange={(e) => change({ stretch: { everyMin: Number(e.target.value) } })}
+          >
+            {[60, 90, 120].map((m) => (
+              <option key={m} value={m}>
+                {m === 90 ? '1 h 30' : `${m / 60} h`}
+              </option>
+            ))}
+          </select>
+        </Row>
+        <Toggle
+          label="😴 Bedtime mode"
+          description="After this time he gets sleepy, yawns, then lies across your screen: go to bed! Click him for 30 more minutes."
+          checked={s.bedtime.enabled}
+          onChange={(enabled) => change({ bedtime: { enabled } })}
+        />
+        <Row label="Bedtime">
+          <input
+            type="time"
+            className="settings-input"
+            value={s.bedtime.at}
+            disabled={!s.bedtime.enabled}
+            onChange={(e) => e.target.value && change({ bedtime: { at: e.target.value } })}
+          />
+        </Row>
+      </Group>
+
       <Group title="🎮 Play">
         <Toggle
           label="🔴 Laser game"

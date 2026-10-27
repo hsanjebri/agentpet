@@ -15,7 +15,15 @@ const INITIAL: PetSettings = {
 
 /** Current settings from the main process, updated live when they change anywhere. */
 export function useSettings(): PetSettings {
-  const [settings, setSettings] = useState(INITIAL)
+  return useLoadedSettings() ?? INITIAL
+}
+
+/**
+ * Like useSettings, but null until the real settings arrived: for screens whose inputs start
+ * from a setting's value (they must not start from the defaults).
+ */
+export function useLoadedSettings(): PetSettings | null {
+  const [settings, setSettings] = useState<PetSettings | null>(null)
 
   useEffect(() => {
     let active = true

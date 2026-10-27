@@ -7,7 +7,7 @@ import { app, ipcMain, screen } from 'electron'
 import { type ForegroundWindow, distractionIn, parseWindowLine } from '../shared/guard'
 import { IPC } from '../shared/ipc'
 import { LineBuffer } from '../shared/music'
-import { dailyState, setDaily } from './daily'
+import { dailyState, setDaily, snoozeBedtime } from './daily'
 import { inFocusRound, onPomodoroChange } from './pomodoro'
 import { sendMoment } from './progress'
 import { onSettingsChange, storedSettings } from './settings'
@@ -108,7 +108,8 @@ function update(): void {
 /** Click on him while he guards: off he goes, and that site is left alone for a while. */
 function shoo(): void {
   const site = dailyState().guarding
-  if (site) snoozed.set(site, Date.now() + SNOOZE_MS)
+  if (!site) return snoozeBedtime() // lying across the screen at bedtime
+  snoozed.set(site, Date.now() + SNOOZE_MS)
   stopGuarding()
 }
 

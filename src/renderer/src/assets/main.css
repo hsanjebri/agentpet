@@ -1088,3 +1088,66 @@ body,
   display: block;
   margin: 4px 0 0 auto;
 }
+
+/* ---------- countdown sign + sticky note ---------- */
+
+/* "Bac 23d": a little wooden sign he holds up */
+.countdown-sign {
+  position: absolute;
+  left: 4%;
+  top: -6px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 2px 7px;
+  border: 2px solid #1f1c1a;
+  box-shadow: 2px 2px 0 #1f1c1a;
+  background: #c8915a;
+  color: #1f1c1a;
+  font:
+    700 11px/1.15 ui-monospace,
+    'Cascadia Mono',
+    Consolas,
+    monospace;
+  pointer-events: none;
+}
+
+.countdown-sign b {
+  font-size: 15px;
+}
+
+.sticky-note {
+  position: absolute;
+  right: 2%;
+  top: -14px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  max-width: 170px;
+  padding: 5px 6px 5px 8px;
+  border: 2px solid #1f1c1a;
+  box-shadow: 2px 2px 0 #1f1c1a;
+  background: #fff3a8;
+  color: #1f1c1a;
+  font:
+    600 12px/1.25 system-ui,
+    sans-serif;
+  transform: rotate(2deg);
+}
+
+.sticky-note span:first-child {
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+}
+
+.sticky-note .btn {
+  padding: 0 5px;
+  font-size: 12px;
+}
+
+.sticky-more {
+  font-size: 10px;
+  opacity: 0.7;
+}

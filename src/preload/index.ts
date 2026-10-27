@@ -60,7 +60,12 @@ const api: PetApi = {
   onDaily: (listener) => listen(IPC.daily, listener),
   drank: () => ipcRenderer.send(IPC.drank),
   searchPlace: (query) => ipcRenderer.invoke(IPC.searchPlace, query),
-  shoo: () => ipcRenderer.send(IPC.shoo)
+  shoo: () => ipcRenderer.send(IPC.shoo),
+  stretched: () => ipcRenderer.send(IPC.stretched),
+  getNotes: () => ipcRenderer.invoke(IPC.getNotes),
+  onNotes: (listener) => listen(IPC.notes, listener),
+  addNote: (text) => ipcRenderer.send(IPC.addNote, text),
+  doneNote: (id) => ipcRenderer.send(IPC.doneNote, id)
 }
 
 contextBridge.exposeInMainWorld('api', api)

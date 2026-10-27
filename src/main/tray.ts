@@ -52,6 +52,7 @@ function buildMenu(): Menu {
 function petMenu(): Menu {
   return Menu.buildFromTemplate([
     ...pomodoroMenuItems(),
+    { label: 'Sticky note…', click: () => openSettingsWindow('daily') },
     { type: 'separator' },
     settingsItem(),
     profileItem()

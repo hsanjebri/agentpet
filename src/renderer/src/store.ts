@@ -140,6 +140,15 @@ function onMoment(moment: PetMoment): void {
     case 'prayer':
       showToast(`🕌 ${moment.label} time`)
       break
+    case 'streak':
+      showToast(`${moment.days} days in a row 🔥`)
+      break
+    case 'bedtime':
+      showToast('*yawn*… it’s getting late 😴')
+      break
+    case 'stretch':
+      // its own bubble while it lasts (useDaily)
+      break
     case 'caught':
       showToast('got it! 🐾')
       break

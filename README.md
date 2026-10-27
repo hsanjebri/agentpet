@@ -55,6 +55,20 @@ done, or waiting for you, and you can say yes without going back to the terminal
 - **🍅 Pomodoro**: right-click him › _Start Pomodoro_. He naps on a tiny tomato timer while you
   focus, wakes up and stretches at the break, and earns a fish every round.
 - **🙈 Auto-hide** (Windows): out of the way during fullscreen apps, meetings and Do not disturb.
+- **🛡️ Distraction guard** (Windows): during a Pomodoro, open YouTube, Instagram or TikTok and he
+  walks over and sits on the window: "Focus first 😾". Click to shoo him.
+- **📚 Study streaks and countdowns**: 5 days in a row with a Pomodoro earns a scarf; set an exam
+  date and he holds the days left on a little sign.
+
+### Healthy habits and daily life
+
+- **💧 Drink water**: now and then he pushes a glass toward you. Tap "I drank".
+- **🙆 Stretch with me** and **😴 bedtime mode** (he yawns, then lies across your screen).
+- **⛅ Weather outfits** (opt-in): rain hood, scarf or sunglasses for the weather in your city.
+- **🕌 Prayer times + 🏮 Ramadan mode** (opt-in): a prayer mat and a soft reminder at each prayer
+  time, calculated on your computer; a lantern and the iftar countdown during Ramadan.
+- **📝 Sticky notes**: "buy bread". He holds the note until you tick it.
+- **🔴 Laser game**: press Ctrl+Alt+L and he chases the red dot.
 
 ### Just for fun
 
@@ -144,11 +158,14 @@ Everything stays on your computer. The app:
   count);
 - has no telemetry.
 
-Two exceptions, both off unless you turn them on:
+A few exceptions, all off unless you turn them on:
 
 - **Phone ping** sends the project name to your own ntfy topic.
 - **Friends** shares your pet's name, skin, level and online status with the friends you accept
   (anonymous account, no email). Nothing else.
+- **Weather outfits** send your city's coordinates to Open-Meteo (free, no account) every 30 min.
+  Prayer times are calculated on your computer. The distraction guard reads window titles only on
+  your PC, only during a Pomodoro.
 
 ## Uninstall
 
